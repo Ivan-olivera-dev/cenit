@@ -9,7 +9,7 @@ import java.time.Instant
 
 /**
  * Schedules and cancels windowed offline alarms using [AlarmManager.setWindow] (`RTC_WAKEUP`,
- * window ≤ 5 min). Requires no exact-alarm permission (`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`).
+ * 10-minute window ending 30 minutes before the event). Requires no exact-alarm permission (`SCHEDULE_EXACT_ALARM` / `USE_EXACT_ALARM`).
  */
 class AlarmScheduler(context: Context) {
     private val appContext = context.applicationContext
@@ -65,7 +65,7 @@ class AlarmScheduler(context: Context) {
             )
             manager.setWindow(
                 AlarmManager.RTC_WAKEUP,
-                decision.trigger.triggerInstant.toEpochMilli(),
+                decision.windowStart.toEpochMilli(),
                 decision.windowLengthMillis,
                 pendingIntent,
             )

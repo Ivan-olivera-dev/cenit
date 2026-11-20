@@ -70,4 +70,15 @@ class AlertNotificationFormatterTest {
         assertEquals("06:44", formatted.body)
         assertEquals("Sunrise in 30 minutes · 06:44", formatted.summary)
     }
+
+    @Test
+    fun `minutes left are counted to the displayed event minute and never negative`() {
+        val zone = ZoneId.of("Europe/Madrid")
+        fun at(text: String) = LocalDateTime.parse(text).atZone(zone).toInstant()
+        val event = at("2026-11-21T07:22:45") // shown as 07:22
+        assertEquals(40L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:42:00"), event))
+        assertEquals(34L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:47:30"), event))
+        assertEquals(30L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:52:00"), event))
+        assertEquals(0L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T07:30:00"), event))
+    }
 }

@@ -17,7 +17,10 @@ sealed interface ScheduleDecision {
         override val subscription: AlertSubscription,
         val trigger: AlertTrigger,
         val windowLengthMillis: Long,
-    ) : ScheduleDecision
+    ) : ScheduleDecision {
+        /** Start of the `setWindow` window; the window ends exactly at [AlertTrigger.triggerInstant]. */
+        val windowStart: java.time.Instant get() = trigger.triggerInstant.minusMillis(windowLengthMillis)
+    }
 
     data class Cancel(
         override val subscription: AlertSubscription,
@@ -29,8 +32,12 @@ sealed interface ScheduleDecision {
  * Pure JVM decision logic for scheduling, rescheduling, and cancelling alert alarms.
  */
 object AlertReschedulePlanner {
-    /** Window length for `AlarmManager.setWindow`: 5 minutes (no exact-alarm permission). */
-    const val MAX_WINDOW_LENGTH_MILLIS: Long = 5L * 60L * 1000L
+    /**
+     * Window length for `AlarmManager.setWindow` (no exact-alarm permission). Android 14+ widens
+     * shorter windows to 10 minutes, so the window is 10 minutes and ends at the trigger: the alert
+     * arrives between 40 and 30 minutes before the event, never later (L26).
+     */
+    const val WINDOW_LENGTH_MILLIS: Long = 10L * 60L * 1000L
 
     private val RESCHEDULE_ACTIONS = setOf(
         "android.intent.action.BOOT_COMPLETED",
@@ -60,7 +67,7 @@ object AlertReschedulePlanner {
         return ScheduleDecision.Schedule(
             subscription = subscription,
             trigger = trigger,
-            windowLengthMillis = MAX_WINDOW_LENGTH_MILLIS,
+            windowLengthMillis = WINDOW_LENGTH_MILLIS,
         )
     }
 

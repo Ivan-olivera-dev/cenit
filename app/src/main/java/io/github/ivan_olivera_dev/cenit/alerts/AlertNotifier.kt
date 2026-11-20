@@ -10,7 +10,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import io.github.ivan_olivera_dev.cenit.R
 import io.github.ivan_olivera_dev.cenit.core.alerts.AlertKind
-import io.github.ivan_olivera_dev.cenit.core.alerts.AlertSchedule
 import io.github.ivan_olivera_dev.cenit.ui.MainActivity
 import java.time.Instant
 import java.time.ZoneId
@@ -52,7 +51,7 @@ object AlertNotifier {
         val locale = appContext.resources.configuration.locales[0] ?: Locale.getDefault()
         val formatted = AlertNotificationFormatter.format(
             eventLabel = appContext.getString(labelResId(subscription.kind)),
-            leadMinutes = AlertSchedule.DEFAULT_LEAD_MINUTES,
+            leadMinutes = AlertNotificationFormatter.minutesUntil(Instant.now(), eventInstant),
             eventInstant = eventInstant,
             zone = zone,
             placeName = subscription.placeName,

@@ -20,7 +20,7 @@ class AlertReschedulePlannerTest {
         LocalDateTime.parse(text).atZone(madridZone).toInstant()
 
     @Test
-    fun `planOne schedules valid subscription with window at most 5 minutes`() {
+    fun `planOne schedules the window from 40 to 30 minutes before the event`() {
         val sub = AlertSubscription.create(AlertKind.SUNRISE, "Madrid", madrid, "Europe/Madrid")
         val now = atMadrid("2026-06-21T05:00:00")
 
@@ -30,8 +30,11 @@ class AlertReschedulePlannerTest {
         assertEquals(sub, scheduled.subscription)
         assertEquals(atMadrid("2026-06-21T06:44:00"), scheduled.trigger.eventInstant)
         assertEquals(atMadrid("2026-06-21T06:14:00"), scheduled.trigger.triggerInstant)
-        assertTrue(scheduled.windowLengthMillis in 1L..AlertReschedulePlanner.MAX_WINDOW_LENGTH_MILLIS)
-        assertTrue(AlertReschedulePlanner.MAX_WINDOW_LENGTH_MILLIS <= 5L * 60L * 1000L)
+        // Android 14+ widens setWindow to at least 10 minutes, so the window ends at the
+        // 30-minute trigger instead of starting there: the alert never comes later than 30 min before (L26).
+        assertEquals(atMadrid("2026-06-21T06:04:00"), scheduled.windowStart)
+        assertEquals(10L * 60L * 1000L, scheduled.windowLengthMillis)
+        assertEquals(scheduled.trigger.triggerInstant, scheduled.windowStart.plusMillis(scheduled.windowLengthMillis))
     }
 
     @Test
