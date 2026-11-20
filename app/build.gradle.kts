@@ -19,8 +19,29 @@ android {
         versionName = (findProperty("versionName") as String?) ?: "0.1.0"
     }
 
+    // Release signing comes only from the developer's own ~/.gradle/gradle.properties (never this
+    // repository): cenitReleaseStoreFile, cenitReleaseStorePassword, cenitReleaseKeyAlias,
+    // cenitReleaseKeyPassword. Without all four the release APK is unsigned, as F-Droid expects.
+    val releaseSigning = listOf(
+        "cenitReleaseStoreFile", "cenitReleaseStorePassword", "cenitReleaseKeyAlias", "cenitReleaseKeyPassword",
+    ).associateWith { findProperty(it) as String? }
+    if (releaseSigning.values.all { !it.isNullOrBlank() }) {
+        signingConfigs {
+            create("release") {
+                storeFile = file(releaseSigning.getValue("cenitReleaseStoreFile")!!)
+                storePassword = releaseSigning.getValue("cenitReleaseStorePassword")
+                keyAlias = releaseSigning.getValue("cenitReleaseKeyAlias")
+                keyPassword = releaseSigning.getValue("cenitReleaseKeyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            // -PcenitReleaseDebugSigning=true signs a local release with the debug key, so a minified
+            // build can replace an installed debug build for testing without losing its data.
+            signingConfig = signingConfigs.findByName("release")
+                ?: signingConfigs.getByName("debug").takeIf { findProperty("cenitReleaseDebugSigning") == "true" }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
