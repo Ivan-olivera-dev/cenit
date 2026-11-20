@@ -77,3 +77,9 @@ dependencies {
     implementation(libs.androidx.material3)
     testImplementation(libs.junit)
 }
+
+// BundledCitiesAssetTest reads the bundled city list by path; declare it as an
+// input so a regenerated list re-runs the unit tests instead of reusing old results.
+tasks.withType<Test>().configureEach {
+    inputs.dir("src/main/assets/geonames").withPropertyName("geonamesAsset")
+}

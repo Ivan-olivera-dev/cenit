@@ -15,10 +15,10 @@ class BundledCitiesAssetTest {
     fun `bundled GeoNames asset parses completely with valid IANA zones and expected search hits`() {
         val asset = File("src/main/assets/geonames/cities.tsv")
         assertTrue("Expected bundled asset at ${asset.absolutePath}", asset.isFile)
-        assertTrue("Bundled asset must be <= 3 MB", asset.length() <= 3_000_000L)
+        assertTrue("Bundled asset must be <= 6 MB (tools/geonames MAX_BYTES)", asset.length() <= 6_000_000L)
 
         val entries = asset.bufferedReader(Charsets.UTF_8).use { CityTsvParser.parse(it) }
-        assertTrue("Expected at least 30,000 cities, got ${entries.size}", entries.size >= 30_000)
+        assertTrue("Expected more than 40,000 cities (Sun Seeker parity), got ${entries.size}", entries.size > 40_000)
 
         for (entry in entries) {
             assertNotNull("Invalid ZoneId '${entry.timezoneId}' for ${entry.name}", entry.zoneIdOrNull())
