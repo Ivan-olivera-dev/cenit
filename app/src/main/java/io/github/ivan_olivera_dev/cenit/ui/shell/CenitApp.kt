@@ -12,14 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
-import io.github.ivan_olivera_dev.cenit.ui.planner.DefaultMadridPlace
+import androidx.compose.ui.platform.LocalContext
+import io.github.ivan_olivera_dev.cenit.ui.compass.CompassScreen
+import io.github.ivan_olivera_dev.cenit.ui.places.PlacesScreen
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
+import io.github.ivan_olivera_dev.cenit.ui.planner.plannerStateSaver
+import io.github.ivan_olivera_dev.cenit.ui.planner.resolveInitialPlannerState
+import io.github.ivan_olivera_dev.cenit.ui.sky.SkyScreen
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 import io.github.ivan_olivera_dev.cenit.ui.today.TodayScreen
 import java.time.Clock
@@ -27,8 +29,8 @@ import java.time.LocalDate
 import java.time.ZoneId
 
 /**
- * Root app shell: holds shared [PlannerState] across tabs and switches between Hoy and
- * placeholder screens for Cielo (T6b), Brújula (T7), and Lugares (T8).
+ * Root app shell: holds the shared [PlannerState] (active place and its time zone, date,
+ * time) across the Hoy, Cielo, Brújula and Lugares tabs.
  */
 @Composable
 fun CenitApp(
@@ -37,24 +39,14 @@ fun CenitApp(
 ) {
     val palette = LocalCenitPalette.current
     var selectedTab by rememberSaveable { mutableStateOf(CenitTab.HOY) }
-    val plannerSaver = remember(zone) {
-        Saver<PlannerState, List<Long>>(
-            save = { listOf(it.selectedDate.toEpochDay(), it.minuteOffset.toLong()) },
-            restore = { saved ->
-                PlannerState(
-                    activePlace = DefaultMadridPlace,
-                    zone = zone,
-                    selectedDate = LocalDate.ofEpochDay(saved[0]),
-                    minuteOffset = saved[1].toInt(),
-                )
-            },
-        )
-    }
+    val context = LocalContext.current
+    val plannerSaver = remember(zone) { plannerStateSaver(zone) }
     var plannerState by rememberSaveable(zone.id, stateSaver = plannerSaver) {
-        mutableStateOf(PlannerState.now(clock, zone))
+        // Last active saved place, else the permitted device location, else Madrid.
+        mutableStateOf(resolveInitialPlannerState(context, clock, zone))
     }
-    val today = remember(clock, zone, plannerState.selectedDate) {
-        LocalDate.now(clock.withZone(zone))
+    val today = remember(clock, plannerState.zone, plannerState.selectedDate) {
+        LocalDate.now(clock.withZone(plannerState.zone))
     }
 
     Column(
@@ -77,8 +69,14 @@ fun CenitApp(
                     onScrubFraction = { fraction -> plannerState = plannerState.selectFraction(fraction) },
                     onStepMinutes = { delta -> plannerState = plannerState.stepMinutes(delta) },
                 )
-                CenitTab.CIELO, CenitTab.BRUJULA, CenitTab.LUGARES -> PlaceholderTabScreen(
-                    title = stringResource(selectedTab.labelRes),
+                CenitTab.CIELO -> SkyScreen(
+                    state = plannerState,
+                    onStateChange = { plannerState = it },
+                )
+                CenitTab.BRUJULA -> CompassScreen(state = plannerState)
+                CenitTab.LUGARES -> PlacesScreen(
+                    state = plannerState,
+                    onStateChange = { plannerState = it },
                 )
             }
         }
@@ -86,23 +84,6 @@ fun CenitApp(
         CenitTabBar(
             selectedTab = selectedTab,
             onSelectTab = { selectedTab = it },
-        )
-    }
-}
-
-@Composable
-private fun PlaceholderTabScreen(title: String) {
-    val palette = LocalCenitPalette.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(palette.bgColor)
-            .padding(horizontal = 22.dp, vertical = 20.dp),
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineLarge,
-            color = palette.textPrimary,
         )
     }
 }
