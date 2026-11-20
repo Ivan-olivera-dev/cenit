@@ -194,15 +194,23 @@ object Eclipses {
     private fun LunarEclipseInfo.toCenitEclipse(place: Place): CenitEclipse {
         val peakInstant = peak.toInstant()
         val moonElevation = Ephemeris.moonPosition(place, peakInstant).elevation
+        val penumbralRange = rangeFromSemiDuration(peakInstant, sdPenum)
+        val partialRange = rangeFromSemiDuration(peakInstant, sdPartial)
+        // Visible when the Moon is up at the peak or at some point of the umbral (partial or total)
+        // phase: an eclipsed moonrise or moonset counts, like the solar rule. Penumbral shading is
+        // only noticeable near the peak, so a penumbral eclipse needs the Moon up at the peak.
+        // Within a few hours the Moon cannot rise and set again, so both ends are enough.
+        val visible = moonElevation > 0.0 || listOfNotNull(partialRange?.start, partialRange?.end)
+            .any { Ephemeris.moonPosition(place, it).elevation > 0.0 }
         return CenitEclipse(
             body = EclipseBody.MOON,
             kind = kind.toCenitKind(),
             peak = peakInstant,
             obscuration = obscuration.takeIf { it.isFinite() },
-            visible = moonElevation > 0.0,
+            visible = visible,
             peakElevationDeg = moonElevation,
-            penumbralRange = rangeFromSemiDuration(peakInstant, sdPenum),
-            partialRange = rangeFromSemiDuration(peakInstant, sdPartial),
+            penumbralRange = penumbralRange,
+            partialRange = partialRange,
             totalRange = rangeFromSemiDuration(peakInstant, sdTotal),
         )
     }

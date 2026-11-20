@@ -154,7 +154,7 @@ class EclipsesTest {
     }
 
     @Test
-    fun `madrid visibility for 2028-12-31 total lunar eclipse matches computed moon elevation at peak`() {
+    fun `madrid sees the 2028-12-31 total lunar eclipse as an eclipsed moonrise`() {
         val all = Eclipses.upcoming(
             place = madrid,
             from = from2026,
@@ -165,11 +165,10 @@ class EclipsesTest {
         val dec2028 = all.first {
             it.body == EclipseBody.MOON && it.peak.atOffset(ZoneOffset.UTC).toLocalDate() == LocalDate.of(2028, 12, 31)
         }
-        // At 16:52 UT in Madrid (40.4165°N, -3.7026°W), the Moon is still ~0.37° below the horizon
-        // (it rises a few minutes after peak during the second half of totality), so under the
-        // moon-above-horizon-at-peak visibility rule it is marked visible = false.
-        assertEquals(dec2028.peakElevationDeg > 0.0, dec2028.visible)
-        assertFalse(dec2028.visible)
+        // At 16:52 UT in Madrid (40.4165°N, -3.7026°W), the Moon is still ~0.37° below the horizon,
+        // but it rises about a minute later, in the middle of totality: an eclipsed moonrise, so the
+        // eclipse is visible (visible = the Moon is up at some point of the eclipse, like the solar rule).
+        assertTrue(dec2028.visible)
         assertTrue(
             "Expected Moon just below horizon in Madrid at 2028-12-31 peak, elevation=${dec2028.peakElevationDeg}°",
             dec2028.peakElevationDeg < 0.0 && dec2028.peakElevationDeg > -1.0,
@@ -189,7 +188,9 @@ class EclipsesTest {
         )
         val cutoff = Instant.parse("2027-11-20T00:00:00Z")
         assertTrue(oneYear.all { !it.peak.isAfter(cutoff) && it.visible })
-        // Within 1 year from 2026-11-20, Madrid sees 2027-02-20 penumbral lunar + 2027-08-02 partial solar
+        // Within 1 year from 2026-11-20, Madrid sees 2027-02-20 penumbral lunar + 2027-08-02 partial solar.
+        // Not 2027-08-17 penumbral: the Moon is 0.5° up only at the start of the penumbral phase,
+        // when no shading is visible, and sets before the peak.
         assertEquals(2, oneYear.size)
     }
 
