@@ -11,7 +11,9 @@ here=$(cd "$(dirname "$0")" && pwd)
 guard="$here/check-manifest.sh"
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
-trap 'exit 130' HUP INT TERM
+trap 'exit 129' HUP
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 ns='http://schemas.android.com/apk/res/android'
 perm_line="        A: $ns:name(0x01010003)=\"android.permission.INTERNET\" (Raw: \"android.permission.INTERNET\")"
