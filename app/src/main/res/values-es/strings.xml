@@ -2,4 +2,119 @@
 <resources>
     <string name="app_name">Cenit</string>
     <string name="placeholder_tagline">Planificador de sol y luna para fotografía. Funciona sin conexión.</string>
+
+    <!-- Tabs -->
+    <string name="tab_today">Hoy</string>
+    <string name="tab_sky">Cielo</string>
+    <string name="tab_compass">Brújula</string>
+    <string name="tab_places">Lugares</string>
+    <string name="cd_tab_bar">Secciones</string>
+
+    <!-- Place & coordinates -->
+    <string name="coords_format">%1$s° %2$s · %3$s° %4$s</string>
+    <string name="hemisphere_north">N</string>
+    <string name="hemisphere_south">S</string>
+    <string name="hemisphere_east">E</string>
+    <string name="hemisphere_west">O</string>
+
+    <!-- Date planner -->
+    <string name="action_now">Ahora</string>
+    <string name="cd_back_to_now">Volver a ahora</string>
+    <string name="cd_previous_day">Día anterior</string>
+    <string name="cd_next_day">Día siguiente</string>
+    <string name="cd_date_strip">Fecha</string>
+    <string name="cd_date_today_suffix">, hoy</string>
+
+    <!-- Sky dome -->
+    <string name="cardinal_n">N</string>
+    <string name="cardinal_e">E</string>
+    <string name="cardinal_s">S</string>
+    <string name="cardinal_w">O</string>
+    <string name="dome_solstice_jun">jun</string>
+    <string name="dome_solstice_dec">dic</string>
+    <string name="dome_legend_solstices">solsticios jun/dic</string>
+    <string name="dome_legend_equinox">equinoccio</string>
+    <string name="dome_legend_night">noche</string>
+    <string name="cd_sky_dome_normal">Brújula plana: recorrido del sol con sus horas y de la luna. Amanecer a %1$s° a las %2$s, atardecer a %3$s° a las %4$s. Líneas finas: solsticios de junio y diciembre y equinoccio.</string>
+    <string name="cd_sky_dome_polar">Brújula plana: recorrido del sol con sus horas y de la luna. Líneas finas: solsticios de junio y diciembre y equinoccio.</string>
+
+    <!-- Sky phases -->
+    <string name="phase_day">Día</string>
+    <string name="phase_golden">Hora dorada</string>
+    <string name="phase_blue">Hora azul</string>
+    <string name="phase_nautical">Crepúsculo náutico</string>
+    <string name="phase_astronomical">Crepúsculo astronómico</string>
+    <string name="phase_night">Noche</string>
+
+    <!-- Sun readout & shadow -->
+    <string name="sun_position_above">%1$s · sol %2$s° %3$s, %4$s°</string>
+    <string name="sun_position_below">%1$s · sol %2$s° %3$s, bajo el horizonte</string>
+    <string name="shadow_ratio">Sombra %1$s × la altura</string>
+    <string name="shadow_none">Sin sombra</string>
+
+    <!-- Alert toggle -->
+    <string name="cd_alert_event">Avisarme 30 minutos antes de %1$s</string>
+    <string name="cd_alert_next">el próximo evento</string>
+
+    <!-- Day ribbon & scrubber -->
+    <string name="ribbon_golden_label">Hora dorada %1$s</string>
+    <string name="ribbon_golden_none">Sin hora dorada hoy</string>
+    <string name="ribbon_golden_range">%1$s–%2$s</string>
+    <string name="cd_day_ribbon">Luz del día: %1$s</string>
+    <string name="cd_time_scrubber">Hora</string>
+    <string name="a11y_step_forward_5m">Avanzar 5 minutos</string>
+    <string name="a11y_step_back_5m">Retroceder 5 minutos</string>
+    <string name="a11y_step_forward_1h">Avanzar 1 hora</string>
+    <string name="a11y_step_back_1h">Retroceder 1 hora</string>
+
+    <!-- Moon -->
+    <string name="moon_phase_new">Luna nueva</string>
+    <string name="moon_phase_waxing_crescent">Luna creciente</string>
+    <string name="moon_phase_first_quarter">Cuarto creciente</string>
+    <string name="moon_phase_waxing_gibbous">Gibosa creciente</string>
+    <string name="moon_phase_full">Luna llena</string>
+    <string name="moon_phase_waning_gibbous">Gibosa menguante</string>
+    <string name="moon_phase_last_quarter">Cuarto menguante</string>
+    <string name="moon_phase_waning_crescent">Luna menguante</string>
+    <string name="moon_summary">%1$s · %2$d %%</string>
+    <string name="moon_position_above">%1$s° %2$s · %3$s°</string>
+    <string name="moon_position_below">bajo el horizonte</string>
+    <string name="cd_phase_glyph">%1$s, %2$d %% iluminada</string>
+
+    <!-- Events -->
+    <string name="event_astro_dawn">Empieza el crepúsculo astronómico</string>
+    <string name="event_nautical_dawn">Empieza el crepúsculo náutico</string>
+    <string name="event_blue_hour">Hora azul</string>
+    <string name="event_golden_hour">Hora dorada</string>
+    <string name="event_sunrise">Amanecer</string>
+    <string name="event_solar_noon">Mediodía solar</string>
+    <string name="event_sunset">Atardecer</string>
+    <string name="event_nautical_dusk">Termina el crepúsculo náutico</string>
+    <string name="event_night">Empieza la noche</string>
+    <string name="event_moonrise">Salida de la luna</string>
+    <string name="event_moonset">Puesta de la luna</string>
+    <string name="event_azimuth">%1$s° %2$s</string>
+    <string name="event_until">hasta %1$s</string>
+    <string name="event_elevation">%1$s°</string>
+    <string name="events_none_left">No quedan eventos este día</string>
+    <string name="cd_next_events">Próximos eventos</string>
+
+    <string-array name="compass_winds">
+        <item>N</item>
+        <item>NNE</item>
+        <item>NE</item>
+        <item>ENE</item>
+        <item>E</item>
+        <item>ESE</item>
+        <item>SE</item>
+        <item>SSE</item>
+        <item>S</item>
+        <item>SSO</item>
+        <item>SO</item>
+        <item>OSO</item>
+        <item>O</item>
+        <item>ONO</item>
+        <item>NO</item>
+        <item>NNO</item>
+    </string-array>
 </resources>

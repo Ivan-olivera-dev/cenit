@@ -2,4 +2,119 @@
 <resources>
     <string name="app_name">Cenit</string>
     <string name="placeholder_tagline">Sun and moon planner for photographers. Works offline.</string>
+
+    <!-- Tabs -->
+    <string name="tab_today">Today</string>
+    <string name="tab_sky">Sky</string>
+    <string name="tab_compass">Compass</string>
+    <string name="tab_places">Places</string>
+    <string name="cd_tab_bar">Sections</string>
+
+    <!-- Place & coordinates -->
+    <string name="coords_format">%1$s° %2$s · %3$s° %4$s</string>
+    <string name="hemisphere_north">N</string>
+    <string name="hemisphere_south">S</string>
+    <string name="hemisphere_east">E</string>
+    <string name="hemisphere_west">W</string>
+
+    <!-- Date planner -->
+    <string name="action_now">Now</string>
+    <string name="cd_back_to_now">Back to now</string>
+    <string name="cd_previous_day">Previous day</string>
+    <string name="cd_next_day">Next day</string>
+    <string name="cd_date_strip">Date</string>
+    <string name="cd_date_today_suffix">, today</string>
+
+    <!-- Sky dome -->
+    <string name="cardinal_n">N</string>
+    <string name="cardinal_e">E</string>
+    <string name="cardinal_s">S</string>
+    <string name="cardinal_w">W</string>
+    <string name="dome_solstice_jun">jun</string>
+    <string name="dome_solstice_dec">dec</string>
+    <string name="dome_legend_solstices">jun/dec solstices</string>
+    <string name="dome_legend_equinox">equinox</string>
+    <string name="dome_legend_night">night</string>
+    <string name="cd_sky_dome_normal">Flat compass: sun path with hours and moon path. Sunrise at %1$s° at %2$s, sunset at %3$s° at %4$s. Thin lines: June and December solstices and equinox.</string>
+    <string name="cd_sky_dome_polar">Flat compass: sun path with hours and moon path. Thin lines: June and December solstices and equinox.</string>
+
+    <!-- Sky phases -->
+    <string name="phase_day">Day</string>
+    <string name="phase_golden">Golden hour</string>
+    <string name="phase_blue">Blue hour</string>
+    <string name="phase_nautical">Nautical twilight</string>
+    <string name="phase_astronomical">Astronomical twilight</string>
+    <string name="phase_night">Night</string>
+
+    <!-- Sun readout & shadow -->
+    <string name="sun_position_above">%1$s · sun %2$s° %3$s, %4$s°</string>
+    <string name="sun_position_below">%1$s · sun %2$s° %3$s, below horizon</string>
+    <string name="shadow_ratio">Shadow %1$s × height</string>
+    <string name="shadow_none">No shadow</string>
+
+    <!-- Alert toggle -->
+    <string name="cd_alert_event">Notify me 30 minutes before %1$s</string>
+    <string name="cd_alert_next">the next event</string>
+
+    <!-- Day ribbon & scrubber -->
+    <string name="ribbon_golden_label">Golden hour %1$s</string>
+    <string name="ribbon_golden_none">No golden hour today</string>
+    <string name="ribbon_golden_range">%1$s–%2$s</string>
+    <string name="cd_day_ribbon">Daylight: %1$s</string>
+    <string name="cd_time_scrubber">Time</string>
+    <string name="a11y_step_forward_5m">Forward 5 minutes</string>
+    <string name="a11y_step_back_5m">Back 5 minutes</string>
+    <string name="a11y_step_forward_1h">Forward 1 hour</string>
+    <string name="a11y_step_back_1h">Back 1 hour</string>
+
+    <!-- Moon -->
+    <string name="moon_phase_new">New moon</string>
+    <string name="moon_phase_waxing_crescent">Waxing crescent</string>
+    <string name="moon_phase_first_quarter">First quarter</string>
+    <string name="moon_phase_waxing_gibbous">Waxing gibbous</string>
+    <string name="moon_phase_full">Full moon</string>
+    <string name="moon_phase_waning_gibbous">Waning gibbous</string>
+    <string name="moon_phase_last_quarter">Last quarter</string>
+    <string name="moon_phase_waning_crescent">Waning crescent</string>
+    <string name="moon_summary">%1$s · %2$d %%</string>
+    <string name="moon_position_above">%1$s° %2$s · %3$s°</string>
+    <string name="moon_position_below">below horizon</string>
+    <string name="cd_phase_glyph">%1$s, %2$d %% illuminated</string>
+
+    <!-- Events -->
+    <string name="event_astro_dawn">Astronomical twilight begins</string>
+    <string name="event_nautical_dawn">Nautical twilight begins</string>
+    <string name="event_blue_hour">Blue hour</string>
+    <string name="event_golden_hour">Golden hour</string>
+    <string name="event_sunrise">Sunrise</string>
+    <string name="event_solar_noon">Solar noon</string>
+    <string name="event_sunset">Sunset</string>
+    <string name="event_nautical_dusk">Nautical twilight ends</string>
+    <string name="event_night">Night begins</string>
+    <string name="event_moonrise">Moonrise</string>
+    <string name="event_moonset">Moonset</string>
+    <string name="event_azimuth">%1$s° %2$s</string>
+    <string name="event_until">until %1$s</string>
+    <string name="event_elevation">%1$s°</string>
+    <string name="events_none_left">No more events today</string>
+    <string name="cd_next_events">Next events</string>
+
+    <string-array name="compass_winds">
+        <item>N</item>
+        <item>NNE</item>
+        <item>NE</item>
+        <item>ENE</item>
+        <item>E</item>
+        <item>ESE</item>
+        <item>SE</item>
+        <item>SSE</item>
+        <item>S</item>
+        <item>SSW</item>
+        <item>SW</item>
+        <item>WSW</item>
+        <item>W</item>
+        <item>WNW</item>
+        <item>NW</item>
+        <item>NNW</item>
+    </string-array>
 </resources>
