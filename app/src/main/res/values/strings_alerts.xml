@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alert_channel_name">Alerts</string>
+    <string name="alert_channel_description">Notifications 30 minutes before solar events</string>
+
+    <string name="alert_notif_title">%1$s in %2$d minutes</string>
+    <string name="alert_notif_body_with_place">%1$s · %2$s</string>
+    <string name="alert_notif_summary">%1$s · %2$s</string>
+
+    <string name="alert_kind_astro_dawn">Astronomical dawn</string>
+    <string name="alert_kind_nautical_dawn">Nautical dawn</string>
+    <string name="alert_kind_civil_dawn">Civil dawn</string>
+    <string name="alert_kind_blue_morning">Blue hour</string>
+    <string name="alert_kind_golden_morning">Golden hour</string>
+    <string name="alert_kind_sunrise">Sunrise</string>
+    <string name="alert_kind_golden_evening">Golden hour</string>
+    <string name="alert_kind_sunset">Sunset</string>
+    <string name="alert_kind_blue_evening">Blue hour</string>
+    <string name="alert_kind_civil_dusk">Civil dusk</string>
+    <string name="alert_kind_nautical_dusk">Nautical dusk</string>
+    <string name="alert_kind_astro_dusk">Astronomical dusk</string>
+
+    <string name="alert_cd_notify">Notify me 30 minutes before %1$s</string>
+    <string name="alert_cd_enabled">Alerts enabled for %1$s</string>
+    <string name="alert_cd_unavailable">No alertable events available</string>
+
+    <string name="alert_permission_denied_notice">Notifications are off. Enable them in app settings to receive alerts.</string>
+    <string name="alert_no_occurrence_notice">This event does not occur at this location within the next year.</string>
+</resources>

@@ -1,5 +1,9 @@
 package io.github.ivan_olivera_dev.cenit.ui.today
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -24,28 +28,41 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.ivan_olivera_dev.cenit.R
+import io.github.ivan_olivera_dev.cenit.alerts.AlertNotifier
+import io.github.ivan_olivera_dev.cenit.alerts.AlertPermissions
 import io.github.ivan_olivera_dev.cenit.core.Cenit
 import io.github.ivan_olivera_dev.cenit.core.Ephemeris
 import io.github.ivan_olivera_dev.cenit.core.MoonDay
@@ -53,6 +70,7 @@ import io.github.ivan_olivera_dev.cenit.core.MoonPhaseName
 import io.github.ivan_olivera_dev.cenit.core.PathPoint
 import io.github.ivan_olivera_dev.cenit.core.Place
 import io.github.ivan_olivera_dev.cenit.core.SunDay
+import io.github.ivan_olivera_dev.cenit.core.alerts.AlertKind
 import io.github.ivan_olivera_dev.cenit.core.sky.DayRibbon
 import io.github.ivan_olivera_dev.cenit.core.sky.DayRibbonSegment
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyEvent
@@ -91,6 +109,11 @@ private data class TodayDayBundle(
     val sunsetTick: DomeHorizonTick?,
 )
 
+private enum class TodayAlertNotice {
+    PERMISSION_DENIED,
+    NO_OCCURRENCE,
+}
+
 /**
  * Hoy screen of Artboard 02 (Cúpula): flat-compass sky dome, date strip, focal time with sun
  * position and shadow ratio, 24 h day ribbon, time scrubber, moon phase summary, and next events.
@@ -106,8 +129,12 @@ fun TodayScreen(
     onScrubFraction: (Float) -> Unit,
     onStepMinutes: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    subscribedAlertKinds: Set<AlertKind> = emptySet(),
+    onSubscribeAlert: (AlertKind) -> Boolean = { false },
+    onUnsubscribeAlert: (AlertKind) -> Unit = {},
 ) {
     val palette = LocalCenitPalette.current
+    val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val locale = remember(configuration) {
         configuration.locales[0] ?: Locale.getDefault()
@@ -203,10 +230,70 @@ fun TodayScreen(
         stringResource(R.string.shadow_ratio, SkyFormatting.formatDecimal(ratio, 1, locale))
     } ?: stringResource(R.string.shadow_none)
 
-    val nextEvent = upcomingEvents.firstOrNull()
-    val alertTargetName = nextEvent?.let { eventLabel(it.kind).lowercase(locale) }
-        ?: stringResource(R.string.cd_alert_next)
-    val alertDesc = stringResource(R.string.cd_alert_event, alertTargetName)
+    val nextAlertEvent = remember(upcomingEvents) {
+        upcomingEvents.firstOrNull { AlertKind.fromSkyEventKind(it.kind) != null }
+    }
+    val alertTargetKind = remember(nextAlertEvent, place, selectedDate, selectedInstant, zone) {
+        if (nextAlertEvent != null) {
+            AlertKind.fromSkyEventKind(nextAlertEvent.kind)
+        } else {
+            val tomorrow = selectedDate.plusDays(1)
+            val tomorrowSun = Ephemeris.sunDay(place, tomorrow, zone)
+            val tomorrowMoon = Ephemeris.moonDay(place, tomorrow, zone)
+            SkyEvents.nextKeyEvents(
+                SkyEvents.forDay(place, tomorrowSun, tomorrowMoon),
+                after = selectedInstant,
+            ).firstNotNullOfOrNull { AlertKind.fromSkyEventKind(it.kind) }
+        }
+    }
+    val isAlertSubscribed = alertTargetKind != null && alertTargetKind in subscribedAlertKinds
+
+    var pendingAlertKind by rememberSaveable { mutableStateOf<AlertKind?>(null) }
+    var alertNotice by remember { mutableStateOf<TodayAlertNotice?>(null) }
+
+    LaunchedEffect(state.activePlace, alertTargetKind) {
+        alertNotice = null
+    }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        val pending = pendingAlertKind
+        pendingAlertKind = null
+        if (granted && pending != null) {
+            val scheduled = onSubscribeAlert(pending)
+            alertNotice = if (scheduled) null else TodayAlertNotice.NO_OCCURRENCE
+        } else if (!granted) {
+            alertNotice = TodayAlertNotice.PERMISSION_DENIED
+        }
+    }
+
+    fun onAlertToggleClick() {
+        val kind = alertTargetKind ?: return
+        alertNotice = null
+        if (isAlertSubscribed) {
+            onUnsubscribeAlert(kind)
+        } else if (AlertPermissions.hasNotificationPermission(context)) {
+            val scheduled = onSubscribeAlert(kind)
+            if (!scheduled) {
+                alertNotice = TodayAlertNotice.NO_OCCURRENCE
+            }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            pendingAlertKind = kind
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
+    val alertDesc = if (alertTargetKind != null) {
+        val targetName = stringResource(AlertNotifier.labelResId(alertTargetKind)).lowercase(locale)
+        if (isAlertSubscribed) {
+            stringResource(R.string.alert_cd_enabled, targetName)
+        } else {
+            stringResource(R.string.alert_cd_notify, targetName)
+        }
+    } else {
+        stringResource(R.string.alert_cd_unavailable)
+    }
 
     Box(
         modifier = modifier
@@ -306,23 +393,56 @@ fun TodayScreen(
                     )
                 }
 
-                // Inert alert toggle (44×44 dp, 1 dp controlBorder; functional in T9)
+                // Alert toggle (design/system.md alert-toggle: 44×44 dp; 1 dp controlBorder;
+                // pressed: fill --sun, icon --bg-color).
+                val toggleShape = RoundedCornerShape(10.dp)
+                val toggleBg = if (isAlertSubscribed) palette.sun else Color.Transparent
+                val toggleBorder = if (isAlertSubscribed) palette.sun else palette.controlBorder
+                val toggleIconTint = when {
+                    isAlertSubscribed -> palette.bgColor
+                    alertTargetKind != null -> palette.textPrimary
+                    else -> palette.textSecondary
+                }
                 Box(
                     modifier = Modifier
                         .size(44.dp)
                         .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
-                        .clip(RoundedCornerShape(10.dp))
-                        .border(1.dp, palette.controlBorder, RoundedCornerShape(10.dp))
-                        .clickable(role = Role.Button, onClick = {})
-                        .semantics { contentDescription = alertDesc },
+                        .clip(toggleShape)
+                        .background(toggleBg)
+                        .border(1.dp, toggleBorder, toggleShape)
+                        .clickable(
+                            enabled = alertTargetKind != null,
+                            role = Role.Button,
+                            onClick = ::onAlertToggleClick,
+                        )
+                        .semantics {
+                            contentDescription = alertDesc
+                            selected = isAlertSubscribed
+                        },
                     contentAlignment = Alignment.Center,
                 ) {
                     CenitIcon(
                         kind = CenitIconKind.BELL,
-                        tint = palette.textPrimary,
+                        tint = toggleIconTint,
                         size = 22.dp,
                     )
                 }
+            }
+
+            if (alertNotice != null) {
+                Spacer(modifier = Modifier.height(4.dp))
+                val noticeText = when (alertNotice) {
+                    TodayAlertNotice.PERMISSION_DENIED ->
+                        stringResource(R.string.alert_permission_denied_notice)
+                    TodayAlertNotice.NO_OCCURRENCE ->
+                        stringResource(R.string.alert_no_occurrence_notice)
+                    null -> ""
+                }
+                TodayAlertNoticeBanner(
+                    text = noticeText,
+                    palette = palette,
+                    onDismiss = { alertNotice = null },
+                )
             }
 
             Spacer(modifier = Modifier.height(4.dp))
@@ -364,6 +484,46 @@ fun TodayScreen(
                 locale = locale,
             )
         }
+    }
+}
+
+@Composable
+private fun TodayAlertNoticeBanner(
+    text: String,
+    palette: CenitPalette,
+    onDismiss: () -> Unit,
+) {
+    val shape = RoundedCornerShape(
+        topStart = 0.dp,
+        bottomStart = 0.dp,
+        topEnd = 12.dp,
+        bottomEnd = 12.dp,
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(palette.surfaceColor)
+            .drawBehind {
+                val ruleWidth = 3.dp.toPx()
+                val startX = if (layoutDirection == LayoutDirection.Rtl) size.width - ruleWidth else 0f
+                drawRect(
+                    color = palette.warning,
+                    topLeft = Offset(startX, 0f),
+                    size = Size(ruleWidth, size.height),
+                )
+            }
+            .clickable(role = Role.Button, onClick = onDismiss)
+            .padding(start = 15.dp, end = 12.dp, top = 7.dp, bottom = 7.dp)
+            .semantics { liveRegion = LiveRegionMode.Polite },
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodySmall,
+            color = palette.textPrimary,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

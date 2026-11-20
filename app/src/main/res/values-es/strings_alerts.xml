@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="alert_channel_name">Avisos</string>
+    <string name="alert_channel_description">Avisos 30 minutos antes de los eventos solares</string>
+
+    <string name="alert_notif_title">%1$s en %2$d minutos</string>
+    <string name="alert_notif_body_with_place">%1$s · %2$s</string>
+    <string name="alert_notif_summary">%1$s · %2$s</string>
+
+    <string name="alert_kind_astro_dawn">Alba astronómica</string>
+    <string name="alert_kind_nautical_dawn">Alba náutica</string>
+    <string name="alert_kind_civil_dawn">Alba civil</string>
+    <string name="alert_kind_blue_morning">Hora azul</string>
+    <string name="alert_kind_golden_morning">Hora dorada</string>
+    <string name="alert_kind_sunrise">Amanecer</string>
+    <string name="alert_kind_golden_evening">Hora dorada</string>
+    <string name="alert_kind_sunset">Atardecer</string>
+    <string name="alert_kind_blue_evening">Hora azul</string>
+    <string name="alert_kind_civil_dusk">Ocaso civil</string>
+    <string name="alert_kind_nautical_dusk">Ocaso náutico</string>
+    <string name="alert_kind_astro_dusk">Ocaso astronómico</string>
+
+    <string name="alert_cd_notify">Avisarme 30 minutos antes de %1$s</string>
+    <string name="alert_cd_enabled">Avisos activados para %1$s</string>
+    <string name="alert_cd_unavailable">Sin eventos con aviso disponibles</string>
+
+    <string name="alert_permission_denied_notice">Notificaciones desactivadas. Actívalas en los ajustes de la app para recibir avisos.</string>
+    <string name="alert_no_occurrence_notice">Este evento no ocurre en este lugar durante el próximo año.</string>
+</resources>

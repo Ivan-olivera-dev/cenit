@@ -16,6 +16,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import io.github.ivan_olivera_dev.cenit.alerts.AlarmScheduler
+import io.github.ivan_olivera_dev.cenit.alerts.AlertSubscription
+import io.github.ivan_olivera_dev.cenit.alerts.AlertSubscriptionsStore
 import io.github.ivan_olivera_dev.cenit.ui.compass.CompassScreen
 import io.github.ivan_olivera_dev.cenit.ui.places.PlacesScreen
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
@@ -25,6 +28,7 @@ import io.github.ivan_olivera_dev.cenit.ui.sky.SkyScreen
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 import io.github.ivan_olivera_dev.cenit.ui.today.TodayScreen
 import java.time.Clock
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -48,6 +52,15 @@ fun CenitApp(
     val today = remember(clock, plannerState.zone, plannerState.selectedDate) {
         LocalDate.now(clock.withZone(plannerState.zone))
     }
+    val alertStore = remember(context) { AlertSubscriptionsStore.fromContext(context) }
+    val alarmScheduler = remember(context) { AlarmScheduler(context) }
+    var alertSubscriptions by remember(alertStore) { mutableStateOf(alertStore.load()) }
+    val subscribedAlertKinds = remember(alertSubscriptions, plannerState.activePlace.place) {
+        val activePlace = plannerState.activePlace.place
+        alertSubscriptions
+            .filter { it.matches(it.kind, activePlace) }
+            .mapTo(LinkedHashSet()) { it.kind }
+    }
 
     Column(
         modifier = Modifier
@@ -68,6 +81,34 @@ fun CenitApp(
                     onResetNow = { plannerState = plannerState.resetToNow(clock) },
                     onScrubFraction = { fraction -> plannerState = plannerState.selectFraction(fraction) },
                     onStepMinutes = { delta -> plannerState = plannerState.stepMinutes(delta) },
+                    subscribedAlertKinds = subscribedAlertKinds,
+                    onSubscribeAlert = { kind ->
+                        val subscription = AlertSubscription.create(
+                            kind = kind,
+                            placeName = plannerState.activePlace.name,
+                            place = plannerState.activePlace.place,
+                            zoneId = plannerState.zone.id,
+                        )
+                        val scheduled = alarmScheduler.schedule(subscription, now = Instant.now(clock))
+                        if (scheduled != null) {
+                            alertSubscriptions = alertStore.add(subscription)
+                            true
+                        } else {
+                            alarmScheduler.cancel(subscription.id)
+                            false
+                        }
+                    },
+                    onUnsubscribeAlert = { kind ->
+                        val activePlace = plannerState.activePlace.place
+                        val existing = alertSubscriptions.firstOrNull { it.matches(kind, activePlace) }
+                        val cancelId = existing?.id ?: AlertSubscription.stableId(
+                            kind = kind,
+                            latitude = activePlace.latitude,
+                            longitude = activePlace.longitude,
+                        )
+                        alarmScheduler.cancel(cancelId)
+                        alertSubscriptions = alertStore.removeMatching(kind, activePlace)
+                    },
                 )
                 CenitTab.CIELO -> SkyScreen(
                     state = plannerState,
