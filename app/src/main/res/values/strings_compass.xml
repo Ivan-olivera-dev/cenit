@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Screen & heading -->
+    <string name="compass_title">Compass</string>
+    <string name="compass_heading_degrees">%1$s°</string>
+    <string name="compass_heading_pending">—</string>
+    <string name="compass_true_north_sub">True north · magnetic declination corrected</string>
+    <string name="compass_north_up_label">North up</string>
+    <string name="compass_no_sensor_sub">No compass sensor · dome fixed north-up</string>
+
+    <!-- Notices -->
+    <string name="compass_calibration_notice">Calibrate compass: move the phone in a figure-8</string>
+    <string name="compass_no_sensor_notice">This device has no compass sensor. The dome is shown north-up.</string>
+
+    <!-- Target rows -->
+    <string name="compass_target_sunset">Sunset %1$s</string>
+    <string name="compass_target_sun_now">Sun now</string>
+    <string name="compass_target_sunrise">Sunrise %1$s</string>
+    <string name="compass_target_moonrise">Moonrise %1$s</string>
+    <string name="compass_target_moon_now">Moon now</string>
+    <string name="compass_target_moonset">Moonset %1$s</string>
+    <string name="compass_relative_ahead">ahead</string>
+    <string name="compass_relative_left">%1$s° left</string>
+    <string name="compass_relative_right">%1$s° right</string>
+
+    <!-- Accessibility (mirroring artboard aria-labels) -->
+    <string name="compass_cd_screen">Compass screen</string>
+    <string name="compass_cd_targets">Sun and moon directions</string>
+    <string name="compass_cd_dome_live">Compass: heading %1$s° %2$s. %3$s</string>
+    <string name="compass_cd_dome_pending">Compass awaiting heading. %1$s</string>
+    <string name="compass_cd_dome_north_up">Compass fixed north-up. %1$s</string>
+    <string name="compass_cd_events_sun_moon">Sunrise at %1$s° at %2$s, sunset at %3$s° at %4$s, moonrise at %5$s° at %6$s.</string>
+    <string name="compass_cd_events_sun_only">Sunrise at %1$s° at %2$s, sunset at %3$s° at %4$s.</string>
+    <string name="compass_cd_events_polar">Sun and moon paths with solstice and equinox reference arcs.</string>
+</resources>

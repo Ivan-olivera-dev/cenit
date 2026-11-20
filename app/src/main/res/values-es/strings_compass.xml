@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Screen & heading -->
+    <string name="compass_title">Brújula</string>
+    <string name="compass_heading_degrees">%1$s°</string>
+    <string name="compass_heading_pending">—</string>
+    <string name="compass_true_north_sub">Norte geográfico · declinación magnética corregida</string>
+    <string name="compass_north_up_label">Norte arriba</string>
+    <string name="compass_no_sensor_sub">Sin sensor de brújula · cúpula fija al norte</string>
+
+    <!-- Notices -->
+    <string name="compass_calibration_notice">Calibra la brújula: mueve el teléfono en forma de 8</string>
+    <string name="compass_no_sensor_notice">Este dispositivo no tiene sensor de brújula. La cúpula se muestra orientada al norte.</string>
+
+    <!-- Target rows -->
+    <string name="compass_target_sunset">Atardecer %1$s</string>
+    <string name="compass_target_sun_now">Sol ahora</string>
+    <string name="compass_target_sunrise">Amanecer %1$s</string>
+    <string name="compass_target_moonrise">Salida luna %1$s</string>
+    <string name="compass_target_moon_now">Luna ahora</string>
+    <string name="compass_target_moonset">Puesta luna %1$s</string>
+    <string name="compass_relative_ahead">de frente</string>
+    <string name="compass_relative_left">%1$s° izq.</string>
+    <string name="compass_relative_right">%1$s° der.</string>
+
+    <!-- Accessibility (mirroring artboard aria-labels) -->
+    <string name="compass_cd_screen">Pantalla Brújula</string>
+    <string name="compass_cd_targets">Direcciones del sol y la luna</string>
+    <string name="compass_cd_dome_live">Brújula: rumbo %1$s° %2$s. %3$s</string>
+    <string name="compass_cd_dome_pending">Brújula esperando lectura de rumbo. %1$s</string>
+    <string name="compass_cd_dome_north_up">Brújula orientada al norte. %1$s</string>
+    <string name="compass_cd_events_sun_moon">Amanecer a %1$s° a las %2$s, atardecer a %3$s° a las %4$s, salida de la luna a %5$s° a las %6$s.</string>
+    <string name="compass_cd_events_sun_only">Amanecer a %1$s° a las %2$s, atardecer a %3$s° a las %4$s.</string>
+    <string name="compass_cd_events_polar">Recorrido del sol y la luna con líneas de solsticios y equinoccio.</string>
+</resources>
