@@ -578,5 +578,16 @@ class TestMainEndToEnd(unittest.TestCase):
             self.assertEqual(list(sync_fail_dir.iterdir()), [])
 
 
+class TestAtomicWriteMode(unittest.TestCase):
+    @unittest.skipIf(os.name != "posix", "POSIX file modes only")
+    def test_atomic_write_produces_a_world_readable_file(self) -> None:
+        # NamedTemporaryFile creates 0600 files; the asset must stay readable (0644) like Path.write_bytes.
+        with tempfile.TemporaryDirectory() as tmp:
+            dest = pathlib.Path(tmp) / "out" / "cities.tsv"
+            build_cities.write_bytes_atomic(dest, b"x\n")
+            self.assertEqual(dest.read_bytes(), b"x\n")
+            self.assertEqual(dest.stat().st_mode & 0o777, 0o644)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -192,6 +192,8 @@ def write_bytes_atomic(dest: pathlib.Path, payload: bytes) -> None:
             fh.write(payload)
             fh.flush()
             os.fsync(fh.fileno())
+        # NamedTemporaryFile creates 0600 files; keep the asset readable like Path.write_bytes.
+        os.chmod(tmp_path, 0o644)
         os.replace(tmp_path, dest)
         tmp_path = None
     finally:
