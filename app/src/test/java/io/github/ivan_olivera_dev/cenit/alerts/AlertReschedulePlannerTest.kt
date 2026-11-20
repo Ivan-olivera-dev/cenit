@@ -38,6 +38,20 @@ class AlertReschedulePlannerTest {
     }
 
     @Test
+    fun `a reschedule inside the delivery window moves to the next occurrence`() {
+        val sub = AlertSubscription.create(AlertKind.SUNRISE, "Madrid", madrid, "Europe/Madrid")
+        // Sunrise 06:44: window 06:04-06:14. Just before it, today's sunrise is still planned.
+        val before = AlertReschedulePlanner.planOne(sub, atMadrid("2026-06-21T06:03:59")) as ScheduleDecision.Schedule
+        assertEquals(atMadrid("2026-06-21T06:04:00"), before.windowStart)
+        // Inside it (boot, update or clock change), never a window that already started.
+        for (now in listOf("2026-06-21T06:04:00", "2026-06-21T06:09:00", "2026-06-21T06:13:59")) {
+            val inside = AlertReschedulePlanner.planOne(sub, atMadrid(now)) as ScheduleDecision.Schedule
+            assertEquals(LocalDate.of(2026, 6, 22), inside.trigger.eventInstant.atZone(madridZone).toLocalDate())
+            assertTrue(inside.windowStart.isAfter(atMadrid(now)))
+        }
+    }
+
+    @Test
     fun `planOne cancels when zone is invalid or polar event does not occur within horizon`() {
         val invalidZoneSub = AlertSubscription.create(AlertKind.SUNRISE, "Nowhere", madrid, "Not/A_Zone")
         val invalidDecision = AlertReschedulePlanner.planOne(invalidZoneSub, atMadrid("2026-06-21T05:00:00"))

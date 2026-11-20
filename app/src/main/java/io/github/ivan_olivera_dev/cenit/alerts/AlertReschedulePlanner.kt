@@ -56,13 +56,16 @@ object AlertReschedulePlanner {
     ): ScheduleDecision {
         val zone = subscription.resolveZoneOrNull()
             ?: return ScheduleDecision.Cancel(subscription, CancelReason.INVALID_ZONE)
-        val trigger = AlertSchedule.nextTrigger(
+        // Pick the occurrence by its window start (event - lead - window), so the whole window is
+        // in the future and a reschedule inside it moves on instead of firing the same alert again.
+        val earliest = AlertSchedule.nextTrigger(
             kind = subscription.kind,
             place = subscription.toPlace(),
             zone = zone,
             now = now,
-            lead = lead,
+            lead = lead.plusMillis(WINDOW_LENGTH_MILLIS),
         ) ?: return ScheduleDecision.Cancel(subscription, CancelReason.NO_UPCOMING_OCCURRENCE)
+        val trigger = earliest.copy(triggerInstant = earliest.eventInstant.minus(lead))
 
         return ScheduleDecision.Schedule(
             subscription = subscription,
