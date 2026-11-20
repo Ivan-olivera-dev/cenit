@@ -44,6 +44,7 @@ import io.github.ivan_olivera_dev.cenit.core.places.CoordinateParser
 import io.github.ivan_olivera_dev.cenit.core.places.CoordinatesValidationResult
 import io.github.ivan_olivera_dev.cenit.data.SavedPlace
 import io.github.ivan_olivera_dev.cenit.ui.components.cenitFocusRing
+import io.github.ivan_olivera_dev.cenit.ui.planner.displayName
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 
 /** Scrim token from design/system.md (`rgba(0,0,0,.6)`). */
@@ -347,7 +348,8 @@ internal fun EditSavedPlaceDialog(
     onRequestDelete: () -> Unit,
 ) {
     val palette = LocalCenitPalette.current
-    var nameInput by remember(place.id) { mutableStateOf(place.name) }
+    val displayName = place.displayName()
+    var nameInput by remember(place.id, displayName) { mutableStateOf(displayName) }
     var emptyError by remember(place.id) { mutableStateOf(false) }
 
     CenitModalPanel(onDismiss = onDismiss) {
@@ -365,7 +367,7 @@ internal fun EditSavedPlaceDialog(
                 nameInput = it
                 emptyError = false
             },
-            placeholder = place.name,
+            placeholder = displayName,
             errorText = if (emptyError) stringResource(R.string.places_name_error_empty) else null,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
         )

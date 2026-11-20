@@ -67,6 +67,8 @@ import io.github.ivan_olivera_dev.cenit.ui.components.cenitFocusRing
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlaceSource
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerPlace
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
+import io.github.ivan_olivera_dev.cenit.ui.planner.displayName
+import io.github.ivan_olivera_dev.cenit.ui.planner.displayRegion
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 import kotlinx.coroutines.launch
 import java.time.ZoneId
@@ -302,9 +304,9 @@ fun PlacesScreen(
                     Eyebrow(text = stringResource(R.string.places_active_eyebrow))
                     Spacer(modifier = Modifier.height(6.dp))
                     PlaceRow(
-                        name = state.activePlace.name,
+                        name = state.activePlace.displayName(),
                         subtitle = formatPlaceSubtitle(
-                            region = state.activePlace.region,
+                            region = state.activePlace.displayRegion(),
                             place = state.activePlace.place,
                             locale = locale,
                         ),
@@ -371,9 +373,9 @@ fun PlacesScreen(
                     savedPlaces.forEach { saved ->
                         val isActive = matchingSaved?.id == saved.id
                         PlaceRow(
-                            name = saved.name,
+                            name = saved.displayName(),
                             subtitle = formatPlaceSubtitle(
-                                region = saved.region,
+                                region = saved.displayRegion(),
                                 place = Place(saved.latitude, saved.longitude),
                                 locale = locale,
                             ),
@@ -463,7 +465,7 @@ fun PlacesScreen(
 
     pendingDeletePlace?.let { target ->
         DeleteConfirmationDialog(
-            placeName = target.name,
+            placeName = target.displayName(),
             onDismiss = { pendingDeletePlace = null },
             onConfirmDelete = {
                 val snapshot = store.deletePlace(target.id)

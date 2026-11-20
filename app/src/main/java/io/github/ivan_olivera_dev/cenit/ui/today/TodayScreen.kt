@@ -95,6 +95,7 @@ import io.github.ivan_olivera_dev.cenit.ui.components.SkyDome
 import io.github.ivan_olivera_dev.cenit.ui.components.TimeScrubber
 import io.github.ivan_olivera_dev.cenit.ui.components.cenitFocusRing
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
+import io.github.ivan_olivera_dev.cenit.ui.planner.displayName
 import io.github.ivan_olivera_dev.cenit.ui.theme.CenitPalette
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 import java.time.Duration
@@ -362,7 +363,7 @@ fun TodayScreen(
         ) {
             // 1. Place headline + "Ahora" reset + Settings gear button
             PlaceHeaderRow(
-                placeName = state.activePlace.name,
+                placeName = state.activePlace.displayName(),
                 coordsText = coordsText,
                 onResetNow = onResetNow,
                 onOpenSettings = onOpenSettings,

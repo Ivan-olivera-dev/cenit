@@ -13,6 +13,7 @@ import io.github.ivan_olivera_dev.cenit.core.alerts.AlertKind
 import io.github.ivan_olivera_dev.cenit.settings.AppLocaleController
 import io.github.ivan_olivera_dev.cenit.settings.SettingsStore
 import io.github.ivan_olivera_dev.cenit.ui.MainActivity
+import io.github.ivan_olivera_dev.cenit.ui.planner.PlaceDisplayName
 import java.time.Instant
 import java.time.ZoneId
 import java.util.Locale
@@ -54,12 +55,17 @@ object AlertNotifier {
 
         val zone = subscription.resolveZoneOrNull() ?: ZoneId.systemDefault()
         val locale = localizedContext.resources.configuration.locales[0] ?: Locale.getDefault()
+        val displayPlaceName = PlaceDisplayName.resolve(
+            context = localizedContext,
+            storedName = subscription.placeName,
+            source = null,
+        )
         val formatted = AlertNotificationFormatter.format(
             eventLabel = localizedContext.getString(labelResId(subscription.kind)),
             leadMinutes = AlertNotificationFormatter.minutesUntil(Instant.now(), eventInstant),
             eventInstant = eventInstant,
             zone = zone,
-            placeName = subscription.placeName,
+            placeName = displayPlaceName,
             titleTemplate = localizedContext.getString(R.string.alert_notif_title),
             bodyWithPlaceTemplate = localizedContext.getString(R.string.alert_notif_body_with_place),
             summaryTemplate = localizedContext.getString(R.string.alert_notif_summary),
