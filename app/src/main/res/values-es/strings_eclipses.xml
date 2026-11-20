@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="eclipses_section_title">Eclipses</string>
+
+    <string name="eclipse_solar_partial">Eclipse parcial de sol</string>
+    <string name="eclipse_solar_annular">Eclipse anular de sol</string>
+    <string name="eclipse_solar_total">Eclipse total de sol</string>
+    <string name="eclipse_lunar_penumbral">Eclipse penumbral de luna</string>
+    <string name="eclipse_lunar_partial">Eclipse parcial de luna</string>
+    <string name="eclipse_lunar_total">Eclipse total de luna</string>
+    <string name="eclipse_title_with_obscuration">%1$s · %2$d %%</string>
+
+    <string name="eclipse_peak_time">Máximo %1$s</string>
+    <string name="eclipse_phase_partial">Parcial %1$s–%2$s</string>
+    <string name="eclipse_phase_total">Total %1$s–%2$s</string>
+    <string name="eclipse_phase_annular">Anular %1$s–%2$s</string>
+    <string name="eclipse_times_pair">%1$s · %2$s</string>
+
+    <string name="eclipses_loading">Buscando próximos eclipses…</string>
+    <string name="eclipses_none_all">Sin eclipses visibles en los próximos 10 años.</string>
+    <string name="eclipses_none_sun">Sin eclipses de sol visibles en los próximos 10 años.</string>
+    <string name="eclipses_none_moon">Sin eclipses de luna visibles en los próximos 10 años.</string>
+</resources>

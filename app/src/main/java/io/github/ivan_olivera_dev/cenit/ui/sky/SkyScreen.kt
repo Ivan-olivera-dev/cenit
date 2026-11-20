@@ -25,11 +25,14 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,6 +60,7 @@ import io.github.ivan_olivera_dev.cenit.core.MoonPhaseName
 import io.github.ivan_olivera_dev.cenit.core.PolarCondition
 import io.github.ivan_olivera_dev.cenit.core.SkyPosition
 import io.github.ivan_olivera_dev.cenit.core.SunDay
+import io.github.ivan_olivera_dev.cenit.core.eclipses.Eclipses
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyPhase
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.ElevationChartData
@@ -156,6 +160,31 @@ fun SkyScreen(
     val currentMoonIllumPct = (currentMoonPhase.illumination * 100.0).roundToInt().coerceIn(0, 100)
 
     var filter by rememberSaveable { mutableStateOf(SkyTimesFilter.ALL) }
+
+    val eclipseCacheKey = remember(place, today, zone.id) {
+        EclipseCacheKey(place = place, anchorDate = today, zoneId = zone.id)
+    }
+    var upcomingEclipses by remember(eclipseCacheKey) {
+        mutableStateOf(DefaultSkyEclipseCache.get(eclipseCacheKey))
+    }
+    LaunchedEffect(eclipseCacheKey) {
+        if (upcomingEclipses == null) {
+            upcomingEclipses = withContext(Dispatchers.Default) {
+                DefaultSkyEclipseCache.getOrCompute(eclipseCacheKey) {
+                    Eclipses.upcoming(
+                        place = place,
+                        from = today.atStartOfDay(zone).toInstant(),
+                        count = SKY_ECLIPSES_FETCH_COUNT,
+                        horizonYears = SKY_ECLIPSES_HORIZON_YEARS,
+                        visibleOnly = true,
+                    )
+                }
+            }
+        }
+    }
+    val visibleEclipses = remember(upcomingEclipses, filter) {
+        upcomingEclipses?.let { filterEclipsesForTab(it, filter, limit = SKY_ECLIPSES_MAX_SHOWN) }
+    }
 
     val shortDateFormatter = remember(locale) {
         DateTimeFormatter.ofPattern("EEE d MMM", locale)
@@ -341,6 +370,49 @@ fun SkyScreen(
                             dateFormatter = quarterDateFormatter,
                             palette = palette,
                             showDivider = index < dayBundle.schedule.nextQuarters.lastIndex,
+                        )
+                    }
+                }
+
+                item(key = "eclipses_gap") {
+                    Spacer(modifier = Modifier.height(18.dp))
+                }
+
+                item(key = "eclipses_header") {
+                    SectionEyebrow(text = stringResource(R.string.eclipses_section_title))
+                }
+
+                val eclipsesToShow = visibleEclipses
+                if (eclipsesToShow == null) {
+                    item(key = "eclipses_loading") {
+                        EclipseQuietLine(
+                            text = stringResource(R.string.eclipses_loading),
+                            palette = palette,
+                        )
+                    }
+                } else if (eclipsesToShow.isEmpty()) {
+                    item(key = "eclipses_empty") {
+                        val emptyResId = when (filter) {
+                            SkyTimesFilter.ALL -> R.string.eclipses_none_all
+                            SkyTimesFilter.SUN -> R.string.eclipses_none_sun
+                            SkyTimesFilter.MOON -> R.string.eclipses_none_moon
+                        }
+                        EclipseQuietLine(
+                            text = stringResource(emptyResId),
+                            palette = palette,
+                        )
+                    }
+                } else {
+                    itemsIndexed(
+                        items = eclipsesToShow,
+                        key = { _, eclipse -> "eclipse_${eclipse.body.name}_${eclipse.peak.toEpochMilli()}" },
+                    ) { index, eclipse ->
+                        EclipseEventRow(
+                            eclipse = eclipse,
+                            zone = zone,
+                            locale = locale,
+                            palette = palette,
+                            showDivider = index < eclipsesToShow.lastIndex,
                         )
                     }
                 }
