@@ -78,6 +78,9 @@ import io.github.ivan_olivera_dev.cenit.core.sky.SkyEventKind
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyEvents
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyPhase
+import io.github.ivan_olivera_dev.cenit.core.sky.UpcomingSkyEvent
+import io.github.ivan_olivera_dev.cenit.core.sky.shadow.ShadowDirection
+import io.github.ivan_olivera_dev.cenit.ui.components.CenitDatePicker
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIcon
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIconKind
 import io.github.ivan_olivera_dev.cenit.ui.components.DateStrip
@@ -94,6 +97,7 @@ import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 import java.time.Duration
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.roundToInt
@@ -191,10 +195,30 @@ fun TodayScreen(
     val moonPosition = remember(place, selectedInstant) { Ephemeris.moonPosition(place, selectedInstant) }
     val currentPhase = remember(place, selectedInstant) { SkyPhase.at(place, selectedInstant) }
     val currentMoonPhase = remember(selectedInstant) { Ephemeris.moonPhase(selectedInstant) }
-    val upcomingEvents = remember(dayBundle.events, selectedInstant) {
-        SkyEvents.nextKeyEvents(dayBundle.events, after = selectedInstant)
+    val upcomingEvents = remember(dayBundle.events, place, selectedDate, selectedInstant, zone) {
+        SkyEvents.nextKeyEventsOrTomorrow(
+            todayEvents = dayBundle.events,
+            after = selectedInstant,
+            limit = Int.MAX_VALUE,
+            tomorrowEvents = {
+                val tomorrow = selectedDate.plusDays(1)
+                SkyEvents.forDay(
+                    place,
+                    Ephemeris.sunDay(place, tomorrow, zone),
+                    Ephemeris.moonDay(place, tomorrow, zone),
+                )
+            },
+        )
     }
     val weekDays = remember(selectedDate) { state.weekDays() }
+    val monthYearFormatter = remember(locale) {
+        DateTimeFormatter.ofPattern("LLLL yyyy", locale)
+    }
+    val monthYearLabel = remember(selectedDate, monthYearFormatter, locale) {
+        val raw = monthYearFormatter.format(selectedDate)
+        raw.replaceFirstChar { if (it.isLowerCase()) it.titlecase(locale) else it.toString() }
+    }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
     val formattedTime = SkyFormatting.formatLocalTimeTruncated(state.selectedTime)
     val coordsText = formatCoordinates(place, locale)
@@ -226,16 +250,39 @@ fun TodayScreen(
         )
     }
 
-    val shadowLine = sunPosition.shadowRatio?.let { ratio ->
-        stringResource(R.string.shadow_ratio, SkyFormatting.formatDecimal(ratio, 1, locale))
-    } ?: stringResource(R.string.shadow_none)
+    val shadowInfo = remember(sunPosition) { ShadowDirection.fromSunPosition(sunPosition) }
+    val shadowLine: String
+    val shadowDesc: String?
+    if (shadowInfo != null) {
+        val shadowRatioText = SkyFormatting.formatDecimal(shadowInfo.ratio, 1, locale)
+        val displayAzimuth = if (shadowInfo.azimuthDeg >= 359.5) 0.0 else shadowInfo.azimuthDeg
+        val shadowAzText = SkyFormatting.formatDecimal(displayAzimuth, 0, locale)
+        val shadowWind = winds[shadowInfo.compassIndex]
+        shadowLine = stringResource(
+            R.string.shadow_ratio_direction,
+            shadowRatioText,
+            shadowAzText,
+            shadowWind,
+        )
+        shadowDesc = stringResource(
+            R.string.cd_shadow_ratio_direction,
+            shadowRatioText,
+            shadowAzText,
+            shadowWind,
+        )
+    } else {
+        shadowLine = stringResource(R.string.shadow_none)
+        shadowDesc = null
+    }
 
     val nextAlertEvent = remember(upcomingEvents) {
-        upcomingEvents.firstOrNull { AlertKind.fromSkyEventKind(it.kind) != null }
+        upcomingEvents.firstOrNull { AlertKind.fromSkyEventKind(it.event.kind) != null }
     }
-    val alertTargetKind = remember(nextAlertEvent, place, selectedDate, selectedInstant, zone) {
+    val alertTargetKind = remember(nextAlertEvent, upcomingEvents, place, selectedDate, selectedInstant, zone) {
         if (nextAlertEvent != null) {
-            AlertKind.fromSkyEventKind(nextAlertEvent.kind)
+            AlertKind.fromSkyEventKind(nextAlertEvent.event.kind)
+        } else if (upcomingEvents.any { it.isNextDay }) {
+            null
         } else {
             val tomorrow = selectedDate.plusDays(1)
             val tomorrowSun = Ephemeris.sunDay(place, tomorrow, zone)
@@ -317,9 +364,12 @@ fun TodayScreen(
                 onResetNow = onResetNow,
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            // 2. Month context + "Otra fecha" picker trigger + 7-day date strip
+            DateStripHeaderRow(
+                monthYearLabel = monthYearLabel,
+                onOpenDatePicker = { showDatePicker = true },
+            )
 
-            // 2. 7-day date strip
             DateStrip(
                 weekDays = weekDays,
                 selectedDate = selectedDate,
@@ -388,8 +438,13 @@ fun TodayScreen(
                         style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
                         color = palette.textSecondary,
                         textAlign = TextAlign.End,
-                        maxLines = 1,
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
+                        modifier = if (shadowDesc != null) {
+                            Modifier.semantics { contentDescription = shadowDesc }
+                        } else {
+                            Modifier
+                        },
                     )
                 }
 
@@ -482,6 +537,59 @@ fun TodayScreen(
                 zone = zone,
                 winds = winds,
                 locale = locale,
+            )
+        }
+    }
+
+    if (showDatePicker) {
+        CenitDatePicker(
+            initialDate = selectedDate,
+            onDismiss = { showDatePicker = false },
+            onConfirm = { pickedDate ->
+                showDatePicker = false
+                onSelectDate(pickedDate)
+            },
+        )
+    }
+}
+
+@Composable
+private fun DateStripHeaderRow(
+    monthYearLabel: String,
+    onOpenDatePicker: () -> Unit,
+) {
+    val palette = LocalCenitPalette.current
+    val otherDateLabel = stringResource(R.string.action_other_date)
+    val otherDateDesc = stringResource(R.string.cd_other_date)
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        Text(
+            text = monthYearLabel,
+            style = MaterialTheme.typography.bodySmall,
+            color = palette.textSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
+        )
+        Box(
+            modifier = Modifier
+                .heightIn(min = 44.dp)
+                .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .clickable(role = Role.Button, onClick = onOpenDatePicker)
+                .padding(start = 12.dp, end = 4.dp)
+                .semantics { contentDescription = otherDateDesc },
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = otherDateLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = palette.sun,
+                maxLines = 1,
             )
         }
     }
@@ -736,7 +844,7 @@ private fun MoonSummaryRow(
 
 @Composable
 private fun NextEventsBlock(
-    events: List<SkyEvent>,
+    events: List<UpcomingSkyEvent>,
     zone: ZoneId,
     winds: Array<String>,
     locale: Locale,
@@ -764,9 +872,10 @@ private fun NextEventsBlock(
                 )
             }
         } else {
-            events.forEachIndexed { index, event ->
+            events.forEachIndexed { index, upcoming ->
                 EventRow(
-                    event = event,
+                    event = upcoming.event,
+                    isNextDay = upcoming.isNextDay,
                     zone = zone,
                     winds = winds,
                     locale = locale,
@@ -783,6 +892,7 @@ private fun NextEventsBlock(
 @Composable
 private fun EventRow(
     event: SkyEvent,
+    isNextDay: Boolean,
     zone: ZoneId,
     winds: Array<String>,
     locale: Locale,
@@ -790,6 +900,7 @@ private fun EventRow(
 ) {
     val timeText = SkyFormatting.formatTimeTruncated(event.instant, zone)
     val labelText = eventLabel(event.kind)
+    val tomorrowLabel = if (isNextDay) stringResource(R.string.event_tomorrow) else null
     val az = event.azimuth
     val end = event.end
     val elev = event.elevation
@@ -814,18 +925,35 @@ private fun EventRow(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 38.dp)
-            .padding(vertical = 5.dp)
+            .padding(vertical = if (isNextDay) 4.dp else 5.dp)
             .semantics(mergeDescendants = true) {},
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        Text(
-            text = timeText,
-            style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"),
-            color = palette.textPrimary,
-            modifier = Modifier.width(58.dp),
-            maxLines = 1,
-        )
+        Column(modifier = Modifier.widthIn(min = 58.dp)) {
+            Text(
+                text = timeText,
+                style = MaterialTheme.typography.titleMedium.copy(
+                    fontFeatureSettings = "tnum",
+                    lineHeight = if (isNextDay) 22.sp else 26.sp,
+                ),
+                color = palette.textPrimary,
+                maxLines = 1,
+            )
+            if (tomorrowLabel != null) {
+                Text(
+                    text = tomorrowLabel,
+                    style = MaterialTheme.typography.labelMedium.copy(
+                        fontSize = 11.sp,
+                        lineHeight = 13.sp,
+                        fontWeight = FontWeight.Normal,
+                        letterSpacing = 0.sp,
+                    ),
+                    color = palette.textSecondary,
+                    maxLines = 1,
+                )
+            }
+        }
 
         Row(
             modifier = Modifier.weight(1f),

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- T11 shadow direction -->
+    <string name="shadow_ratio_direction">Shadow %1$s × height → %2$s° %3$s</string>
+    <string name="cd_shadow_ratio_direction">Shadow %1$s times height towards %2$s degrees %3$s</string>
+
+    <!-- T15 tomorrow fallback tag -->
+    <string name="event_tomorrow">tomorrow</string>
+
+    <!-- T12 date picker & "Other date" control -->
+    <string name="action_other_date">Other date</string>
+    <string name="cd_other_date">Pick another date</string>
+    <string name="date_picker_confirm">OK</string>
+    <string name="date_picker_cancel">Cancel</string>
+</resources>

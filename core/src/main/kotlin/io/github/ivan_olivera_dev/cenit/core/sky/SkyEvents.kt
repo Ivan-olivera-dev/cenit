@@ -5,6 +5,8 @@ import io.github.ivan_olivera_dev.cenit.core.MoonDay
 import io.github.ivan_olivera_dev.cenit.core.Place
 import io.github.ivan_olivera_dev.cenit.core.SunDay
 import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * Kind of solar or lunar event displayed in Cenit's event lists.
@@ -40,6 +42,18 @@ data class SkyEvent(
     val end: Instant? = null,
     val azimuth: Double? = null,
     val elevation: Double? = null,
+)
+
+/**
+ * Upcoming [event] selected for display, indicating whether it was drawn from the following
+ * calendar day because no key events remained on the selected day.
+ *
+ * @property event Underlying solar or lunar event.
+ * @property isNextDay `true` when [event] belongs to the day after the selected calendar date.
+ */
+data class UpcomingSkyEvent(
+    val event: SkyEvent,
+    val isNextDay: Boolean,
 )
 
 /**
@@ -133,4 +147,59 @@ object SkyEvents {
      */
     fun nextKeyEvent(events: List<SkyEvent>, after: Instant): SkyEvent? =
         nextKeyEvents(events, after).firstOrNull()
+
+    /**
+     * Returns up to [limit] key events strictly after [after] from [todayEvents]; when none
+     * remain on the selected day, falls back to the first [limit] key events from
+     * [tomorrowEvents] with [UpcomingSkyEvent.isNextDay] set to `true`.
+     *
+     * [tomorrowEvents] is invoked lazily only when [todayEvents] has no remaining key events.
+     */
+    fun nextKeyEventsOrTomorrow(
+        todayEvents: List<SkyEvent>,
+        after: Instant,
+        limit: Int = 3,
+        tomorrowEvents: () -> List<SkyEvent>,
+    ): List<UpcomingSkyEvent> {
+        require(limit >= 0) { "limit must be non-negative, was $limit" }
+        if (limit == 0) return emptyList()
+        val remainingToday = nextKeyEvents(todayEvents, after)
+        if (remainingToday.isNotEmpty()) {
+            return remainingToday.take(limit).map { UpcomingSkyEvent(it, isNextDay = false) }
+        }
+        return nextKeyEvents(tomorrowEvents(), after)
+            .take(limit)
+            .map { UpcomingSkyEvent(it, isNextDay = true) }
+    }
+
+    /**
+     * Resolves key events for [selectedDate] strictly after [after], falling back to the first
+     * [limit] key events of `selectedDate.plusDays(1)` when none remain on [selectedDate].
+     */
+    fun nextKeyEventsOrTomorrow(
+        place: Place,
+        selectedDate: LocalDate,
+        zone: ZoneId,
+        after: Instant,
+        limit: Int = 3,
+    ): List<UpcomingSkyEvent> {
+        val todayEvents = forDay(
+            place,
+            Ephemeris.sunDay(place, selectedDate, zone),
+            Ephemeris.moonDay(place, selectedDate, zone),
+        )
+        return nextKeyEventsOrTomorrow(
+            todayEvents = todayEvents,
+            after = after,
+            limit = limit,
+            tomorrowEvents = {
+                val tomorrow = selectedDate.plusDays(1)
+                forDay(
+                    place,
+                    Ephemeris.sunDay(place, tomorrow, zone),
+                    Ephemeris.moonDay(place, tomorrow, zone),
+                )
+            },
+        )
+    }
 }
