@@ -70,6 +70,7 @@ import io.github.ivan_olivera_dev.cenit.core.sky.chart.SkyDaySchedule
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.SkyTimesList
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.SunTimeItem
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.SunTimeKind
+import io.github.ivan_olivera_dev.cenit.ui.components.CenitDatePicker
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIcon
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIconKind
 import io.github.ivan_olivera_dev.cenit.ui.components.PhaseGlyph
@@ -128,6 +129,7 @@ fun SkyScreen(
     onStateChange: (PlannerState) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
     val palette = LocalCenitPalette.current
     val configuration = LocalConfiguration.current
     val locale = remember(configuration) {
@@ -243,7 +245,18 @@ fun SkyScreen(
                 onPrevDay = { onStateChange(state.shiftDays(-1L)) },
                 onNextDay = { onStateChange(state.shiftDays(1L)) },
                 onResetNow = { onStateChange(state.resetToNow(Clock.systemDefaultZone())) },
+                onPickDate = { showDatePicker = true },
             )
+            if (showDatePicker) {
+                CenitDatePicker(
+                    initialDate = state.selectedDate,
+                    onDismiss = { showDatePicker = false },
+                    onConfirm = { date ->
+                        showDatePicker = false
+                        onStateChange(state.selectDate(date))
+                    },
+                )
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
 
@@ -428,8 +441,10 @@ private fun SkyHeaderRow(
     onPrevDay: () -> Unit,
     onNextDay: () -> Unit,
     onResetNow: () -> Unit,
+    onPickDate: () -> Unit,
 ) {
     val palette = LocalCenitPalette.current
+    val pickDesc = stringResource(R.string.cd_other_date)
     val stepperDesc = stringResource(R.string.sky_cd_date_stepper)
     val prevDesc = stringResource(R.string.cd_previous_day)
     val nextDesc = stringResource(R.string.cd_next_day)
@@ -452,6 +467,17 @@ private fun SkyHeaderRow(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .clickable(role = Role.Button, onClick = onPickDate)
+                    .semantics { contentDescription = pickDesc },
+                contentAlignment = Alignment.Center,
+            ) {
+                CenitIcon(kind = CenitIconKind.CALENDAR, tint = palette.textPrimary, size = 20.dp)
+            }
             Box(
                 modifier = Modifier
                     .size(44.dp)

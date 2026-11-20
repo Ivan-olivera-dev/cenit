@@ -27,6 +27,7 @@ enum class CenitIconKind {
     PREV,
     NEXT,
     BELL,
+    CALENDAR,
 }
 
 @Composable
@@ -52,6 +53,7 @@ fun CenitIcon(
             CenitIconKind.PREV -> drawChevron(tint, sx, sy, stroke, left = true)
             CenitIconKind.NEXT -> drawChevron(tint, sx, sy, stroke, left = false)
             CenitIconKind.BELL -> drawBell(tint, sx, sy, stroke)
+            CenitIconKind.CALENDAR -> drawCalendar(tint, sx, sy, stroke)
         }
     }
 }
@@ -143,4 +145,16 @@ private fun DrawScope.drawBell(color: Color, sx: Float, sy: Float, stroke: Strok
         size = Size(4f * sx, 4f * sy),
         style = stroke,
     )
+}
+
+private fun DrawScope.drawCalendar(color: Color, sx: Float, sy: Float, stroke: Stroke) {
+    fun line(x1: Float, y1: Float, x2: Float, y2: Float) =
+        drawLine(color, Offset(x1 * sx, y1 * sy), Offset(x2 * sx, y2 * sy), stroke.width, StrokeCap.Round)
+    line(4f, 6f, 20f, 6f)
+    line(20f, 6f, 20f, 20f)
+    line(20f, 20f, 4f, 20f)
+    line(4f, 20f, 4f, 6f)
+    line(4f, 10f, 20f, 10f)
+    line(8f, 3.5f, 8f, 7.5f)
+    line(16f, 3.5f, 16f, 7.5f)
 }
