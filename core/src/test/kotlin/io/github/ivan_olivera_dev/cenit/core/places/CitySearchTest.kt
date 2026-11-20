@@ -21,6 +21,12 @@ class CitySearchTest {
         CityEntry("Łódź", "Lodz", "Lodz Voivodeship", "PL", 51.7592, 19.4560, 670_642, "Europe/Warsaw"),
         CityEntry("São Paulo", "Sao Paulo", "Sao Paulo", "BR", -23.5475, -46.6361, 12_325_232, "America/Sao_Paulo"),
         CityEntry("Peñíscola", "Peniscola", "Valencia", "ES", 40.3594, 0.4067, 7_683, "Europe/Madrid"),
+        CityEntry("Valencia", "Valencia", "Carabobo", "VE", 10.1615, -68.0004, 1_619_470, "America/Caracas"),
+        CityEntry("Valencia", "Valencia", "Valencia", "ES", 39.4739, -0.3797, 824_340, "Europe/Madrid"),
+        CityEntry("Valenzuela", "Valenzuela", "National Capital Region", "PH", 14.7000, 120.9667, 725_173, "Asia/Manila"),
+        CityEntry("Valencia", "Valencia", "California", "US", 34.4436, -118.6095, 148_456, "America/Los_Angeles"),
+        CityEntry("Valencia de Alcántara", "Valencia de Alcantara", "Extremadura", "ES", 39.4115, -7.2443, 6_129, "Europe/Madrid"),
+        CityEntry("Melilla", "Melilla", "Melilla", "ES", 35.2937, -2.9383, 85_985, "Africa/Ceuta"),
     )
 
     private val index = CityIndex.fromEntries(fixture)
@@ -92,8 +98,120 @@ class CitySearchTest {
                 else -> code
             }
         }
-        assertEquals("España", madrids[0].regionLabel) // admin1 == name, so country alone
+        // Two results share the name "Madrid", so admin1 is shown even when equal to the city name
+        assertEquals("Madrid · España", madrids[0].regionLabel)
         assertEquals("Cundinamarca · Colombia", madrids[1].regionLabel)
+
+        // Unique city name whose admin1 matches its name keeps country alone
+        val melilla = index.search("melilla") { code -> if (code == "ES") "España" else code }
+        assertEquals(1, melilla.size)
+        assertEquals("España", melilla[0].regionLabel)
+    }
+
+    @Test
+    fun `valen ranks preferred country ES ahead of higher-population VE and shows admin1 for duplicate names`() {
+        val countryNames: (String) -> String = { code ->
+            when (code) {
+                "ES" -> "España"
+                "VE" -> "Venezuela"
+                "PH" -> "Filipinas"
+                "US" -> "Estados Unidos"
+                else -> code
+            }
+        }
+
+        val esResults = index.search(
+            query = "valen",
+            preferredCountryCode = "ES",
+            countryNameForCode = countryNames,
+        )
+        assertEquals("Valencia", esResults[0].city.name)
+        assertEquals("ES", esResults[0].city.countryCode)
+        assertEquals("Valencia · España", esResults[0].regionLabel)
+        // Second ES prefix match also ranks ahead of non-ES prefix matches
+        assertEquals("Valencia de Alcántara", esResults[1].city.name)
+        assertEquals("ES", esResults[1].city.countryCode)
+        // Non-preferred cities follow in descending population order
+        assertEquals("Valencia", esResults[2].city.name)
+        assertEquals("VE", esResults[2].city.countryCode)
+        assertEquals("Carabobo · Venezuela", esResults[2].regionLabel)
+
+        val veResults = index.search(
+            query = "valen",
+            preferredCountryCode = "VE",
+            countryNameForCode = countryNames,
+        )
+        assertEquals("Valencia", veResults[0].city.name)
+        assertEquals("VE", veResults[0].city.countryCode)
+        assertEquals("Valencia", veResults[1].city.name)
+        assertEquals("ES", veResults[1].city.countryCode)
+
+        // Without preferred country, pure population order holds
+        val neutralResults = index.search(
+            query = "valen",
+            preferredCountryCode = null,
+            countryNameForCode = countryNames,
+        )
+        assertEquals("VE", neutralResults[0].city.countryCode)
+        assertEquals("ES", neutralResults[1].city.countryCode)
+    }
+
+    @Test
+    fun `exact-name matches still beat prefix matches across countries`() {
+        // Exact "Perella" (IT) must still beat word/prefix matches in preferred ES
+        val perellaResults = index.search("perella", preferredCountryCode = "ES")
+        assertEquals("Perella", perellaResults.first().city.name)
+        assertEquals("IT", perellaResults.first().city.countryCode)
+
+        // Exact "Valencia" (VE, US, ES) all beat prefix "Valencia de Alcántara" (ES)
+        val valenciaResults = index.search("valencia", preferredCountryCode = "ES")
+        assertEquals("ES", valenciaResults[0].city.countryCode)
+        assertEquals("Valencia", valenciaResults[0].city.name)
+        assertEquals("VE", valenciaResults[1].city.countryCode)
+        assertEquals("Valencia", valenciaResults[1].city.name)
+        assertEquals("US", valenciaResults[2].city.countryCode)
+        assertEquals("Valencia", valenciaResults[2].city.name)
+        assertEquals("Valencia de Alcántara", valenciaResults[3].city.name)
+        assertEquals("ES", valenciaResults[3].city.countryCode)
+    }
+
+    @Test
+    fun `preferred country city still ranks first when more than limit foreign cities have higher population`() {
+        val entries = (1..25).map { i ->
+            CityEntry(
+                name = "Valen City $i",
+                asciiName = "Valen City $i",
+                admin1 = "State $i",
+                countryCode = "US",
+                latitude = 35.0,
+                longitude = -90.0,
+                population = 100_000L + i * 1_000L,
+                timezoneId = "America/Chicago",
+            )
+        } + CityEntry(
+            name = "Valencia Small",
+            asciiName = "Valencia Small",
+            admin1 = "Valencia",
+            countryCode = "ES",
+            latitude = 39.47,
+            longitude = -0.38,
+            population = 5_500L,
+            timezoneId = "Europe/Madrid",
+        )
+
+        val largeIndex = CityIndex.fromEntries(entries)
+        val results = largeIndex.search("valen", limit = 10, preferredCountryCode = "es")
+
+        assertEquals(10, results.size)
+        assertEquals("Valencia Small", results.first().city.name)
+        assertEquals("ES", results.first().city.countryCode)
+    }
+
+    @Test
+    fun `countryCodeFor resolves nearest city country code for active place fallback`() {
+        assertEquals("ES", index.countryCodeFor(40.4165, -3.7026))
+        assertEquals("VE", index.countryCodeFor(10.16, -68.0))
+        assertEquals(null, CityIndex.empty().countryCodeFor(40.4165, -3.7026))
     }
 
     @Test

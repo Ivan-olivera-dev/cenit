@@ -13,23 +13,26 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.ivan_olivera_dev.cenit.R
 import io.github.ivan_olivera_dev.cenit.core.PathPoint
 import io.github.ivan_olivera_dev.cenit.core.SkyPosition
-import io.github.ivan_olivera_dev.cenit.core.compass.CompassMath
+import io.github.ivan_olivera_dev.cenit.core.compass.CompassLabelPlacement
+import io.github.ivan_olivera_dev.cenit.core.compass.CompassRingLabel
+import io.github.ivan_olivera_dev.cenit.core.compass.CompassRingObstacle
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyDomeProjection
 import io.github.ivan_olivera_dev.cenit.ui.components.DomeHorizonTick
 import io.github.ivan_olivera_dev.cenit.ui.components.DomeReferencePaths
 import io.github.ivan_olivera_dev.cenit.ui.components.SkyDome
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 import java.time.ZoneId
-import kotlin.math.abs
 
 /**
  * Brújula rotating dome (`sky-dome` + `compass-rose` tokens, Artboard 02):
@@ -64,6 +67,13 @@ internal fun CompassDome(
         fontFeatureSettings = "tnum",
         color = palette.textPrimary,
     )
+    val northCardinalStyle = labelStyle.copy(fontWeight = FontWeight.SemiBold)
+    val cardinalLabels = listOf(
+        stringResource(R.string.cardinal_n),
+        stringResource(R.string.cardinal_e),
+        stringResource(R.string.cardinal_s),
+        stringResource(R.string.cardinal_w),
+    )
 
     val bezelInset = 18.dp
 
@@ -72,14 +82,16 @@ internal fun CompassDome(
         contentAlignment = Alignment.Center,
     ) {
         // Core flat-compass sky dome, rotated by live true-north heading (read-only reuse).
+        // Pass null sunrise/sunset ticks so CompassDome draws all four rise/set ticks and
+        // places every time label jointly to avoid collisions with the cardinals or each other.
         SkyDome(
             sunPath = sunPath,
             moonPath = moonPath,
             referencePaths = referencePaths,
             sunPosition = sunPosition,
             moonPosition = moonPosition,
-            sunriseTick = sunriseTick,
-            sunsetTick = sunsetTick,
+            sunriseTick = null,
+            sunsetTick = null,
             zone = zone,
             contentDescription = contentDescription,
             headingDeg = headingDeg,
@@ -135,11 +147,19 @@ internal fun CompassDome(
                 )
             }
 
-            // 2. Sun & moon rise/set azimuth rays from zenith toward the horizon
+            // 2. Sun & moon rise/set azimuth rays and horizon ticks at exact event azimuths
             val rayStartR = 5.dp.toPx()
-            val rayEndR = (horizonR - 36.dp.toPx()).coerceAtLeast(rayStartR)
+            val primaryLabelR = (horizonR - 25.dp.toPx()).coerceAtLeast(rayStartR + 12.dp.toPx())
+            val cardinalR = (horizonR - 11.dp.toPx()).coerceAtLeast(rayStartR + 1.dp.toPx())
+            val outerLabelR = (domeOuterR + 4.dp.toPx()).coerceAtMost(bezelR - 2.dp.toPx())
+            val rayEndR = (primaryLabelR - 11.dp.toPx()).coerceAtLeast(rayStartR)
+            val tickInnerR = (horizonR - 9.dp.toPx()).coerceAtLeast(rayStartR)
 
-            listOfNotNull(sunriseTick, sunsetTick).forEach { tick ->
+            val sunTicks = listOfNotNull(
+                sunriseTick?.let { "sunrise" to it },
+                sunsetTick?.let { "sunset" to it },
+            )
+            sunTicks.forEach { (_, tick) ->
                 drawLine(
                     color = palette.sun,
                     start = onRing(rayStartR, tick.azimuthDeg),
@@ -147,50 +167,105 @@ internal fun CompassDome(
                     strokeWidth = 1.5.dp.toPx(),
                     cap = StrokeCap.Round,
                 )
+                drawLine(
+                    color = palette.sun,
+                    start = onRing(horizonR, tick.azimuthDeg),
+                    end = onRing(tickInnerR, tick.azimuthDeg),
+                    strokeWidth = 2.dp.toPx(),
+                    cap = StrokeCap.Round,
+                )
             }
 
             val moonDash = PathEffect.dashPathEffect(floatArrayOf(5.dp.toPx(), 4.dp.toPx()))
-            val sunTickAzimuths = listOfNotNull(sunriseTick?.azimuthDeg, sunsetTick?.azimuthDeg)
-            val moonTicks = listOfNotNull(moonriseTick, moonsetTick)
-            val placedMoonLabelAzimuths = mutableListOf<Double>()
-
-            moonTicks.forEach { tick ->
-                // Offset label inward if close to a sun tick or another moon tick to avoid overlap
-                val closeToExisting = (sunTickAzimuths + placedMoonLabelAzimuths).any { other ->
-                    abs(CompassMath.shortestArcDelta(tick.azimuthDeg, other)) < 20.0
-                }
-                val labelR = (horizonR - if (closeToExisting) 40.dp.toPx() else 25.dp.toPx())
-                    .coerceAtLeast(rayStartR + 12.dp.toPx())
-                val moonRayEndR = (labelR - 11.dp.toPx()).coerceAtLeast(rayStartR)
-
+            val moonTicks = listOfNotNull(
+                moonriseTick?.let { "moonrise" to it },
+                moonsetTick?.let { "moonset" to it },
+            )
+            moonTicks.forEach { (_, tick) ->
                 drawLine(
                     color = palette.moon,
                     start = onRing(rayStartR, tick.azimuthDeg),
-                    end = onRing(moonRayEndR, tick.azimuthDeg),
+                    end = onRing(rayEndR, tick.azimuthDeg),
                     strokeWidth = 1.5.dp.toPx(),
                     cap = StrokeCap.Round,
                     pathEffect = moonDash,
                 )
-
-                // Moon horizon tick (SkyDome renders sun ticks; CompassDome adds moon ticks)
                 drawLine(
                     color = palette.moon,
                     start = onRing(horizonR, tick.azimuthDeg),
-                    end = onRing(horizonR - 9.dp.toPx(), tick.azimuthDeg),
+                    end = onRing(tickInnerR, tick.azimuthDeg),
                     strokeWidth = 2.dp.toPx(),
                     cap = StrokeCap.Round,
                 )
-
-                drawCenteredText(
-                    textMeasurer = textMeasurer,
-                    text = tick.label,
-                    center = onRing(labelR, tick.azimuthDeg),
-                    style = labelStyle,
-                )
-                placedMoonLabelAzimuths.add(tick.azimuthDeg)
             }
 
-            // 3. Fixed top heading index marker (lubber triangle + tick at 12 o'clock)
+            // 3. Collision-free placement for all sun & moon rise/set time labels
+            val allTicks = sunTicks + moonTicks
+            if (allTicks.isNotEmpty() && primaryLabelR > 0f && cardinalR > 0f) {
+                val measuredTicks = allTicks.map { (id, tick) ->
+                    Triple(id, tick, textMeasurer.measure(text = tick.label, style = labelStyle))
+                }
+                val cardinalMeasurements = cardinalLabels.mapIndexed { idx, text ->
+                    textMeasurer.measure(
+                        text = text,
+                        style = if (idx == 0) northCardinalStyle else labelStyle,
+                    )
+                }
+                val cardinalWidthPx = cardinalMeasurements.maxOf { it.size.width }.toDouble()
+                val cardinalHeightPx = cardinalMeasurements.maxOf { it.size.height }.toDouble()
+                val labelPaddingPx = 2.dp.toPx().toDouble()
+
+                val ringLabels = measuredTicks.map { (id, tick, layout) ->
+                    val pairWidthDeg = CompassLabelPlacement.requiredPairAngularWidthDeg(
+                        labelWidth = layout.size.width.toDouble(),
+                        labelHeight = layout.size.height.toDouble(),
+                        ringRadius = primaryLabelR.toDouble(),
+                        padding = labelPaddingPx,
+                    ).coerceAtLeast(1.0)
+                    CompassRingLabel(
+                        id = id,
+                        anchorAzimuthDeg = tick.azimuthDeg,
+                        angularWidthDeg = pairWidthDeg,
+                    )
+                }
+
+                val maxLabelWidthPx = measuredTicks.maxOf { it.third.size.width }.toDouble()
+                val maxLabelHeightPx = measuredTicks.maxOf { it.third.size.height }.toDouble()
+                val minPairWidthDeg = ringLabels.minOf { it.angularWidthDeg }
+                val cardinalClearanceDeg = CompassLabelPlacement.requiredCardinalClearanceDeg(
+                    labelWidth = maxLabelWidthPx,
+                    labelHeight = maxLabelHeightPx,
+                    labelRingRadius = primaryLabelR.toDouble(),
+                    cardinalWidth = cardinalWidthPx,
+                    cardinalHeight = cardinalHeightPx,
+                    cardinalRingRadius = cardinalR.toDouble(),
+                    padding = labelPaddingPx,
+                )
+                val obstacleWidthDeg = CompassLabelPlacement.obstacleAngularWidthDeg(
+                    pairAngularWidthDeg = minPairWidthDeg,
+                    cardinalClearanceDeg = cardinalClearanceDeg,
+                )
+                val cardinalObstacles = listOf(0.0, 90.0, 180.0, 270.0).map { az ->
+                    CompassRingObstacle(azimuthDeg = az, angularWidthDeg = obstacleWidthDeg)
+                }
+
+                val placedLabels = CompassLabelPlacement.place(
+                    labels = ringLabels,
+                    obstacles = cardinalObstacles,
+                )
+                val layoutById = measuredTicks.associate { (id, _, layout) -> id to layout }
+
+                placedLabels.forEach { placed ->
+                    val layout = layoutById.getValue(placed.id)
+                    val radius = if (placed.radialTier == 0) primaryLabelR else outerLabelR
+                    drawCenteredLayout(
+                        layout = layout,
+                        center = onRing(radius, placed.placedAzimuthDeg),
+                    )
+                }
+            }
+
+            // 4. Fixed top heading index marker (lubber triangle + tick at 12 o'clock)
             if (showLivePointer) {
                 val topY = cy - bezelR
                 val pointerHalfWidth = 6.dp.toPx()
@@ -216,18 +291,15 @@ internal fun CompassDome(
     }
 }
 
-private fun DrawScope.drawCenteredText(
-    textMeasurer: TextMeasurer,
-    text: String,
+private fun DrawScope.drawCenteredLayout(
+    layout: TextLayoutResult,
     center: Offset,
-    style: TextStyle,
 ) {
-    val result = textMeasurer.measure(text = text, style = style)
     drawText(
-        textLayoutResult = result,
+        textLayoutResult = layout,
         topLeft = Offset(
-            x = center.x - result.size.width / 2f,
-            y = center.y - result.size.height / 2f,
+            x = center.x - layout.size.width / 2f,
+            y = center.y - layout.size.height / 2f,
         ),
     )
 }

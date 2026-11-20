@@ -39,5 +39,15 @@ class BundledCitiesAssetTest {
         val valencias = index.search("valencia").filter { it.city.name == "Valencia" }
         assertTrue("Expected multiple disambiguated Valencia entries", valencias.size >= 2)
         assertEquals(valencias.size, valencias.map { it.regionLabel }.toSet().size)
+
+        val valenEs = index.search("valen", preferredCountryCode = "ES")
+        assertEquals("Valencia", valenEs.first().city.name)
+        assertEquals("ES", valenEs.first().city.countryCode)
+        assertEquals("Valencia · ES", valenEs.first().regionLabel)
+
+        val valenVe = index.search("valen", preferredCountryCode = "VE")
+        assertEquals("Valencia", valenVe.first().city.name)
+        assertEquals("VE", valenVe.first().city.countryCode)
+        assertEquals("Carabobo · VE", valenVe.first().regionLabel)
     }
 }

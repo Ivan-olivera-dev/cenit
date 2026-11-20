@@ -195,13 +195,26 @@ fun PlacesScreen(
         }
     }
 
-    val searchResults: List<CitySearchResult> = remember(query, cityIndex, locale) {
+    val preferredCountryCode: String? = remember(locale, state.activePlace.place, cityIndex) {
+        CityRepository.resolvePreferredCountryCode(
+            locale = locale,
+            fallbackCountryCode = {
+                cityIndex?.countryCodeFor(
+                    latitude = state.activePlace.place.latitude,
+                    longitude = state.activePlace.place.longitude,
+                )
+            },
+        )
+    }
+
+    val searchResults: List<CitySearchResult> = remember(query, cityIndex, locale, preferredCountryCode) {
         val index = cityIndex ?: return@remember emptyList()
         if (query.isBlank()) {
             emptyList()
         } else {
             index.search(
                 query = query,
+                preferredCountryCode = preferredCountryCode,
                 countryNameForCode = { code -> CityRepository.localizedCountryName(code, locale) },
             )
         }

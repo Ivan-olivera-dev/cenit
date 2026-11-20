@@ -41,4 +41,22 @@ object CityRepository {
         val display = Locale.Builder().setRegion(trimmed).build().getDisplayCountry(locale)
         return display.ifBlank { trimmed }
     }
+
+    /**
+     * Resolves the ISO 3166-1 alpha-2 country code to prefer in city search: the device [locale]'s
+     * two-letter region when present, or lazily [fallbackCountryCode] (e.g. the active place's
+     * country) when the locale carries no two-letter country code (such as `es` or `es-419`).
+     */
+    fun resolvePreferredCountryCode(
+        locale: Locale,
+        fallbackCountryCode: () -> String? = { null },
+    ): String? {
+        normalizeIsoCountryCode(locale.country)?.let { return it }
+        return normalizeIsoCountryCode(fallbackCountryCode())
+    }
+
+    private fun normalizeIsoCountryCode(raw: String?): String? {
+        val code = raw?.trim()?.uppercase(Locale.ROOT) ?: return null
+        return if (code.length == 2 && code[0] in 'A'..'Z' && code[1] in 'A'..'Z') code else null
+    }
 }
