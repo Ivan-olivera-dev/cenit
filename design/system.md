@@ -1,6 +1,6 @@
 # Cenit design system
 
-> **Proposed starter — pending the user's acceptance (T3 of `odd/tasks/cenit-stage-1.md`).**
+> **Accepted by the user on 2026-11-20 (L6 of `odd/tasks/cenit-stage-1.md`).**
 > Cenit has no design sources yet (no Compose theme, no CSS). Every value below is a proposal derived from the user's two sibling apps, which the user named as the style to follow (S2). Values copied or adapted cite their source `path`, relative to `/Users/ivanoliveragonzalez/Developer/Personal/` (read-only references): Scrolless `scrolless/app/src/main/java/com/scrolless/app/ui/PlayaTheme.kt` and Sereno `sereno/design/system.md` (accepted by the user on 2026-11-17). Values new to Cenit say **Cenit proposal**. Contrast ratios were computed with a WCAG 2.x relative-luminance script (see "Contrast").
 
 Direction: the same DNA as Scrolless and Sereno — editorial minimalism, system sans with one focal serif role, 1 px hairlines, no shadows, a palette expressed as a `data class` of surface tiers with light and dark variants. Cenit sits between its siblings: Scrolless is the sun on the horizon (warm paper), Sereno the moon on the horizon (ink night); Cenit is the arc between them, so its **light theme is Scrolless paper and its dark theme is Sereno ink**, and it carries both lights as accents: **sun ochre** (Scrolless `warning` `#D6C07E`) and **moonlight** (Sereno `accent` `#AFBDE3`). Theme follows the system setting (photographers move between bright daytime scouting and night shoots).
