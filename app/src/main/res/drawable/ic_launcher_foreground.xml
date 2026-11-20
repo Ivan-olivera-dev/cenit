@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Logo mark (design/system.md, logo-mark): the sun's arc from horizon to horizon,
+     the sun at its zenith and three reflection lines. Safe zone: 66 dp centred. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:pathData="M33,62 A21,21 0 0,1 75,62"
+        android:strokeColor="#FFE9E7E2"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M54,36.5 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0"
+        android:fillColor="#FFD6C07E" />
+    <path
+        android:pathData="M29,62 L79,62 M42,69 L66,69 M48,76 L60,76"
+        android:strokeColor="#FFA6ABB5"
+        android:strokeWidth="3"
+        android:strokeLineCap="round" />
+</vector>

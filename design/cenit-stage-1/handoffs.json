@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "chosen": "02-cupula.html",
+  "handoffs": {
+    "02-cupula.html": {
+      "status": "sent",
+      "queued": false,
+      "sentAt": "2026-11-20T18:31:46.426Z",
+      "startedAt": null,
+      "implementedAt": null,
+      "feature": "odd/tasks/cenit-stage-1.md"
+    }
+  }
+}

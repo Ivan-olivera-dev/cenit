@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Cenit</string>
+    <string name="placeholder_tagline">Planificador de sol y luna para fotografía. Funciona sin conexión.</string>
+</resources>
