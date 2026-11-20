@@ -292,7 +292,8 @@ fun TodayScreen(
                         style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
                         color = palette.textSecondary,
                         textAlign = TextAlign.End,
-                        maxLines = 1,
+                        // Two lines: "Noche · sol 270° O, bajo el horizonte" does not fit one on a 411 dp phone.
+                        maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
                     )
                     Text(
