@@ -6,7 +6,9 @@ Run with:
 
 Uses Python 3 stdlib only. Downloads cities5000.zip, admin1CodesASCII.txt and
 countryInfo.txt into a temporary directory outside the repository, then writes
-app/src/main/assets/geonames/cities.tsv.
+app/src/main/assets/geonames/cities.tsv atomically via a sibling temporary file
+and os.replace. Fails with a non-zero exit code without modifying the output if
+countryInfo.txt yields zero countries or the rendered TSV has zero cities.
 
 Attribution: GeoNames (geonames.org), CC BY 4.0.
 """
@@ -16,6 +18,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import math
+import os
 import pathlib
 import ssl
 import sys
@@ -174,11 +177,41 @@ def render_tsv(
     return "".join(lines).encode("utf-8"), len(filtered)
 
 
+def write_bytes_atomic(dest: pathlib.Path, payload: bytes) -> None:
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path: pathlib.Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=dest.parent,
+            prefix=f".{dest.name}.",
+            suffix=".tmp",
+            delete=False,
+        ) as fh:
+            tmp_path = pathlib.Path(fh.name)
+            fh.write(payload)
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp_path, dest)
+        tmp_path = None
+    finally:
+        if tmp_path is not None:
+            try:
+                tmp_path.unlink()
+            except FileNotFoundError:
+                pass
+
+
 def main(argv: list[str]) -> int:
     repo_root = pathlib.Path(__file__).resolve().parents[2]
     default_out = repo_root / "app" / "src" / "main" / "assets" / "geonames" / "cities.tsv"
 
-    parser = argparse.ArgumentParser(description="Build Cenit's offline GeoNames city TSV.")
+    parser = argparse.ArgumentParser(
+        description=(
+            "Build Cenit's offline GeoNames city TSV atomically. "
+            "Exits non-zero without touching the output if no countries or cities are parsed."
+        )
+    )
     parser.add_argument(
         "--output",
         type=pathlib.Path,
@@ -204,12 +237,18 @@ def main(argv: list[str]) -> int:
             download_file(url, tmp_dir / filename, ssl_ctx)
 
         countries = parse_countries(tmp_dir / "countryInfo.txt")
+        if not countries:
+            print(
+                "Error: parsed 0 countries from countryInfo.txt; refusing to write output.",
+                file=sys.stderr,
+            )
+            return 1
         admin1 = parse_admin1(tmp_dir / "admin1CodesASCII.txt")
         all_rows = parse_cities(tmp_dir / "cities5000.zip", countries, admin1)
 
     payload, count = render_tsv(all_rows, PRIMARY_MIN_POP, download_date)
     chosen_pop = PRIMARY_MIN_POP
-    if len(payload) > args.max_bytes:
+    if count > 0 and len(payload) > args.max_bytes:
         print(
             f"pop >= {PRIMARY_MIN_POP} is {len(payload):,} bytes ({count:,} cities) > {args.max_bytes:,}; "
             f"falling back to pop >= {FALLBACK_MIN_POP}",
@@ -218,8 +257,14 @@ def main(argv: list[str]) -> int:
         payload, count = render_tsv(all_rows, FALLBACK_MIN_POP, download_date)
         chosen_pop = FALLBACK_MIN_POP
 
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_bytes(payload)
+    if count == 0:
+        print(
+            f"Error: rendered 0 cities (min_population={chosen_pop}); refusing to write output.",
+            file=sys.stderr,
+        )
+        return 1
+
+    write_bytes_atomic(args.output, payload)
     print(
         f"Wrote {args.output}: count={count}, size={len(payload)} bytes "
         f"({len(payload) / 1_000_000:.2f} MB), min_population={chosen_pop}, "
