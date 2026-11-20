@@ -27,4 +27,4 @@ Trust points of the build: the Gradle distribution is pinned by `distributionSha
 
 ## Third-party data
 
-- City search data: GeoNames (geonames.org), CC BY 4.0 ([`app/src/main/assets/geonames/cities.tsv`](app/src/main/assets/geonames/cities.tsv), 34,266 cities with population ≥ 15,000, downloaded 2026-11-20; regenerated with `python3 -I tools/geonames/build_cities.py`).
+- City search data: GeoNames (geonames.org), CC BY 4.0 ([`app/src/main/assets/geonames/cities.tsv`](app/src/main/assets/geonames/cities.tsv), 69,440 cities with population ≥ 5,000, downloaded 2026-11-20; regenerated with `python3 -I tools/geonames/build_cities.py`).

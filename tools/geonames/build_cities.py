@@ -25,7 +25,7 @@ import zipfile
 
 BASE_URL = "https://download.geonames.org/export/dump/"
 FILES = ("cities5000.zip", "admin1CodesASCII.txt", "countryInfo.txt")
-MAX_BYTES = 3_000_000  # 3 MB cap for population >= 5000
+MAX_BYTES = 6_000_000  # cap for population >= 5000; the APK deflates the TSV to about 45 %
 PRIMARY_MIN_POP = 5_000
 FALLBACK_MIN_POP = 15_000
 USER_AGENT = "CenitGeoNamesBuilder/1.0 (https://github.com/ivan-olivera-dev/cenit)"
