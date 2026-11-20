@@ -1,12 +1,12 @@
 package io.github.ivan_olivera_dev.cenit.core.sky
 
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
+import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.abs
 import kotlin.math.pow
@@ -19,20 +19,28 @@ import kotlin.math.roundToInt
  * Times are always truncated to the minute (never rounded up), matching EphemerisTest and L14.
  */
 object SkyFormatting {
-    private val HHMM_FORMATTER: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
     private const val UNICODE_MINUS = '\u2212'
 
     /**
-     * Formats [instant] in [zone] as `HH:mm`, truncated to the minute (seconds and nanoseconds dropped).
+     * Formats [instant] in [zone] using [clock] and [locale], truncated to the minute (L14).
+     * Defaults to 24-hour `HH:mm`.
      */
-    fun formatTimeTruncated(instant: Instant, zone: ZoneId): String =
-        instant.atZone(zone).truncatedTo(ChronoUnit.MINUTES).format(HHMM_FORMATTER)
+    fun formatTimeTruncated(
+        instant: Instant,
+        zone: ZoneId,
+        clock: ClockFormat = ClockFormat.H24,
+        locale: Locale = Locale.ROOT,
+    ): String = CenitFormat.formatTime(instant, zone, clock, locale)
 
     /**
-     * Formats [time] as `HH:mm`, truncated to the minute.
+     * Formats [time] using [clock] and [locale], truncated to the minute (L14).
+     * Defaults to 24-hour `HH:mm`.
      */
-    fun formatLocalTimeTruncated(time: LocalTime): String =
-        time.truncatedTo(ChronoUnit.MINUTES).format(HHMM_FORMATTER)
+    fun formatLocalTimeTruncated(
+        time: LocalTime,
+        clock: ClockFormat = ClockFormat.H24,
+        locale: Locale = Locale.ROOT,
+    ): String = CenitFormat.formatLocalTime(time, clock, locale)
 
     /**
      * Formats [value] with [decimals] fractional digits using [locale]'s decimal separator

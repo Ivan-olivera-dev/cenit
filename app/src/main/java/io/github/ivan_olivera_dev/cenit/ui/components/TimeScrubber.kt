@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -25,6 +26,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -37,7 +39,10 @@ import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.ivan_olivera_dev.cenit.R
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
+import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
+import java.util.Locale
 
 /**
  * Time scrubber (`time-scrubber` token): `44 dp` touch row, `2 dp` track `controlBorder`,
@@ -53,6 +58,11 @@ fun TimeScrubber(
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalCenitPalette.current
+    val clock = LocalAppSettings.current.clock
+    val configuration = LocalConfiguration.current
+    val locale = remember(configuration) {
+        configuration.locales[0] ?: Locale.getDefault()
+    }
     val scrubberDesc = stringResource(R.string.cd_time_scrubber)
     val forward5 = stringResource(R.string.a11y_step_forward_5m)
     val back5 = stringResource(R.string.a11y_step_back_5m)
@@ -192,9 +202,9 @@ fun TimeScrubber(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            listOf("00", "06", "12", "18", "24").forEach { tick ->
+            listOf(0, 6, 12, 18, 24).forEach { hour ->
                 Text(
-                    text = tick,
+                    text = CenitFormat.formatAxisHour(hour, clock, locale),
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontSize = 11.sp,
                         lineHeight = 14.sp,

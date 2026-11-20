@@ -1,6 +1,7 @@
 package io.github.ivan_olivera_dev.cenit.alerts
 
-import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
+import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import java.time.Duration
 import java.time.Instant
 import java.time.ZoneId
@@ -16,7 +17,8 @@ data class FormattedAlertNotification(
 /**
  * Pure JVM formatter for local alert notifications ("Hora dorada en 30 minutos · 17:12 · Madrid").
  *
- * Event times are truncated to the minute per Cenit's display rule (L14).
+ * Event times are truncated to the minute per Cenit's display rule (L14) and respect the user's
+ * [ClockFormat] preference.
  */
 object AlertNotificationFormatter {
     /**
@@ -39,8 +41,9 @@ object AlertNotificationFormatter {
         bodyWithPlaceTemplate: String,
         summaryTemplate: String,
         locale: Locale = Locale.ROOT,
+        clock: ClockFormat = ClockFormat.H24,
     ): FormattedAlertNotification {
-        val timeText = SkyFormatting.formatTimeTruncated(eventInstant, zone)
+        val timeText = CenitFormat.formatTime(eventInstant, zone, clock, locale)
         val title = String.format(locale, titleTemplate, eventLabel, leadMinutes)
         val trimmedPlace = placeName.trim()
         val body = if (trimmedPlace.isNotEmpty()) {

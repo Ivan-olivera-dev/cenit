@@ -15,6 +15,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
+import io.github.ivan_olivera_dev.cenit.settings.AppTheme
+import io.github.ivan_olivera_dev.cenit.settings.resolveDarkTheme
 
 /**
  * Colour tokens of design/system.md, one field per token. Light is Scrolless
@@ -160,6 +162,17 @@ val CenitTypography = Typography(
         letterSpacing = 1.sp
     )
 )
+
+@Composable
+fun CenitTheme(
+    theme: AppTheme,
+    content: @Composable () -> Unit,
+) {
+    CenitTheme(
+        darkTheme = resolveDarkTheme(theme, isSystemInDarkTheme()),
+        content = content,
+    )
+}
 
 @Composable
 fun CenitTheme(

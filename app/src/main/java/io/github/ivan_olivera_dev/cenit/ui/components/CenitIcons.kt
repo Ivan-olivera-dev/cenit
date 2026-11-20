@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import kotlin.math.cos
+import kotlin.math.sin
 
 /**
  * Minimal stroke icons matching tools/design-kit/lib.js (`24×24` viewBox, `1.5` stroke,
@@ -28,6 +30,8 @@ enum class CenitIconKind {
     NEXT,
     BELL,
     CALENDAR,
+    SETTINGS,
+    BACK,
 }
 
 @Composable
@@ -54,6 +58,8 @@ fun CenitIcon(
             CenitIconKind.NEXT -> drawChevron(tint, sx, sy, stroke, left = false)
             CenitIconKind.BELL -> drawBell(tint, sx, sy, stroke)
             CenitIconKind.CALENDAR -> drawCalendar(tint, sx, sy, stroke)
+            CenitIconKind.SETTINGS -> drawSettings(tint, sx, sy, stroke)
+            CenitIconKind.BACK -> drawBack(tint, sx, sy, stroke)
         }
     }
 }
@@ -157,4 +163,40 @@ private fun DrawScope.drawCalendar(color: Color, sx: Float, sy: Float, stroke: S
     line(4f, 10f, 20f, 10f)
     line(8f, 3.5f, 8f, 7.5f)
     line(16f, 3.5f, 16f, 7.5f)
+}
+
+private fun DrawScope.drawSettings(color: Color, sx: Float, sy: Float, stroke: Stroke) {
+    // Minimal 8-tooth gear matching the 24×24 viewBox, 1.5 stroke weight, round caps & joins.
+    val cx = 12f
+    val cy = 12f
+    val innerR = 6.5f
+    val outerR = 9.2f
+    val path = Path()
+    for (i in 0 until 8) {
+        val baseDeg = i * 45.0
+        val points = listOf(
+            Math.toRadians(baseDeg - 15.0) to innerR,
+            Math.toRadians(baseDeg - 9.0) to outerR,
+            Math.toRadians(baseDeg + 9.0) to outerR,
+            Math.toRadians(baseDeg + 15.0) to innerR,
+        )
+        points.forEachIndexed { idx, (rad, r) ->
+            val x = (cx + r * cos(rad).toFloat()) * sx
+            val y = (cy + r * sin(rad).toFloat()) * sy
+            if (i == 0 && idx == 0) path.moveTo(x, y) else path.lineTo(x, y)
+        }
+    }
+    path.close()
+    drawPath(path, color, style = stroke)
+    drawCircle(color, radius = 3f * sx, center = Offset(cx * sx, cy * sy), style = stroke)
+}
+
+private fun DrawScope.drawBack(color: Color, sx: Float, sy: Float, stroke: Stroke) {
+    drawLine(color, Offset(19f * sx, 12f * sy), Offset(5f * sx, 12f * sy), stroke.width, StrokeCap.Round)
+    val head = Path().apply {
+        moveTo(11f * sx, 6f * sy)
+        lineTo(5f * sx, 12f * sy)
+        lineTo(11f * sx, 18f * sy)
+    }
+    drawPath(head, color, style = stroke)
 }

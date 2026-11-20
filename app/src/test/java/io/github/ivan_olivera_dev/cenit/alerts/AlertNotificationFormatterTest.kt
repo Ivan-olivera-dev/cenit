@@ -1,9 +1,11 @@
 package io.github.ivan_olivera_dev.cenit.alerts
 
+import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.util.Locale
 
 class AlertNotificationFormatterTest {
 
@@ -80,5 +82,39 @@ class AlertNotificationFormatterTest {
         assertEquals(34L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:47:30"), event))
         assertEquals(30L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:52:00"), event))
         assertEquals(0L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T07:30:00"), event))
+    }
+
+    @Test
+    fun `formats notifications in 12-hour clock for Spanish and English locales`() {
+        val madridZone = ZoneId.of("Europe/Madrid")
+        val eveningInstant = LocalDateTime.parse("2026-11-20T17:12:59").atZone(madridZone).toInstant()
+
+        val esFormatted = AlertNotificationFormatter.format(
+            eventLabel = "Hora dorada",
+            leadMinutes = 30,
+            eventInstant = eveningInstant,
+            zone = madridZone,
+            placeName = "Madrid",
+            titleTemplate = "%1\$s en %2\$d minutos",
+            bodyWithPlaceTemplate = "%1\$s · %2\$s",
+            summaryTemplate = "%1\$s · %2\$s",
+            locale = Locale.forLanguageTag("es-ES"),
+            clock = ClockFormat.H12,
+        )
+        assertEquals("5:12 p.\u00A0m. · Madrid", esFormatted.body)
+
+        val enFormatted = AlertNotificationFormatter.format(
+            eventLabel = "Golden hour",
+            leadMinutes = 30,
+            eventInstant = eveningInstant,
+            zone = madridZone,
+            placeName = "Madrid",
+            titleTemplate = "%1\$s in %2\$d minutes",
+            bodyWithPlaceTemplate = "%1\$s · %2\$s",
+            summaryTemplate = "%1\$s · %2\$s",
+            locale = Locale.US,
+            clock = ClockFormat.H12,
+        )
+        assertEquals("5:12 PM · Madrid", enFormatted.body)
     }
 }

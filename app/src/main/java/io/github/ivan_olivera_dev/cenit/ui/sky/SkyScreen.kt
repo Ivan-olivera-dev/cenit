@@ -61,6 +61,8 @@ import io.github.ivan_olivera_dev.cenit.core.PolarCondition
 import io.github.ivan_olivera_dev.cenit.core.SkyPosition
 import io.github.ivan_olivera_dev.cenit.core.SunDay
 import io.github.ivan_olivera_dev.cenit.core.eclipses.Eclipses
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
+import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyPhase
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.ElevationChartData
@@ -70,9 +72,11 @@ import io.github.ivan_olivera_dev.cenit.core.sky.chart.SkyDaySchedule
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.SkyTimesList
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.SunTimeItem
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.SunTimeKind
+import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitDatePicker
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIcon
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIconKind
+import io.github.ivan_olivera_dev.cenit.ui.components.CenitSegmentedControl
 import io.github.ivan_olivera_dev.cenit.ui.components.PhaseGlyph
 import io.github.ivan_olivera_dev.cenit.ui.components.cenitFocusRing
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
@@ -131,6 +135,7 @@ fun SkyScreen(
 ) {
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     val palette = LocalCenitPalette.current
+    val settings = LocalAppSettings.current
     val configuration = LocalConfiguration.current
     val locale = remember(configuration) {
         configuration.locales[0] ?: Locale.getDefault()
@@ -209,13 +214,13 @@ fun SkyScreen(
     } else {
         shortDateText
     }
-    val formattedTime = SkyFormatting.formatLocalTimeTruncated(state.selectedTime)
+    val formattedTime = CenitFormat.formatLocalTime(state.selectedTime, settings.clock, locale)
 
     val chartContentDesc = stringResource(
         R.string.sky_cd_elevation_chart,
         shortDateText,
-        SkyFormatting.formatDecimal(dayBundle.sunDay.noonElevation, 0, locale),
-        SkyFormatting.formatTimeTruncated(dayBundle.sunDay.solarNoon, zone),
+        CenitFormat.formatAngleValue(dayBundle.sunDay.noonElevation, settings.degreeDecimals, locale),
+        CenitFormat.formatTime(dayBundle.sunDay.solarNoon, zone, settings.clock, locale),
         formattedTime,
     )
     val timesListDesc = stringResource(R.string.sky_cd_times_list, shortDateText)
@@ -279,6 +284,7 @@ fun SkyScreen(
                 sunPosition = sunPosition,
                 moonPosition = moonPosition,
                 moonIlluminationPct = currentMoonIllumPct,
+                degreeDecimals = settings.degreeDecimals,
                 winds = winds,
                 locale = locale,
             )
@@ -324,6 +330,8 @@ fun SkyScreen(
                             item = item,
                             isPast = SkyTimesList.isPast(item, selectedInstant),
                             zone = zone,
+                            clock = settings.clock,
+                            degreeDecimals = settings.degreeDecimals,
                             winds = winds,
                             locale = locale,
                             palette = palette,
@@ -362,6 +370,7 @@ fun SkyScreen(
                         MoonRiseSetBlock(
                             moonItems = dayBundle.schedule.moonItems,
                             zone = zone,
+                            clock = settings.clock,
                             winds = winds,
                             locale = locale,
                             palette = palette,
@@ -380,6 +389,8 @@ fun SkyScreen(
                         LunarQuarterRow(
                             event = event,
                             zone = zone,
+                            clock = settings.clock,
+                            locale = locale,
                             dateFormatter = quarterDateFormatter,
                             palette = palette,
                             showDivider = index < dayBundle.schedule.nextQuarters.lastIndex,
@@ -531,6 +542,7 @@ private fun SkyValuesReadout(
     sunPosition: SkyPosition,
     moonPosition: SkyPosition,
     moonIlluminationPct: Int,
+    degreeDecimals: Boolean,
     winds: Array<String>,
     locale: Locale,
 ) {
@@ -549,7 +561,7 @@ private fun SkyValuesReadout(
     } else {
         stringResource(
             R.string.sky_readout_elev,
-            SkyFormatting.formatDecimal(sunPosition.elevation, 1, locale),
+            CenitFormat.formatAngleValue(sunPosition.elevation, degreeDecimals, locale),
         )
     }
 
@@ -563,7 +575,7 @@ private fun SkyValuesReadout(
     } else {
         stringResource(
             R.string.sky_readout_moon_above,
-            SkyFormatting.formatDecimal(moonPosition.elevation, 1, locale),
+            CenitFormat.formatAngleValue(moonPosition.elevation, degreeDecimals, locale),
             moonIlluminationPct,
         )
     }
@@ -690,58 +702,17 @@ private fun SkySegmentedControl(
     selectedFilter: SkyTimesFilter,
     onSelectFilter: (SkyTimesFilter) -> Unit,
 ) {
-    val palette = LocalCenitPalette.current
-    val shape = RoundedCornerShape(10.dp)
-    val filterDesc = stringResource(R.string.sky_cd_filter)
-
     val options = listOf(
         SkyTimesFilter.ALL to stringResource(R.string.sky_filter_all),
         SkyTimesFilter.SUN to stringResource(R.string.sky_filter_sun),
         SkyTimesFilter.MOON to stringResource(R.string.sky_filter_moon),
     )
-
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(44.dp)
-            .clip(shape)
-            .border(1.dp, palette.controlBorder, shape)
-            .semantics { contentDescription = filterDesc },
-    ) {
-        options.forEach { (option, label) ->
-            val isSelected = option == selectedFilter
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize()
-                    .cenitFocusRing(palette.focusRing, cornerRadius = 8.dp)
-                    .then(if (isSelected) Modifier.background(palette.surfaceSubtle) else Modifier)
-                    .drawBehind {
-                        if (isSelected) {
-                            val inset = 14.dp.toPx().coerceAtMost(size.width / 4f)
-                            val lineHeight = 2.dp.toPx()
-                            drawRect(
-                                color = palette.sun,
-                                topLeft = Offset(inset, size.height - lineHeight),
-                                size = Size((size.width - inset * 2f).coerceAtLeast(0f), lineHeight),
-                            )
-                        }
-                    }
-                    .clickable(role = Role.Tab) { onSelectFilter(option) }
-                    .semantics { selected = isSelected },
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = label,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        fontWeight = if (isSelected) FontWeight.Medium else FontWeight.Normal,
-                    ),
-                    color = if (isSelected) palette.textPrimary else palette.textSecondary,
-                    maxLines = 1,
-                )
-            }
-        }
-    }
+    CenitSegmentedControl(
+        options = options,
+        selectedOption = selectedFilter,
+        onSelect = onSelectFilter,
+        groupContentDescription = stringResource(R.string.sky_cd_filter),
+    )
 }
 
 @Composable
@@ -845,7 +816,7 @@ private fun SelectedMomentRow(
                     fontFeatureSettings = "tnum",
                 ),
                 color = palette.textPrimary,
-                modifier = Modifier.width(102.dp),
+                modifier = Modifier.widthIn(min = 102.dp),
                 maxLines = 1,
             )
             Text(
@@ -866,15 +837,16 @@ private fun SunTimeEventRow(
     item: SunTimeItem,
     isPast: Boolean,
     zone: ZoneId,
+    clock: ClockFormat,
+    degreeDecimals: Boolean,
     winds: Array<String>,
     locale: Locale,
     palette: CenitPalette,
     showDivider: Boolean,
 ) {
-    val startStr = SkyFormatting.formatTimeTruncated(item.instant, zone)
     val timeText = item.end?.let { end ->
-        stringResource(R.string.sky_time_range, startStr, SkyFormatting.formatTimeTruncated(end, zone))
-    } ?: startStr
+        CenitFormat.formatTimeRange(item.instant, end, zone, clock, locale)
+    } ?: CenitFormat.formatTime(item.instant, zone, clock, locale)
 
     val trailingText = when {
         item.azimuthDeg != null -> stringResource(
@@ -884,7 +856,7 @@ private fun SunTimeEventRow(
         )
         item.elevationDeg != null -> stringResource(
             R.string.event_elevation,
-            SkyFormatting.formatDecimal(item.elevationDeg!!, 1, locale),
+            CenitFormat.formatAngleValue(item.elevationDeg!!, degreeDecimals, locale),
         )
         else -> ""
     }
@@ -904,13 +876,13 @@ private fun SunTimeEventRow(
             Text(
                 text = timeText,
                 style = MaterialTheme.typography.bodyLarge.copy(
-                    fontSize = 16.sp,
-                    lineHeight = 22.sp,
+                    fontSize = if (clock == ClockFormat.H12) 14.sp else 16.sp,
+                    lineHeight = if (clock == ClockFormat.H12) 19.sp else 22.sp,
                     fontFeatureSettings = "tnum",
                 ),
                 color = textColor,
-                modifier = Modifier.width(102.dp),
-                maxLines = 1,
+                modifier = Modifier.widthIn(min = 102.dp, max = if (clock == ClockFormat.H12) 136.dp else 108.dp),
+                maxLines = if (clock == ClockFormat.H12) 2 else 1,
             )
 
             Row(
@@ -1038,6 +1010,7 @@ private fun MoonPhaseDetailRow(
 private fun MoonRiseSetBlock(
     moonItems: List<MoonTimeItem>,
     zone: ZoneId,
+    clock: ClockFormat,
     winds: Array<String>,
     locale: Locale,
     palette: CenitPalette,
@@ -1056,7 +1029,7 @@ private fun MoonRiseSetBlock(
             val label = stringResource(
                 if (kind == MoonTimeKind.MOONRISE) R.string.event_moonrise else R.string.event_moonset,
             )
-            val timeText = item?.let { SkyFormatting.formatTimeTruncated(it.instant, zone) }
+            val timeText = item?.let { CenitFormat.formatTime(it.instant, zone, clock, locale) }
                 ?: stringResource(R.string.sky_moon_dash)
             val trailing = if (item != null) {
                 stringResource(
@@ -1081,9 +1054,12 @@ private fun MoonRiseSetBlock(
             ) {
                 Text(
                     text = timeText,
-                    style = MaterialTheme.typography.titleMedium.copy(fontFeatureSettings = "tnum"),
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontSize = if (clock == ClockFormat.H12) 16.sp else 20.sp,
+                        fontFeatureSettings = "tnum",
+                    ),
                     color = if (item != null) palette.textPrimary else palette.textSecondary,
-                    modifier = Modifier.width(64.dp),
+                    modifier = Modifier.widthIn(min = 64.dp),
                     maxLines = 1,
                 )
                 Row(
@@ -1123,6 +1099,8 @@ private fun MoonRiseSetBlock(
 private fun LunarQuarterRow(
     event: LunarEvent,
     zone: ZoneId,
+    clock: ClockFormat,
+    locale: Locale,
     dateFormatter: DateTimeFormatter,
     palette: CenitPalette,
     showDivider: Boolean,
@@ -1133,7 +1111,7 @@ private fun LunarQuarterRow(
     val glyphDesc = stringResource(R.string.cd_phase_glyph, label, pct)
     val localZoned = event.instant.atZone(zone)
     val dateStr = dateFormatter.format(localZoned.toLocalDate())
-    val timeStr = SkyFormatting.formatTimeTruncated(event.instant, zone)
+    val timeStr = CenitFormat.formatTime(event.instant, zone, clock, locale)
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(

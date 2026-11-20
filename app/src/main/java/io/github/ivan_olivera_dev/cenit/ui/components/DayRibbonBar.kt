@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -25,12 +27,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import io.github.ivan_olivera_dev.cenit.R
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
 import io.github.ivan_olivera_dev.cenit.core.sky.DayRibbonSegment
-import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyPhase
+import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.theme.CenitPalette
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 import java.time.ZoneId
+import java.util.Locale
 
 /**
  * 24-hour day light ribbon (`day-ribbon` token): `14 dp` pill bar coloured by [SkyPhase],
@@ -44,14 +48,15 @@ fun DayRibbonBar(
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalCenitPalette.current
+    val clock = LocalAppSettings.current.clock
+    val configuration = LocalConfiguration.current
+    val locale = remember(configuration) {
+        configuration.locales[0] ?: Locale.getDefault()
+    }
     val goldenRanges = segments
         .filter { it.phase == SkyPhase.GOLDEN }
         .map { seg ->
-            stringResource(
-                R.string.ribbon_golden_range,
-                SkyFormatting.formatTimeTruncated(seg.start, zone),
-                SkyFormatting.formatTimeTruncated(seg.end, zone),
-            )
+            CenitFormat.formatTimeRange(seg.start, seg.end, zone, clock, locale)
         }
 
     val goldenText = if (goldenRanges.isEmpty()) {

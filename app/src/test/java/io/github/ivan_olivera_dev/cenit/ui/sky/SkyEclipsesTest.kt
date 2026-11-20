@@ -5,6 +5,7 @@ import io.github.ivan_olivera_dev.cenit.core.TimeRange
 import io.github.ivan_olivera_dev.cenit.core.eclipses.CenitEclipse
 import io.github.ivan_olivera_dev.cenit.core.eclipses.EclipseBody
 import io.github.ivan_olivera_dev.cenit.core.eclipses.EclipseKind
+import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -97,6 +98,14 @@ class SkyEclipsesTest {
             end = Instant.parse("2027-08-02T10:02:59Z"),
         )
         assertEquals("09:45" to "12:02", formatEclipseTimeRange(range, madridZone))
+        assertEquals(
+            "9:45 AM" to "12:02 PM",
+            formatEclipseTimeRange(range, madridZone, ClockFormat.H12, Locale.US),
+        )
+        assertEquals(
+            "9:45 a.\u00A0m." to "12:02 p.\u00A0m.",
+            formatEclipseTimeRange(range, madridZone, ClockFormat.H12, Locale.forLanguageTag("es-ES")),
+        )
     }
 
     @Test

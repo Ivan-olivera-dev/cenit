@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Navigation & top bar -->
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_cd_open">Ajustes</string>
+    <string name="settings_cd_back">Atrás</string>
+
+    <!-- Language section -->
+    <string name="settings_section_language">Idioma</string>
+    <string name="settings_language_system">Sistema</string>
+    <string name="settings_language_es">Español</string>
+    <string name="settings_language_en">English</string>
+
+    <!-- Theme section -->
+    <string name="settings_section_theme">Tema</string>
+    <string name="settings_theme_system">Sistema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+
+    <!-- Format section -->
+    <string name="settings_section_format">Formato</string>
+    <string name="settings_clock_label">Reloj</string>
+    <string name="settings_clock_24h">24 h</string>
+    <string name="settings_clock_12h">12 h</string>
+    <string name="settings_degrees_label">Grados</string>
+    <string name="settings_degrees_with_decimals">Con decimales</string>
+    <string name="settings_degrees_without_decimals">Sin decimales</string>
+
+    <!-- About section -->
+    <string name="settings_section_about">Acerca de</string>
+    <string name="settings_about_version">Versión %1$s</string>
+    <string name="settings_about_license">Licencia MIT</string>
+    <string name="settings_about_astronomy">Astronomy Engine · Don Cross · MIT</string>
+    <string name="settings_about_geonames">Datos de ciudades: GeoNames · CC BY 4.0</string>
+    <string name="settings_about_offline">Sin conexión: Cenit no usa internet</string>
+</resources>

@@ -51,7 +51,10 @@ import io.github.ivan_olivera_dev.cenit.core.compass.CompassTarget
 import io.github.ivan_olivera_dev.cenit.core.compass.CompassTargetKind
 import io.github.ivan_olivera_dev.cenit.core.compass.CompassTargets
 import io.github.ivan_olivera_dev.cenit.core.compass.RelativeDirection
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
+import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
+import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.components.DomeHorizonTick
 import io.github.ivan_olivera_dev.cenit.ui.components.DomeReferencePaths
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
@@ -102,6 +105,7 @@ internal fun CompassScreenContent(
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalCenitPalette.current
+    val clock = LocalAppSettings.current.clock
     val configuration = LocalConfiguration.current
     val locale = remember(configuration) {
         configuration.locales[0] ?: Locale.getDefault()
@@ -113,7 +117,7 @@ internal fun CompassScreenContent(
     val selectedDate = state.selectedDate
     val selectedInstant = state.selectedInstant
 
-    val dayBundle = remember(place, selectedDate, zone) {
+    val dayBundle = remember(place, selectedDate, zone, clock, locale) {
         val sunDay = Ephemeris.sunDay(place, selectedDate, zone)
         val moonDay = Ephemeris.moonDay(place, selectedDate, zone)
         val sunPath = Ephemeris.sunPath(place, selectedDate, zone, Duration.ofMinutes(10))
@@ -121,25 +125,25 @@ internal fun CompassScreenContent(
         val sunriseTick = sunDay.sunrise?.let {
             DomeHorizonTick(
                 azimuthDeg = Ephemeris.sunPosition(place, it).azimuth,
-                label = SkyFormatting.formatTimeTruncated(it, zone),
+                label = CenitFormat.formatTime(it, zone, clock, locale),
             )
         }
         val sunsetTick = sunDay.sunset?.let {
             DomeHorizonTick(
                 azimuthDeg = Ephemeris.sunPosition(place, it).azimuth,
-                label = SkyFormatting.formatTimeTruncated(it, zone),
+                label = CenitFormat.formatTime(it, zone, clock, locale),
             )
         }
         val moonriseTick = moonDay.moonrise?.let {
             DomeHorizonTick(
                 azimuthDeg = Ephemeris.moonPosition(place, it).azimuth,
-                label = SkyFormatting.formatTimeTruncated(it, zone),
+                label = CenitFormat.formatTime(it, zone, clock, locale),
             )
         }
         val moonsetTick = moonDay.moonset?.let {
             DomeHorizonTick(
                 azimuthDeg = Ephemeris.moonPosition(place, it).azimuth,
-                label = SkyFormatting.formatTimeTruncated(it, zone),
+                label = CenitFormat.formatTime(it, zone, clock, locale),
             )
         }
         CompassDayBundle(
@@ -255,6 +259,7 @@ internal fun CompassScreenContent(
                 targets = targets,
                 liveHeadingDeg = liveHeading,
                 zone = zone,
+                clock = clock,
                 winds = winds,
                 locale = locale,
                 palette = palette,
@@ -367,6 +372,7 @@ private fun CompassTargetsList(
     targets: List<CompassTarget>,
     liveHeadingDeg: Double?,
     zone: ZoneId,
+    clock: ClockFormat,
     winds: Array<String>,
     locale: Locale,
     palette: CenitPalette,
@@ -383,6 +389,7 @@ private fun CompassTargetsList(
                 target = target,
                 liveHeadingDeg = liveHeadingDeg,
                 zone = zone,
+                clock = clock,
                 winds = winds,
                 locale = locale,
                 palette = palette,
@@ -399,6 +406,7 @@ private fun CompassTargetRow(
     target: CompassTarget,
     liveHeadingDeg: Double?,
     zone: ZoneId,
+    clock: ClockFormat,
     winds: Array<String>,
     locale: Locale,
     palette: CenitPalette,
@@ -407,7 +415,7 @@ private fun CompassTargetRow(
         R.string.compass_heading_degrees,
         formatRoundedDegrees(target.azimuthDeg, locale),
     )
-    val timeText = target.instant?.let { SkyFormatting.formatTimeTruncated(it, zone) } ?: ""
+    val timeText = target.instant?.let { CenitFormat.formatTime(it, zone, clock, locale) } ?: ""
     val labelText = when (target.kind) {
         CompassTargetKind.SUNSET -> stringResource(R.string.compass_target_sunset, timeText)
         CompassTargetKind.SUN_NOW -> stringResource(R.string.compass_target_sun_now)

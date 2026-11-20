@@ -10,6 +10,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import io.github.ivan_olivera_dev.cenit.R
 import io.github.ivan_olivera_dev.cenit.core.alerts.AlertKind
+import io.github.ivan_olivera_dev.cenit.settings.AppLocaleController
+import io.github.ivan_olivera_dev.cenit.settings.SettingsStore
 import io.github.ivan_olivera_dev.cenit.ui.MainActivity
 import java.time.Instant
 import java.time.ZoneId
@@ -45,20 +47,24 @@ object AlertNotifier {
         val appContext = context.applicationContext
         if (!AlertPermissions.hasNotificationPermission(appContext)) return
 
-        ensureChannel(appContext)
+        val localizedContext = AppLocaleController.localizedContext(appContext)
+        val settings = SettingsStore.fromContext(appContext).load()
+
+        ensureChannel(localizedContext)
 
         val zone = subscription.resolveZoneOrNull() ?: ZoneId.systemDefault()
-        val locale = appContext.resources.configuration.locales[0] ?: Locale.getDefault()
+        val locale = localizedContext.resources.configuration.locales[0] ?: Locale.getDefault()
         val formatted = AlertNotificationFormatter.format(
-            eventLabel = appContext.getString(labelResId(subscription.kind)),
+            eventLabel = localizedContext.getString(labelResId(subscription.kind)),
             leadMinutes = AlertNotificationFormatter.minutesUntil(Instant.now(), eventInstant),
             eventInstant = eventInstant,
             zone = zone,
             placeName = subscription.placeName,
-            titleTemplate = appContext.getString(R.string.alert_notif_title),
-            bodyWithPlaceTemplate = appContext.getString(R.string.alert_notif_body_with_place),
-            summaryTemplate = appContext.getString(R.string.alert_notif_summary),
+            titleTemplate = localizedContext.getString(R.string.alert_notif_title),
+            bodyWithPlaceTemplate = localizedContext.getString(R.string.alert_notif_body_with_place),
+            summaryTemplate = localizedContext.getString(R.string.alert_notif_summary),
             locale = locale,
+            clock = settings.clock,
         )
 
         val openAppIntent = Intent(appContext, MainActivity::class.java).apply {

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +35,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.ProgressBarRangeInfo
@@ -50,12 +52,15 @@ import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import io.github.ivan_olivera_dev.cenit.R
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.ChartPlotPoint
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.ChartSkyBand
 import io.github.ivan_olivera_dev.cenit.core.sky.chart.ElevationChartData
+import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.components.cenitFocusRing
 import io.github.ivan_olivera_dev.cenit.ui.theme.CenitPalette
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
+import java.util.Locale
 
 /**
  * Interactive elevation chart (`elevation-chart` token): plate radius `20 dp`, y from `−20°` to
@@ -78,6 +83,11 @@ fun ElevationChartCanvas(
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalCenitPalette.current
+    val clock = LocalAppSettings.current.clock
+    val configuration = LocalConfiguration.current
+    val locale = remember(configuration) {
+        configuration.locales[0] ?: Locale.getDefault()
+    }
     val textMeasurer = rememberTextMeasurer()
 
     val bandLabels = mapOf(
@@ -342,7 +352,10 @@ fun ElevationChartCanvas(
             val tickStyle = labelStyle.copy(color = palette.textSecondary)
             val tickInset = 6.dp.toPx()
             chartData.hourTicks.forEachIndexed { index, tick ->
-                val measured = textMeasurer.measure(text = tick.label, style = tickStyle)
+                val tickLabel = tick.label.toIntOrNull()?.let { hour ->
+                    CenitFormat.formatAxisHour(hour, clock, locale)
+                } ?: tick.label
+                val measured = textMeasurer.measure(text = tickLabel, style = tickStyle)
                 val rawX = xOf(tick.xFraction)
                 val textX = when (index) {
                     0 -> tickInset

@@ -71,6 +71,8 @@ import io.github.ivan_olivera_dev.cenit.core.PathPoint
 import io.github.ivan_olivera_dev.cenit.core.Place
 import io.github.ivan_olivera_dev.cenit.core.SunDay
 import io.github.ivan_olivera_dev.cenit.core.alerts.AlertKind
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
+import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import io.github.ivan_olivera_dev.cenit.core.sky.DayRibbon
 import io.github.ivan_olivera_dev.cenit.core.sky.DayRibbonSegment
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyEvent
@@ -80,6 +82,7 @@ import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyPhase
 import io.github.ivan_olivera_dev.cenit.core.sky.UpcomingSkyEvent
 import io.github.ivan_olivera_dev.cenit.core.sky.shadow.ShadowDirection
+import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitDatePicker
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIcon
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIconKind
@@ -133,11 +136,13 @@ fun TodayScreen(
     onScrubFraction: (Float) -> Unit,
     onStepMinutes: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    onOpenSettings: () -> Unit = {},
     subscribedAlertKinds: Set<AlertKind> = emptySet(),
     onSubscribeAlert: (AlertKind) -> Boolean = { false },
     onUnsubscribeAlert: (AlertKind) -> Unit = {},
 ) {
     val palette = LocalCenitPalette.current
+    val settings = LocalAppSettings.current
     val context = LocalContext.current
     val configuration = LocalConfiguration.current
     val locale = remember(configuration) {
@@ -149,7 +154,7 @@ fun TodayScreen(
     val zone = state.zone
     val selectedDate = state.selectedDate
 
-    val dayBundle = remember(place, selectedDate, zone) {
+    val dayBundle = remember(place, selectedDate, zone, settings.clock, locale) {
         val sunDay = Ephemeris.sunDay(place, selectedDate, zone)
         val moonDay = Ephemeris.moonDay(place, selectedDate, zone)
         val sunPath = Ephemeris.sunPath(place, selectedDate, zone, Duration.ofMinutes(10))
@@ -159,13 +164,13 @@ fun TodayScreen(
         val sunriseTick = sunDay.sunrise?.let {
             DomeHorizonTick(
                 azimuthDeg = Ephemeris.sunPosition(place, it).azimuth,
-                label = SkyFormatting.formatTimeTruncated(it, zone),
+                label = CenitFormat.formatTime(it, zone, settings.clock, locale),
             )
         }
         val sunsetTick = sunDay.sunset?.let {
             DomeHorizonTick(
                 azimuthDeg = Ephemeris.sunPosition(place, it).azimuth,
-                label = SkyFormatting.formatTimeTruncated(it, zone),
+                label = CenitFormat.formatTime(it, zone, settings.clock, locale),
             )
         }
         TodayDayBundle(
@@ -220,7 +225,7 @@ fun TodayScreen(
     }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
 
-    val formattedTime = SkyFormatting.formatLocalTimeTruncated(state.selectedTime)
+    val formattedTime = CenitFormat.formatLocalTime(state.selectedTime, settings.clock, locale)
     val coordsText = formatCoordinates(place, locale)
 
     val domeDescription = if (dayBundle.sunriseTick != null && dayBundle.sunsetTick != null) {
@@ -246,7 +251,7 @@ fun TodayScreen(
             sunPhaseLabel,
             sunAzText,
             sunWind,
-            SkyFormatting.formatDecimal(sunPosition.elevation, 1, locale),
+            CenitFormat.formatAngleValue(sunPosition.elevation, settings.degreeDecimals, locale),
         )
     }
 
@@ -355,18 +360,19 @@ fun TodayScreen(
                 .padding(horizontal = 22.dp)
                 .padding(top = 8.dp, bottom = 4.dp),
         ) {
-            // 1. Place headline + previous/next day + "Ahora" reset
+            // 1. Place headline + "Ahora" reset + Settings gear button
             PlaceHeaderRow(
                 placeName = state.activePlace.name,
                 coordsText = coordsText,
-                onPrevDay = { onShiftDays(-1L) },
-                onNextDay = { onShiftDays(1L) },
                 onResetNow = onResetNow,
+                onOpenSettings = onOpenSettings,
             )
 
-            // 2. Month context + "Otra fecha" picker trigger + 7-day date strip
+            // 2. Month context + previous/next day arrows + "Otra fecha" picker trigger + 7-day strip
             DateStripHeaderRow(
                 monthYearLabel = monthYearLabel,
+                onPrevDay = { onShiftDays(-1L) },
+                onNextDay = { onShiftDays(1L) },
                 onOpenDatePicker = { showDatePicker = true },
             )
 
@@ -415,7 +421,11 @@ fun TodayScreen(
             ) {
                 Text(
                     text = formattedTime,
-                    style = MaterialTheme.typography.displayMedium.copy(fontFeatureSettings = "tnum"),
+                    style = MaterialTheme.typography.displayMedium.copy(
+                        fontSize = if (settings.clock == ClockFormat.H12) 28.sp else 36.sp,
+                        lineHeight = if (settings.clock == ClockFormat.H12) 32.sp else 40.sp,
+                        fontFeatureSettings = "tnum",
+                    ),
                     color = palette.textPrimary,
                     maxLines = 1,
                 )
@@ -526,6 +536,7 @@ fun TodayScreen(
                 illuminationPct = (currentMoonPhase.illumination * 100.0).roundToInt().coerceIn(0, 100),
                 moonPhase = currentMoonPhase,
                 moonPosition = moonPosition,
+                degreeDecimals = settings.degreeDecimals,
                 winds = winds,
                 locale = locale,
             )
@@ -535,6 +546,8 @@ fun TodayScreen(
             NextEventsBlock(
                 events = upcomingEvents.take(3),
                 zone = zone,
+                clock = settings.clock,
+                degreeDecimals = settings.degreeDecimals,
                 winds = winds,
                 locale = locale,
             )
@@ -556,16 +569,20 @@ fun TodayScreen(
 @Composable
 private fun DateStripHeaderRow(
     monthYearLabel: String,
+    onPrevDay: () -> Unit,
+    onNextDay: () -> Unit,
     onOpenDatePicker: () -> Unit,
 ) {
     val palette = LocalCenitPalette.current
+    val prevDesc = stringResource(R.string.cd_previous_day)
+    val nextDesc = stringResource(R.string.cd_next_day)
     val otherDateLabel = stringResource(R.string.action_other_date)
     val otherDateDesc = stringResource(R.string.cd_other_date)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(2.dp),
     ) {
         Text(
             text = monthYearLabel,
@@ -577,11 +594,33 @@ private fun DateStripHeaderRow(
         )
         Box(
             modifier = Modifier
+                .size(44.dp)
+                .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .clickable(role = Role.Button, onClick = onPrevDay)
+                .semantics { contentDescription = prevDesc },
+            contentAlignment = Alignment.Center,
+        ) {
+            CenitIcon(kind = CenitIconKind.PREV, tint = palette.textPrimary, size = 18.dp)
+        }
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .clickable(role = Role.Button, onClick = onNextDay)
+                .semantics { contentDescription = nextDesc },
+            contentAlignment = Alignment.Center,
+        ) {
+            CenitIcon(kind = CenitIconKind.NEXT, tint = palette.textPrimary, size = 18.dp)
+        }
+        Box(
+            modifier = Modifier
                 .heightIn(min = 44.dp)
                 .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
                 .clip(RoundedCornerShape(10.dp))
                 .clickable(role = Role.Button, onClick = onOpenDatePicker)
-                .padding(start = 12.dp, end = 4.dp)
+                .padding(start = 8.dp, end = 4.dp)
                 .semantics { contentDescription = otherDateDesc },
             contentAlignment = Alignment.Center,
         ) {
@@ -639,20 +678,19 @@ private fun TodayAlertNoticeBanner(
 private fun PlaceHeaderRow(
     placeName: String,
     coordsText: String,
-    onPrevDay: () -> Unit,
-    onNextDay: () -> Unit,
     onResetNow: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     val palette = LocalCenitPalette.current
-    val prevDesc = stringResource(R.string.cd_previous_day)
-    val nextDesc = stringResource(R.string.cd_next_day)
     val nowLabel = stringResource(R.string.action_now)
     val nowDesc = stringResource(R.string.cd_back_to_now)
+    val settingsDesc = stringResource(R.string.settings_cd_open)
+    val gearShape = RoundedCornerShape(10.dp)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -677,19 +715,10 @@ private fun PlaceHeaderRow(
             )
         }
 
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .clickable(role = Role.Button, onClick = onPrevDay)
-                    .semantics { contentDescription = prevDesc },
-                contentAlignment = Alignment.Center,
-            ) {
-                CenitIcon(kind = CenitIconKind.PREV, tint = palette.textPrimary, size = 20.dp)
-            }
-
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
             Box(
                 modifier = Modifier
                     .heightIn(min = 44.dp)
@@ -713,12 +742,13 @@ private fun PlaceHeaderRow(
                 modifier = Modifier
                     .size(44.dp)
                     .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .clickable(role = Role.Button, onClick = onNextDay)
-                    .semantics { contentDescription = nextDesc },
+                    .clip(gearShape)
+                    .border(1.dp, palette.controlBorder, gearShape)
+                    .clickable(role = Role.Button, onClick = onOpenSettings)
+                    .semantics { contentDescription = settingsDesc },
                 contentAlignment = Alignment.Center,
             ) {
-                CenitIcon(kind = CenitIconKind.NEXT, tint = palette.textPrimary, size = 20.dp)
+                CenitIcon(kind = CenitIconKind.SETTINGS, tint = palette.textPrimary, size = 20.dp)
             }
         }
     }
@@ -795,6 +825,7 @@ private fun MoonSummaryRow(
     illuminationPct: Int,
     moonPhase: io.github.ivan_olivera_dev.cenit.core.MoonPhase,
     moonPosition: io.github.ivan_olivera_dev.cenit.core.SkyPosition,
+    degreeDecimals: Boolean,
     winds: Array<String>,
     locale: Locale,
 ) {
@@ -808,7 +839,7 @@ private fun MoonSummaryRow(
             R.string.moon_position_above,
             SkyFormatting.formatDecimal(moonPosition.azimuth, 0, locale),
             winds[SkyFormatting.compassIndex(moonPosition.azimuth)],
-            SkyFormatting.formatDecimal(moonPosition.elevation, 1, locale),
+            CenitFormat.formatAngleValue(moonPosition.elevation, degreeDecimals, locale),
         )
     }
 
@@ -846,6 +877,8 @@ private fun MoonSummaryRow(
 private fun NextEventsBlock(
     events: List<UpcomingSkyEvent>,
     zone: ZoneId,
+    clock: ClockFormat,
+    degreeDecimals: Boolean,
     winds: Array<String>,
     locale: Locale,
 ) {
@@ -877,6 +910,8 @@ private fun NextEventsBlock(
                     event = upcoming.event,
                     isNextDay = upcoming.isNextDay,
                     zone = zone,
+                    clock = clock,
+                    degreeDecimals = degreeDecimals,
                     winds = winds,
                     locale = locale,
                     palette = palette,
@@ -894,11 +929,13 @@ private fun EventRow(
     event: SkyEvent,
     isNextDay: Boolean,
     zone: ZoneId,
+    clock: ClockFormat,
+    degreeDecimals: Boolean,
     winds: Array<String>,
     locale: Locale,
     palette: CenitPalette,
 ) {
-    val timeText = SkyFormatting.formatTimeTruncated(event.instant, zone)
+    val timeText = CenitFormat.formatTime(event.instant, zone, clock, locale)
     val labelText = eventLabel(event.kind)
     val tomorrowLabel = if (isNextDay) stringResource(R.string.event_tomorrow) else null
     val az = event.azimuth
@@ -912,11 +949,11 @@ private fun EventRow(
         )
         end != null -> stringResource(
             R.string.event_until,
-            SkyFormatting.formatTimeTruncated(end, zone),
+            CenitFormat.formatTime(end, zone, clock, locale),
         )
         elev != null -> stringResource(
             R.string.event_elevation,
-            SkyFormatting.formatDecimal(elev, 1, locale),
+            CenitFormat.formatAngleValue(elev, degreeDecimals, locale),
         )
         else -> ""
     }
@@ -934,8 +971,9 @@ private fun EventRow(
             Text(
                 text = timeText,
                 style = MaterialTheme.typography.titleMedium.copy(
+                    fontSize = if (clock == ClockFormat.H12) 16.sp else 20.sp,
                     fontFeatureSettings = "tnum",
-                    lineHeight = if (isNextDay) 22.sp else 26.sp,
+                    lineHeight = if (isNextDay) 20.sp else 24.sp,
                 ),
                 color = palette.textPrimary,
                 maxLines = 1,

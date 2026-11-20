@@ -30,7 +30,9 @@ import io.github.ivan_olivera_dev.cenit.core.TimeRange
 import io.github.ivan_olivera_dev.cenit.core.eclipses.CenitEclipse
 import io.github.ivan_olivera_dev.cenit.core.eclipses.EclipseBody
 import io.github.ivan_olivera_dev.cenit.core.eclipses.EclipseKind
-import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
+import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
+import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.theme.CenitPalette
 import java.time.Instant
 import java.time.LocalDate
@@ -134,11 +136,15 @@ fun formatEclipseDate(instant: Instant, zone: ZoneId, locale: Locale): String {
 }
 
 /**
- * Formats a phase [range] as minute-truncated `(start, end)` `HH:mm` strings in [zone].
+ * Formats a phase [range] as minute-truncated `(start, end)` strings in [zone] using [clock]
+ * and [locale] (defaults to 24-hour `HH:mm`).
  */
-fun formatEclipseTimeRange(range: TimeRange, zone: ZoneId): Pair<String, String> =
-    SkyFormatting.formatTimeTruncated(range.start, zone) to
-        SkyFormatting.formatTimeTruncated(range.end, zone)
+fun formatEclipseTimeRange(
+    range: TimeRange,
+    zone: ZoneId,
+    clock: ClockFormat = ClockFormat.H24,
+    locale: Locale = Locale.ROOT,
+): Pair<String, String> = CenitFormat.formatTimeRangeParts(range.start, range.end, zone, clock, locale)
 
 @Composable
 internal fun EclipseEventRow(
@@ -148,6 +154,7 @@ internal fun EclipseEventRow(
     palette: CenitPalette,
     showDivider: Boolean,
 ) {
+    val clock = LocalAppSettings.current.clock
     val baseTitle = eclipseKindTitle(eclipse.body, eclipse.kind)
     val obscurationPct = eclipseObscurationPercent(eclipse)
     val titleText = if (obscurationPct != null) {
@@ -158,11 +165,11 @@ internal fun EclipseEventRow(
     val dateText = formatEclipseDate(eclipse.peak, zone, locale)
     val peakText = stringResource(
         R.string.eclipse_peak_time,
-        SkyFormatting.formatTimeTruncated(eclipse.peak, zone),
+        CenitFormat.formatTime(eclipse.peak, zone, clock, locale),
     )
 
     val totalPhaseText = eclipse.totalRange?.let { range ->
-        val (start, end) = formatEclipseTimeRange(range, zone)
+        val (start, end) = formatEclipseTimeRange(range, zone, clock, locale)
         val resId = if (eclipse.kind == EclipseKind.ANNULAR) {
             R.string.eclipse_phase_annular
         } else {
@@ -171,7 +178,7 @@ internal fun EclipseEventRow(
         stringResource(resId, start, end)
     }
     val partialPhaseText = eclipse.partialRange?.let { range ->
-        val (start, end) = formatEclipseTimeRange(range, zone)
+        val (start, end) = formatEclipseTimeRange(range, zone, clock, locale)
         stringResource(R.string.eclipse_phase_partial, start, end)
     }
 

@@ -25,7 +25,9 @@ import androidx.compose.ui.unit.sp
 import io.github.ivan_olivera_dev.cenit.R
 import io.github.ivan_olivera_dev.cenit.core.PathPoint
 import io.github.ivan_olivera_dev.cenit.core.SkyPosition
+import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyDomeProjection
+import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
 import java.time.ZoneId
 import kotlin.math.hypot
@@ -70,6 +72,7 @@ fun SkyDome(
     headingDeg: Double = 0.0,
 ) {
     val palette = LocalCenitPalette.current
+    val clock = LocalAppSettings.current.clock
     val textMeasurer = rememberTextMeasurer()
 
     val cardinalN = stringResource(R.string.cardinal_n)
@@ -243,7 +246,7 @@ fun SkyDome(
                 )
                 drawCenteredText(
                     textMeasurer = textMeasurer,
-                    text = zoned.hour.toString(),
+                    text = CenitFormat.formatDomeHour(zoned.hour, clock),
                     center = labelPos,
                     style = baseLabelStyle.copy(color = palette.textPrimary),
                 )
@@ -261,7 +264,8 @@ fun SkyDome(
                 strokeWidth = 2.dp.toPx(),
                 cap = StrokeCap.Round,
             )
-            val labelPos = onRing(horizonR - 25.dp.toPx(), tick.azimuthDeg)
+            val labelInset = if (tick.label.length > 5) 28.dp.toPx() else 25.dp.toPx()
+            val labelPos = onRing(horizonR - labelInset, tick.azimuthDeg)
             drawCenteredText(
                 textMeasurer = textMeasurer,
                 text = tick.label,
