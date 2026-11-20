@@ -20,7 +20,7 @@
     <string name="places_gps_rationale_body">Cenit uses your phone’s GPS to calculate sun and moon times for your position. It works offline and your location never leaves the device.</string>
     <string name="places_gps_rationale_allow">Allow location</string>
     <string name="places_gps_rationale_later">Not now</string>
-    <string name="places_gps_denied_notice">Location permission denied. You can search for a city offline or enter manual coordinates.</string>
+    <string name="places_gps_denied_notice">Location permission denied. You can search for a city offline, enter manual coordinates, or allow location in the app settings.</string>
     <string name="places_gps_disabled_notice">Phone location is turned off. Enable it in settings, or use city search or manual coordinates.</string>
     <string name="places_gps_unavailable_notice">Could not get a GPS fix. Try again outdoors or enter coordinates manually.</string>
 

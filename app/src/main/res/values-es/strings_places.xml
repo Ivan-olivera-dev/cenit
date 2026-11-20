@@ -20,7 +20,7 @@
     <string name="places_gps_rationale_body">Cenit usa el GPS del móvil para calcular el sol y la luna en tu posición. Funciona sin conexión y tu ubicación no sale del dispositivo.</string>
     <string name="places_gps_rationale_allow">Permitir ubicación</string>
     <string name="places_gps_rationale_later">Ahora no</string>
-    <string name="places_gps_denied_notice">Permiso de ubicación denegado. Puedes buscar una ciudad sin conexión o introducir coordenadas manuales.</string>
+    <string name="places_gps_denied_notice">Permiso de ubicación denegado. Puedes buscar una ciudad sin conexión, introducir coordenadas manuales o permitir la ubicación en los ajustes de la app.</string>
     <string name="places_gps_disabled_notice">La ubicación del móvil está desactivada. Actívala en ajustes o usa la búsqueda de ciudades o las coordenadas manuales.</string>
     <string name="places_gps_unavailable_notice">No se ha podido obtener la ubicación por GPS. Prueba de nuevo al aire libre o introduce las coordenadas.</string>
 

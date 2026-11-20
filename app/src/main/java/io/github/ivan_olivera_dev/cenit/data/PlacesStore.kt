@@ -5,6 +5,7 @@ import io.github.ivan_olivera_dev.cenit.core.Place
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlaceSource
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerPlace
 import java.io.File
+import java.util.Locale
 import java.util.UUID
 import kotlin.math.abs
 
@@ -224,7 +225,7 @@ internal object PlacesJsonCodec {
                 '\t' -> append("\\t")
                 else -> {
                     if (ch.code < 0x20) {
-                        append(String.format("\\u%04x", ch.code))
+                        append(String.format(Locale.ROOT, "\\u%04x", ch.code))
                     } else {
                         append(ch)
                     }
@@ -362,6 +363,10 @@ internal object PlacesJsonCodec {
                             'u' -> {
                                 if (pos + 4 > s.length) error("Invalid unicode escape")
                                 val hex = s.substring(pos, pos + 4)
+                                // toInt(16) alone would accept a sign, e.g. "\\u-001".
+                                if (!hex.all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }) {
+                                    error("Invalid unicode escape")
+                                }
                                 sb.append(hex.toInt(16).toChar())
                                 pos += 4
                             }
