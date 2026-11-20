@@ -18,4 +18,6 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "cenit"
-include(":app", ":core")
+include(":app", ":core", ":astronomy")
+// Third-party code vendored unmodified (see third_party/astronomy/README.md).
+project(":astronomy").projectDir = file("third_party/astronomy")

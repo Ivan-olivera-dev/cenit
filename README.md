@@ -20,3 +20,7 @@ scripts/test-check-manifest.sh   # tests of the manifest guard itself
 ```
 
 Trust points of the build: the Gradle distribution is pinned by `distributionSha256Sum` in `gradle/wrapper/gradle-wrapper.properties`. The JDK 21 that runs the Gradle daemon is downloaded over HTTPS from the foojay redirect URLs in `gradle/gradle-daemon-jvm.properties`, which carry no checksum; to avoid that download, install a JDK 21 yourself (Gradle uses a matching local JDK first). Neither affects the shipped APK.
+
+## Third-party code
+
+- [Astronomy Engine](https://github.com/cosinekitty/astronomy) v2.1.19 by Don Cross, MIT licence, vendored unmodified in [`third_party/astronomy/`](third_party/astronomy/) (provenance and integrity check in its README).
