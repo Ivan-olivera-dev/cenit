@@ -3,13 +3,13 @@
   "chosen": "02-cupula.html",
   "handoffs": {
     "02-cupula.html": {
-      "status": "in_progress",
+      "status": "implemented",
       "queued": false,
       "sentAt": "2026-11-20T19:02:04.016Z",
       "startedAt": "2026-11-20T19:02:16.684Z",
-      "implementedAt": null,
+      "implementedAt": "2026-11-20T20:11:15.274Z",
       "feature": "odd/tasks/cenit-stage-1.md",
-      "note": "T6 started: Hoy (flat compass dome + time ribbon + planner) on :core Ephemeris (T5 done)."
+      "note": "Hoy, Cielo, Brújula and Lugares implemented in Compose (feat/stage-1-design, up to 59bb39b) and checked on a Nothing Phone 2; alerts toggle live (T9). Deviations logged in odd/tasks/cenit-stage-1.md L17, L19, L21."
     }
   }
 }
