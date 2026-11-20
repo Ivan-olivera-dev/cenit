@@ -3,12 +3,13 @@
   "chosen": "02-cupula.html",
   "handoffs": {
     "02-cupula.html": {
-      "status": "sent",
+      "status": "in_progress",
       "queued": false,
-      "sentAt": "2026-11-20T18:31:46.426Z",
-      "startedAt": null,
+      "sentAt": "2026-11-20T19:02:04.016Z",
+      "startedAt": "2026-11-20T19:02:16.684Z",
       "implementedAt": null,
-      "feature": "odd/tasks/cenit-stage-1.md"
+      "feature": "odd/tasks/cenit-stage-1.md",
+      "note": "T6 started: Hoy (flat compass dome + time ribbon + planner) on :core Ephemeris (T5 done)."
     }
   }
 }
