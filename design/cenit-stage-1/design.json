@@ -1,0 +1,28 @@
+{
+  "title": "Cenit · etapa 1",
+  "brief": "Pantallas de la primera etapa de Cenit (planificador de sol y luna para fotografía, Android, sin conexión): Hoy con horas y planificador de fecha/hora, Cielo con la gráfica de elevación, Brújula y Lugares. Referencia principal: Sun Seeker (y Sun Locator). Estilo Scrolless/Sereno.",
+  "feature": "odd/tasks/cenit-stage-1.md",
+  "artboards": [
+    {
+      "file": "01-almanaque.html",
+      "title": "01 · Almanaque",
+      "tradeoff": "Todas las horas a la vista sin scroll y lo próximo en grande; familiar y denso, el «dónde» queda en Brújula",
+      "width": 1680,
+      "height": 1060
+    },
+    {
+      "file": "02-cupula.html",
+      "title": "02 · Cúpula (brújula plana)",
+      "tradeoff": "La más cercana a Sun Seeker (brújula plana con horas, noche, solsticios); responde «hacia dónde mirar» de un vistazo; la lista completa de horas está a un toque",
+      "width": 1680,
+      "height": 1060
+    },
+    {
+      "file": "03-linea-del-dia.html",
+      "title": "03 · Línea del día",
+      "tradeoff": "Planificar fecha y hora y comparar la semana es lo principal; muestra menos la geometría del cielo",
+      "width": 1680,
+      "height": 1060
+    }
+  ]
+}
