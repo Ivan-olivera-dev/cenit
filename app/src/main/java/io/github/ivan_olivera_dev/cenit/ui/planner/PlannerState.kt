@@ -13,16 +13,45 @@ import java.time.temporal.TemporalAdjusters
 import kotlin.math.roundToInt
 
 /**
- * Active named location for the planner (fixed default Madrid until T8 replaces it).
+ * Origin of a [PlannerPlace]; determines how its time zone is resolved.
+ */
+enum class PlaceSource {
+    /** Offline GeoNames city with its own IANA time zone. */
+    CITY,
+
+    /** Device GPS fix; uses the device time zone. */
+    GPS,
+
+    /** User-entered coordinates; uses the device time zone. */
+    MANUAL,
+
+    /** Built-in fallback when no saved place or permitted GPS fix exists. */
+    DEFAULT,
+}
+
+/**
+ * Active named location for the planner.
+ *
+ * GeoNames cities carry an IANA [zoneId]; GPS and manual coordinates leave [zoneId] `null`
+ * so [resolveZone] uses the device's current [ZoneId].
  */
 data class PlannerPlace(
     val name: String,
     val place: Place,
-)
+    val region: String = "",
+    val zoneId: String? = null,
+    val id: String? = null,
+    val source: PlaceSource = PlaceSource.DEFAULT,
+) {
+    fun resolveZone(deviceZone: ZoneId = ZoneId.systemDefault()): ZoneId =
+        zoneId?.let { runCatching { ZoneId.of(it) }.getOrNull() } ?: deviceZone
+}
 
 val DefaultMadridPlace = PlannerPlace(
     name = "Madrid",
     place = Place(latitude = 40.4165, longitude = -3.7026),
+    zoneId = "Europe/Madrid",
+    source = PlaceSource.DEFAULT,
 )
 
 /**
@@ -72,6 +101,29 @@ data class PlannerState(
         return copy(minuteOffset = snapped)
     }
 
+    /**
+     * Switches to [place], updating [zone] to the place's IANA time zone (for GeoNames cities) or
+     * [deviceZone] (for GPS and manual coordinates) while keeping the same physical [selectedInstant].
+     */
+    fun selectPlace(
+        place: PlannerPlace,
+        deviceZone: ZoneId = ZoneId.systemDefault(),
+    ): PlannerState {
+        val targetZone = place.resolveZone(deviceZone)
+        val zoned = selectedInstant.atZone(targetZone).truncatedTo(ChronoUnit.MINUTES)
+        val date = zoned.toLocalDate()
+        val start = date.atStartOfDay(targetZone).toInstant()
+        val end = date.plusDays(1).atStartOfDay(targetZone).toInstant()
+        val maxOffset = (Duration.between(start, end).toMinutes().toInt() - 1).coerceAtLeast(0)
+        val offset = Duration.between(start, zoned.toInstant()).toMinutes().toInt().coerceIn(0, maxOffset)
+        return PlannerState(
+            activePlace = place,
+            zone = targetZone,
+            selectedDate = date,
+            minuteOffset = offset,
+        )
+    }
+
     fun resetToNow(clock: Clock): PlannerState = now(clock, zone, activePlace)
 
     fun weekDays(): List<LocalDate> {
@@ -100,5 +152,19 @@ data class PlannerState(
                 minuteOffset = offset,
             )
         }
+
+        /**
+         * Creates a [PlannerState] at "now" for [activePlace], resolving its time zone from
+         * GeoNames (for cities) or [deviceZone] (for GPS and manual coordinates).
+         */
+        fun forPlaceNow(
+            activePlace: PlannerPlace,
+            clock: Clock = Clock.systemDefaultZone(),
+            deviceZone: ZoneId = ZoneId.systemDefault(),
+        ): PlannerState = now(
+            clock = clock,
+            zone = activePlace.resolveZone(deviceZone),
+            activePlace = activePlace,
+        )
     }
 }

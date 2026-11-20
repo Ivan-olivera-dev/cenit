@@ -1,0 +1,43 @@
+package io.github.ivan_olivera_dev.cenit.ui.places
+
+import io.github.ivan_olivera_dev.cenit.core.places.CityIndex
+import io.github.ivan_olivera_dev.cenit.core.places.CityTsvParser
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import java.io.File
+import java.time.ZoneId
+
+class BundledCitiesAssetTest {
+
+    @Test
+    fun `bundled GeoNames asset parses completely with valid IANA zones and expected search hits`() {
+        val asset = File("src/main/assets/geonames/cities.tsv")
+        assertTrue("Expected bundled asset at ${asset.absolutePath}", asset.isFile)
+        assertTrue("Bundled asset must be <= 3 MB", asset.length() <= 3_000_000L)
+
+        val entries = asset.bufferedReader(Charsets.UTF_8).use { CityTsvParser.parse(it) }
+        assertTrue("Expected at least 30,000 cities, got ${entries.size}", entries.size >= 30_000)
+
+        for (entry in entries) {
+            assertNotNull("Invalid ZoneId '${entry.timezoneId}' for ${entry.name}", entry.zoneIdOrNull())
+        }
+
+        val index = CityIndex.fromEntries(entries)
+
+        val madrid = index.search("MADRID")
+        assertEquals(index.search("madrid"), madrid)
+        assertTrue(madrid.isNotEmpty())
+        assertEquals("Madrid", madrid.first().city.name)
+        assertEquals("ES", madrid.first().city.countryCode)
+        assertEquals(ZoneId.of("Europe/Madrid"), madrid.first().city.zoneIdOrNull())
+
+        val malaga = index.search("mala")
+        assertTrue(malaga.any { it.city.name == "Málaga" && it.city.countryCode == "ES" })
+
+        val valencias = index.search("valencia").filter { it.city.name == "Valencia" }
+        assertTrue("Expected multiple disambiguated Valencia entries", valencias.size >= 2)
+        assertEquals(valencias.size, valencias.map { it.regionLabel }.toSet().size)
+    }
+}

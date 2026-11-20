@@ -1,7 +1,11 @@
 package io.github.ivan_olivera_dev.cenit.ui.today
 
+import io.github.ivan_olivera_dev.cenit.core.Place
 import io.github.ivan_olivera_dev.cenit.ui.planner.DefaultMadridPlace
+import io.github.ivan_olivera_dev.cenit.ui.planner.PlaceSource
+import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerPlace
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
+import io.github.ivan_olivera_dev.cenit.ui.planner.resolveInitialPlace
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -106,5 +110,73 @@ class PlannerStateTest {
         assertEquals(LocalDate.of(2026, 11, 16), week.first())
         assertEquals(LocalDate.of(2026, 11, 22), week.last())
         assertTrue(state.selectedDate in week)
+    }
+
+    @Test
+    fun `selectPlace uses GeoNames timezone for cities and preserves physical instant`() {
+        val clock = fixedClock("2026-11-20T16:20:00", madridZone)
+        val state = PlannerState.now(clock, madridZone)
+        val tokyo = PlannerPlace(
+            name = "Tokyo",
+            place = Place(35.6895, 139.6917),
+            region = "Japan",
+            zoneId = "Asia/Tokyo",
+            source = PlaceSource.CITY,
+        )
+
+        val switched = state.selectPlace(tokyo, deviceZone = madridZone)
+        assertEquals(ZoneId.of("Asia/Tokyo"), switched.zone)
+        assertEquals(tokyo, switched.activePlace)
+        assertEquals(state.selectedInstant, switched.selectedInstant)
+        // 16:20 CET (UTC+1) = 00:20 JST (UTC+9) next day
+        assertEquals(LocalDate.of(2026, 11, 21), switched.selectedDate)
+        assertEquals(LocalTime.of(0, 20), switched.selectedTime)
+    }
+
+    @Test
+    fun `selectPlace uses device timezone for GPS and manual coordinates`() {
+        val tokyoZone = ZoneId.of("Asia/Tokyo")
+        val clock = fixedClock("2026-11-20T16:20:00", madridZone)
+        val initial = PlannerState.now(clock, tokyoZone)
+
+        val gps = PlannerPlace(
+            name = "My location",
+            place = Place(39.2817, -0.2763),
+            zoneId = null,
+            source = PlaceSource.GPS,
+        )
+        val manual = PlannerPlace(
+            name = "Mirador",
+            place = Place(40.0, -0.5),
+            zoneId = null,
+            source = PlaceSource.MANUAL,
+        )
+
+        assertEquals(madridZone, initial.selectPlace(gps, deviceZone = madridZone).zone)
+        assertEquals(madridZone, initial.selectPlace(manual, deviceZone = madridZone).zone)
+    }
+
+    @Test
+    fun `resolveInitialPlace prefers saved active place, then permitted device location, then Madrid`() {
+        val saved = PlannerPlace("Valencia", Place(39.4739, -0.3797), zoneId = "Europe/Madrid", source = PlaceSource.CITY)
+        val device = PlannerPlace("My location", Place(36.7202, -4.4203), zoneId = null, source = PlaceSource.GPS)
+
+        assertEquals(saved, resolveInitialPlace(lastActive = saved, permittedDevicePlace = device))
+        assertEquals(device, resolveInitialPlace(lastActive = null, permittedDevicePlace = device))
+        assertEquals(DefaultMadridPlace, resolveInitialPlace(lastActive = null, permittedDevicePlace = null))
+    }
+
+    @Test
+    fun `forPlaceNow resolves active place timezone automatically`() {
+        val clock = fixedClock("2026-06-21T12:00:00", ZoneId.of("UTC"))
+        val nyc = PlannerPlace(
+            name = "New York",
+            place = Place(40.7128, -74.0060),
+            zoneId = "America/New_York",
+            source = PlaceSource.CITY,
+        )
+        val state = PlannerState.forPlaceNow(nyc, clock = clock, deviceZone = madridZone)
+        assertEquals(ZoneId.of("America/New_York"), state.zone)
+        assertEquals(LocalTime.of(8, 0), state.selectedTime)
     }
 }

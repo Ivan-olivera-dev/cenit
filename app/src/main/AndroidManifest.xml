@@ -8,6 +8,8 @@
       is computed on the phone. Backups are disabled so saved places never reach a
       cloud account. scripts/check-manifest.sh enforces this on the built APK.
     -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
         android:localeConfig="@xml/locales_config"

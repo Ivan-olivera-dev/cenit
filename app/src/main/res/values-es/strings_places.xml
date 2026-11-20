@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Places screen -->
+    <string name="places_title">Lugares</string>
+    <string name="places_search_placeholder">Buscar ciudad</string>
+    <string name="places_search_cd">Buscar ciudad</string>
+    <string name="places_search_clear_cd">Limpiar búsqueda</string>
+    <string name="places_loading_cities">Cargando ciudades…</string>
+    <string name="places_results_one">1 resultado</string>
+    <string name="places_results_many">%1$d resultados</string>
+    <string name="places_results_none">Sin resultados</string>
+    <string name="places_search_empty">No hay ninguna ciudad con «%1$s». Prueba con otro nombre o introduce las coordenadas.</string>
+
+    <!-- GPS -->
+    <string name="places_my_location">Mi ubicación</string>
+    <string name="places_gps_subtitle">GPS del móvil · sin conexión</string>
+    <string name="places_gps_locating">Obteniendo ubicación…</string>
+    <string name="places_gps_last_known">Última ubicación conocida del móvil</string>
+    <string name="places_gps_rationale_title">Permiso de ubicación</string>
+    <string name="places_gps_rationale_body">Cenit usa el GPS del móvil para calcular el sol y la luna en tu posición. Funciona sin conexión y tu ubicación no sale del dispositivo.</string>
+    <string name="places_gps_rationale_allow">Permitir ubicación</string>
+    <string name="places_gps_rationale_later">Ahora no</string>
+    <string name="places_gps_denied_notice">Permiso de ubicación denegado. Puedes buscar una ciudad sin conexión o introducir coordenadas manuales.</string>
+    <string name="places_gps_disabled_notice">La ubicación del móvil está desactivada. Actívala en ajustes o usa la búsqueda de ciudades o las coordenadas manuales.</string>
+    <string name="places_gps_unavailable_notice">No se ha podido obtener la ubicación por GPS. Prueba de nuevo al aire libre o introduce las coordenadas.</string>
+
+    <!-- Active & saved places -->
+    <string name="places_active_eyebrow">Lugar activo</string>
+    <string name="places_active_cd">Lugar activo</string>
+    <string name="places_saved_eyebrow">Guardados</string>
+    <string name="places_saved_empty">Aún no has guardado ningún lugar. Busca una ciudad o añade coordenadas para guardarlo aquí.</string>
+    <string name="places_save_action">Guardar lugar</string>
+    <string name="places_saved_confirmation">Lugar guardado</string>
+    <string name="places_edit_cd">Editar %1$s</string>
+
+    <!-- Edit & delete saved place -->
+    <string name="places_edit_title">Editar lugar</string>
+    <string name="places_name_label">Nombre</string>
+    <string name="places_name_error_empty">Introduce un nombre</string>
+    <string name="places_save_changes">Guardar cambios</string>
+    <string name="places_cancel">Cancelar</string>
+    <string name="places_delete_action">Borrar lugar</string>
+    <string name="places_delete_confirm_title">Borrar lugar</string>
+    <string name="places_delete_confirm_body">¿Quieres borrar «%1$s» de tus lugares guardados?</string>
+    <string name="places_delete_confirm_button">Borrar</string>
+
+    <!-- Manual coordinates -->
+    <string name="places_manual_action">Coordenadas manuales</string>
+    <string name="places_manual_title">Coordenadas manuales</string>
+    <string name="places_manual_name_label">Nombre (opcional)</string>
+    <string name="places_manual_name_placeholder">Ej. Mirador del Teide</string>
+    <string name="places_manual_lat_label">Latitud (−90 a 90)</string>
+    <string name="places_manual_lat_placeholder">40,4165</string>
+    <string name="places_manual_lon_label">Longitud (−180 a 180)</string>
+    <string name="places_manual_lon_placeholder">−3,7026</string>
+    <string name="places_manual_use_action">Usar esta ubicación</string>
+    <string name="places_manual_default_name">Coordenadas manuales</string>
+    <string name="places_error_lat_empty">Introduce una latitud</string>
+    <string name="places_error_lat_format">Formato de latitud no válido</string>
+    <string name="places_error_lat_range">La latitud debe estar entre −90 y 90</string>
+    <string name="places_error_lon_empty">Introduce una longitud</string>
+    <string name="places_error_lon_format">Formato de longitud no válido</string>
+    <string name="places_error_lon_range">La longitud debe estar entre −180 y 180</string>
+
+    <!-- Attribution -->
+    <string name="places_attribution">Búsqueda sin conexión. Datos de ciudades: GeoNames (geonames.org), CC BY 4.0.</string>
+</resources>

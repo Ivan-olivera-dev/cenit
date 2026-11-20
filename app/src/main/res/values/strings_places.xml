@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Places screen -->
+    <string name="places_title">Places</string>
+    <string name="places_search_placeholder">Search city</string>
+    <string name="places_search_cd">Search city</string>
+    <string name="places_search_clear_cd">Clear search</string>
+    <string name="places_loading_cities">Loading cities…</string>
+    <string name="places_results_one">1 result</string>
+    <string name="places_results_many">%1$d results</string>
+    <string name="places_results_none">No results</string>
+    <string name="places_search_empty">No city matches “%1$s”. Try another name or enter coordinates.</string>
+
+    <!-- GPS -->
+    <string name="places_my_location">My location</string>
+    <string name="places_gps_subtitle">Phone GPS · offline</string>
+    <string name="places_gps_locating">Getting location…</string>
+    <string name="places_gps_last_known">Last known phone location</string>
+    <string name="places_gps_rationale_title">Location permission</string>
+    <string name="places_gps_rationale_body">Cenit uses your phone’s GPS to calculate sun and moon times for your position. It works offline and your location never leaves the device.</string>
+    <string name="places_gps_rationale_allow">Allow location</string>
+    <string name="places_gps_rationale_later">Not now</string>
+    <string name="places_gps_denied_notice">Location permission denied. You can search for a city offline or enter manual coordinates.</string>
+    <string name="places_gps_disabled_notice">Phone location is turned off. Enable it in settings, or use city search or manual coordinates.</string>
+    <string name="places_gps_unavailable_notice">Could not get a GPS fix. Try again outdoors or enter coordinates manually.</string>
+
+    <!-- Active & saved places -->
+    <string name="places_active_eyebrow">Active place</string>
+    <string name="places_active_cd">Active place</string>
+    <string name="places_saved_eyebrow">Saved</string>
+    <string name="places_saved_empty">No saved places yet. Search for a city or enter coordinates to save one here.</string>
+    <string name="places_save_action">Save place</string>
+    <string name="places_saved_confirmation">Place saved</string>
+    <string name="places_edit_cd">Edit %1$s</string>
+
+    <!-- Edit & delete saved place -->
+    <string name="places_edit_title">Edit place</string>
+    <string name="places_name_label">Name</string>
+    <string name="places_name_error_empty">Enter a name</string>
+    <string name="places_save_changes">Save changes</string>
+    <string name="places_cancel">Cancel</string>
+    <string name="places_delete_action">Delete place</string>
+    <string name="places_delete_confirm_title">Delete place</string>
+    <string name="places_delete_confirm_body">Delete “%1$s” from your saved places?</string>
+    <string name="places_delete_confirm_button">Delete</string>
+
+    <!-- Manual coordinates -->
+    <string name="places_manual_action">Manual coordinates</string>
+    <string name="places_manual_title">Manual coordinates</string>
+    <string name="places_manual_name_label">Name (optional)</string>
+    <string name="places_manual_name_placeholder">e.g. Teide Overlook</string>
+    <string name="places_manual_lat_label">Latitude (−90 to 90)</string>
+    <string name="places_manual_lat_placeholder">40.4165</string>
+    <string name="places_manual_lon_label">Longitude (−180 to 180)</string>
+    <string name="places_manual_lon_placeholder">-3.7026</string>
+    <string name="places_manual_use_action">Use this location</string>
+    <string name="places_manual_default_name">Manual coordinates</string>
+    <string name="places_error_lat_empty">Enter a latitude</string>
+    <string name="places_error_lat_format">Invalid latitude format</string>
+    <string name="places_error_lat_range">Latitude must be between −90 and 90</string>
+    <string name="places_error_lon_empty">Enter a longitude</string>
+    <string name="places_error_lon_format">Invalid longitude format</string>
+    <string name="places_error_lon_range">Longitude must be between −180 and 180</string>
+
+    <!-- Attribution -->
+    <string name="places_attribution">Offline search. City data: GeoNames (geonames.org), CC BY 4.0.</string>
+</resources>
