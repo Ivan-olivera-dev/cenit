@@ -16,5 +16,6 @@ kotlin {
 }
 
 dependencies {
+    implementation(project(":astronomy"))
     testImplementation(libs.junit)
 }
