@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Date stepper -->
+    <string name="sky_today_chip">Hoy</string>
+    <string name="sky_cd_date_stepper">Fecha</string>
+    <string name="sky_cd_date_chip">Fecha elegida: %1$s. Toca para volver a ahora</string>
+
+    <!-- Elevation chart bands & accessibility -->
+    <string name="sky_band_day">Día</string>
+    <string name="sky_band_civil">Civil</string>
+    <string name="sky_band_nautical">Náutico</string>
+    <string name="sky_band_astro">Astron.</string>
+    <string name="sky_band_night">Noche</string>
+    <string name="sky_cd_elevation_chart">Elevación del sol (línea continua) y de la luna (discontinua) el %1$s. Máxima del sol %2$s° a las %3$s. Hora elegida %4$s.</string>
+
+    <!-- Values readout -->
+    <string name="sky_readout_sun">Sol</string>
+    <string name="sky_readout_moon">Luna</string>
+    <string name="sky_readout_az_wind">%1$s° %2$s</string>
+    <string name="sky_readout_elev">elev. %1$s°</string>
+    <string name="sky_readout_below">bajo el horizonte</string>
+    <string name="sky_readout_moon_above">elev. %1$s° · %2$d %%</string>
+    <string name="sky_readout_moon_below">bajo el horizonte · %1$d %%</string>
+    <string name="sky_selected_summary">%1$s · %2$s</string>
+
+    <!-- Segmented filter -->
+    <string name="sky_cd_filter">Filtro de horas</string>
+    <string name="sky_filter_all">Todo</string>
+    <string name="sky_filter_sun">Sol</string>
+    <string name="sky_filter_moon">Luna</string>
+
+    <!-- Section headers & list semantics -->
+    <string name="sky_section_sun">Sol</string>
+    <string name="sky_section_moon">Luna</string>
+    <string name="sky_section_quarters">Próximos cuartos lunares</string>
+    <string name="sky_cd_times_list">Horas del %1$s</string>
+    <string name="sky_daylight_hours_min">%1$d h %2$02d min de luz</string>
+    <string name="sky_daylight_min_only">%1$d min de luz</string>
+
+    <!-- Sun events -->
+    <string name="sky_event_civil_dawn">Empieza el crepúsculo civil</string>
+    <string name="sky_event_civil_dusk">Termina el crepúsculo civil</string>
+    <string name="sky_event_astro_dusk">Termina el crepúsculo astronómico</string>
+    <string name="sky_selected_moment">Momento elegido</string>
+    <string name="sky_time_range">%1$s–%2$s</string>
+
+    <!-- Polar day / night notices -->
+    <string name="sky_polar_midnight_sun">Sol de medianoche: el sol no se pone hoy.</string>
+    <string name="sky_polar_night">Noche polar: el sol no sale hoy.</string>
+
+    <!-- Moon details & quarters -->
+    <string name="sky_moon_illumination">%1$d %% iluminada</string>
+    <string name="sky_moon_no_rise">No sale hoy</string>
+    <string name="sky_moon_no_set">No se pone hoy</string>
+    <string name="sky_moon_dash">—</string>
+    <string name="sky_quarter_date_time">%1$s · %2$s</string>
+</resources>

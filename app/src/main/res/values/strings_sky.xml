@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Date stepper -->
+    <string name="sky_today_chip">Today</string>
+    <string name="sky_cd_date_stepper">Date</string>
+    <string name="sky_cd_date_chip">Selected date: %1$s. Tap to return to now</string>
+
+    <!-- Elevation chart bands & accessibility -->
+    <string name="sky_band_day">Day</string>
+    <string name="sky_band_civil">Civil</string>
+    <string name="sky_band_nautical">Nautical</string>
+    <string name="sky_band_astro">Astro.</string>
+    <string name="sky_band_night">Night</string>
+    <string name="sky_cd_elevation_chart">Sun elevation (solid line) and moon elevation (dashed line) on %1$s. Sun peak %2$s° at %3$s. Selected time %4$s.</string>
+
+    <!-- Values readout -->
+    <string name="sky_readout_sun">Sun</string>
+    <string name="sky_readout_moon">Moon</string>
+    <string name="sky_readout_az_wind">%1$s° %2$s</string>
+    <string name="sky_readout_elev">elev. %1$s°</string>
+    <string name="sky_readout_below">below horizon</string>
+    <string name="sky_readout_moon_above">elev. %1$s° · %2$d %%</string>
+    <string name="sky_readout_moon_below">below horizon · %1$d %%</string>
+    <string name="sky_selected_summary">%1$s · %2$s</string>
+
+    <!-- Segmented filter -->
+    <string name="sky_cd_filter">Times filter</string>
+    <string name="sky_filter_all">All</string>
+    <string name="sky_filter_sun">Sun</string>
+    <string name="sky_filter_moon">Moon</string>
+
+    <!-- Section headers & list semantics -->
+    <string name="sky_section_sun">Sun</string>
+    <string name="sky_section_moon">Moon</string>
+    <string name="sky_section_quarters">Next lunar quarters</string>
+    <string name="sky_cd_times_list">Times for %1$s</string>
+    <string name="sky_daylight_hours_min">%1$d h %2$02d min of daylight</string>
+    <string name="sky_daylight_min_only">%1$d min of daylight</string>
+
+    <!-- Sun events -->
+    <string name="sky_event_civil_dawn">Civil twilight begins</string>
+    <string name="sky_event_civil_dusk">Civil twilight ends</string>
+    <string name="sky_event_astro_dusk">Astronomical twilight ends</string>
+    <string name="sky_selected_moment">Selected time</string>
+    <string name="sky_time_range">%1$s–%2$s</string>
+
+    <!-- Polar day / night notices -->
+    <string name="sky_polar_midnight_sun">Midnight sun: the sun does not set today.</string>
+    <string name="sky_polar_night">Polar night: the sun does not rise today.</string>
+
+    <!-- Moon details & quarters -->
+    <string name="sky_moon_illumination">%1$d %% illuminated</string>
+    <string name="sky_moon_no_rise">Does not rise today</string>
+    <string name="sky_moon_no_set">Does not set today</string>
+    <string name="sky_moon_dash">—</string>
+    <string name="sky_quarter_date_time">%1$s · %2$s</string>
+</resources>
