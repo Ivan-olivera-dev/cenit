@@ -38,7 +38,8 @@ Each release includes a `.sha256` checksum and a GitHub SLSA build provenance at
 - Shadow length ratio relative to object height and the compass direction the shadow falls.
 - Live compass with magnetometer heading corrected to true north via magnetic declination, plus rise and set azimuth rays.
 - Offline location tools: search 69,440 bundled GeoNames places (population 5,000 or more), read GPS from Android's `LocationManager`, enter manual coordinates and manage saved places.
-- Local alerts scheduled 30 to 40 minutes before golden hour, blue hour, sunrise, sunset or twilight.
+- Camera view: the day's sun path with hourly dots, sunrise and sunset on the horizon, the moon path and phase, and optional solstice and equinox paths drawn over the live camera. A centre crosshair shows the azimuth and elevation you are aiming at and when the sun or moon will pass through it, and the time slider moves both along their paths. Open it from the compass.
+- Local alerts 30 minutes before golden hour, blue hour, sunrise, sunset or twilight. With Android's *Alarms & reminders* permission (optional, in Settings) they arrive exactly 30 minutes before, even when the phone is idle. Without it they arrive between 40 and 30 minutes before, and Android may hold them back while the phone is in deep sleep.
 - English and Spanish interface, light and dark themes, 24-hour or 12-hour clock, and optional decimal degrees.
 
 Cenit is inspired by Sun Seeker. It is an independent open-source app with no affiliation to ozPDA.

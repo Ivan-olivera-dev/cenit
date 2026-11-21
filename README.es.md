@@ -38,7 +38,8 @@ Cada versión incluye un archivo `.sha256` y una atestación SLSA de procedencia
 - Longitud relativa de la sombra respecto a la altura del objeto y rumbo hacia el que cae.
 - Brújula en tiempo real con el magnetómetro, corregida al norte geográfico mediante declinación magnética, con los rumbos de salida y puesta.
 - Ubicación sin red: búsqueda sin conexión entre 69.440 localidades de GeoNames (población igual o superior a 5.000 habitantes), GPS mediante `LocationManager`, coordenadas manuales y lugares guardados.
-- Avisos locales programados entre 30 y 40 minutos antes de la hora dorada, la hora azul, el amanecer, el atardecer o los crepúsculos.
+- Vista de cámara: el recorrido del sol con sus puntos por hora, el amanecer y el atardecer sobre el horizonte, la trayectoria y la fase de la luna y, si quieres, los solsticios y el equinoccio, dibujados sobre la imagen en directo. Una mira central indica el rumbo y la elevación a los que apuntas y cuándo pasarán por ahí el sol o la luna, y el deslizador de hora los mueve por su trayectoria. Se abre desde la brújula.
+- Avisos locales 30 minutos antes de la hora dorada, la hora azul, el amanecer, el atardecer o los crepúsculos. Con el permiso de Android *Alarmas y recordatorios* (opcional, en Ajustes) llegan justo 30 minutos antes, aunque el móvil esté en reposo. Sin él llegan entre 40 y 30 minutos antes, y Android puede retenerlos mientras el móvil está en reposo profundo.
 - Interfaz en español e inglés, tema claro y oscuro, reloj de 24 h o 12 h y grados con o sin decimales.
 
 Cenit se inspira en Sun Seeker. Es una aplicación independiente de código abierto, sin relación con ozPDA.
