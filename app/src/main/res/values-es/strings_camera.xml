@@ -63,4 +63,6 @@
     <string name="visor_cd_heading_tape">Cinta de rumbo: %1$s %2$s</string>
     <string name="visor_cd_date_chip">Fecha elegida: %1$s. Toca para elegir otra fecha</string>
     <string name="visor_cd_place_pill">Lugar activo: %1$s</string>
+    <string name="visor_now_live_state">Hora en directo</string>
+    <string name="visor_now_manual_state">Hora manual</string>
 </resources>

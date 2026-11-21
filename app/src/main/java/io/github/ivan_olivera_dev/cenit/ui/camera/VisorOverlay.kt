@@ -9,15 +9,26 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -31,10 +42,14 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -45,6 +60,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.ivan_olivera_dev.cenit.R
 import io.github.ivan_olivera_dev.cenit.core.Cenit
 import io.github.ivan_olivera_dev.cenit.core.Ephemeris
@@ -68,8 +86,11 @@ import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitDatePicker
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.withContext
 import java.time.Clock
+import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import kotlin.math.abs
@@ -137,6 +158,8 @@ fun VisorOverlay(
     val configuration = LocalConfiguration.current
     val view = LocalView.current
     val density = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val lifecycleOwner = LocalLifecycleOwner.current
     val locale = remember(configuration) {
         configuration.locales[0] ?: Locale.getDefault()
     }
@@ -145,7 +168,49 @@ fun VisorOverlay(
     var layers by rememberSaveable(stateSaver = VisorLayersSaver) {
         mutableStateOf(VisorLayers.DEFAULT)
     }
+    var timeMode by rememberSaveable { mutableStateOf(VisorTimeMode.LIVE) }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
+
+    // Sync PlannerState immediately on entering live mode, on every resume, and at minute boundaries.
+    val latestState by rememberUpdatedState(state)
+    val latestOnStateChange by rememberUpdatedState(onStateChange)
+    var resumeGeneration by remember { mutableIntStateOf(0) }
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                resumeGeneration++
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(timeMode, clock, resumeGeneration) {
+        if (!shouldLiveTick(timeMode)) return@LaunchedEffect
+        while (isActive) {
+            applyLiveTick(timeMode, latestState, clock)?.let { updated ->
+                latestOnStateChange(updated)
+            }
+            delay(nextLiveTickDelayMillis(Instant.now(clock)))
+        }
+    }
+
+    val isLiveTime = timeMode == VisorTimeMode.LIVE
+    val handleOpenDatePicker = {
+        timeMode = transitionVisorTimeMode(timeMode, VisorTimeEvent.PICK_DATE)
+        showDatePicker = true
+    }
+    val handleResetNow = {
+        timeMode = transitionVisorTimeMode(timeMode, VisorTimeEvent.TAP_NOW)
+        onStateChange(state.resetToNow(clock))
+    }
+    val handleFractionChange: (Float) -> Unit = { f ->
+        timeMode = transitionVisorTimeMode(timeMode, VisorTimeEvent.SCRUB_TIME)
+        onStateChange(state.selectFraction(f))
+    }
+    val handleStepMinutes: (Int) -> Unit = { d ->
+        timeMode = transitionVisorTimeMode(timeMode, VisorTimeEvent.STEP_TIME)
+        onStateChange(state.stepMinutes(d))
+    }
 
     val place = state.activePlace.place
     val zone = state.zone
@@ -359,24 +424,67 @@ fun VisorOverlay(
     val canvasResources = remember(density) { ArCanvasResources(density) }
     val overlayDesc = stringResource(R.string.visor_cd_overlay)
 
+    // Measured HUD bounds in BoxWithConstraints pixel coordinates for safe overlay clipping.
+    var measuredPortraitTopHudBottomPx by remember { mutableFloatStateOf(0f) }
+    var measuredPortraitBottomDockTopPx by remember { mutableFloatStateOf(0f) }
+    var measuredLandscapeTopHudBottomPx by remember { mutableFloatStateOf(0f) }
+    var measuredLandscapeRightDockLeftPx by remember { mutableFloatStateOf(0f) }
+
+    val statusBars = WindowInsets.statusBars
+    val navigationBars = WindowInsets.navigationBars
+    val displayCutout = WindowInsets.displayCutout
+    val insetsTopPx = maxOf(statusBars.getTop(density), displayCutout.getTop(density)).toDouble()
+    val insetsBottomPx = maxOf(navigationBars.getBottom(density), displayCutout.getBottom(density)).toDouble()
+    val insetsLeftPx = maxOf(
+        navigationBars.getLeft(density, layoutDirection),
+        displayCutout.getLeft(density, layoutDirection),
+    ).toDouble()
+    val insetsRightPx = maxOf(
+        navigationBars.getRight(density, layoutDirection),
+        displayCutout.getRight(density, layoutDirection),
+    ).toDouble()
+
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val isLandscape = maxWidth > maxHeight
+        val backButtonClearanceFromInsetsPx = with(density) { 52.dp.toPx().toDouble() }
+        val topClearancePx = with(density) { 4.dp.toPx().toDouble() }
+        val minTopHudBottomPx = insetsTopPx + backButtonClearanceFromInsetsPx
 
-        // Safe label viewport insets so Canvas labels & edge arrows stay clear of HUD bars.
-        val safeTopPx = with(density) {
-            val baseTop = if (isLandscape) 60.dp else 112.dp
-            val noticeExtra = if (!calibrated || pointingAtGround) 56.dp else 0.dp
-            (baseTop + noticeExtra).toPx()
-        }
-        val safeBottomPx = with(density) {
-            (if (isLandscape) 16.dp else 210.dp).toPx()
-        }
-        val safeRightPx = with(density) {
-            (if (isLandscape) 208.dp else 12.dp).toPx()
-        }
-        val safeLeftPx = with(density) { 12.dp.toPx() }
+        val safeRect = computeVisorSafeRect(
+            viewportWidthPx = constraints.maxWidth.toDouble(),
+            viewportHeightPx = constraints.maxHeight.toDouble(),
+            insetsLeftPx = insetsLeftPx,
+            insetsTopPx = insetsTopPx,
+            insetsRightPx = insetsRightPx,
+            insetsBottomPx = insetsBottomPx,
+            topHudBottomPx = if (isLandscape) {
+                measuredLandscapeTopHudBottomPx.takeIf { it > 0f }
+                    ?.let { maxOf(it.toDouble(), minTopHudBottomPx) }
+            } else {
+                measuredPortraitTopHudBottomPx.takeIf { it > 0f }
+                    ?.let { maxOf(it.toDouble(), minTopHudBottomPx) }
+            },
+            bottomDockTopPx = if (isLandscape) {
+                null
+            } else {
+                measuredPortraitBottomDockTopPx.takeIf { it > 0f }?.toDouble()
+            },
+            rightDockLeftPx = if (isLandscape) {
+                measuredLandscapeRightDockLeftPx.takeIf { it > 0f }?.toDouble()
+            } else {
+                null
+            },
+            fallbackTopHudHeightPx = with(density) {
+                val baseTop = if (isLandscape) 52.dp else 96.dp
+                val noticeExtra = if (!calibrated || pointingAtGround) 56.dp else 0.dp
+                (baseTop + noticeExtra).toPx().toDouble()
+            },
+            fallbackBottomDockHeightPx = if (isLandscape) 0.0 else with(density) { 210.dp.toPx().toDouble() },
+            fallbackRightDockWidthPx = if (isLandscape) with(density) { 196.dp.toPx().toDouble() } else 0.0,
+            topClearancePx = topClearancePx,
+        )
 
-        // 1. Live AR Canvas (horizon, paths, hour dots, markers, crosshair, crossing pill, edge arrows)
+        // 1. Live AR Canvas (clipped strictly to safeRect; crosshair remains at preview centre)
         VisorArCanvas(
             projector = projector,
             rotation = smoothedRotation,
@@ -392,48 +500,51 @@ fun VisorOverlay(
             crosshairAimText = crosshairAimText,
             crossingPillText = crossingPillText,
             strings = visorStrings,
-            safeLeftPx = safeLeftPx,
-            safeTopPx = safeTopPx,
-            safeRightPx = safeRightPx,
-            safeBottomPx = safeBottomPx,
+            safeRect = safeRect,
             resources = canvasResources,
             contentDescription = overlayDesc,
             modifier = Modifier.fillMaxSize(),
         )
 
         if (isLandscape) {
-            // 2L. Landscape top heading tape (clears top-left back button & right side dock)
-            VisorHeadingTape(
-                headingDeg = pointing.azimuthDeg,
-                winds = winds,
-                sunPosition = sunPosition,
-                moonPosition = moonPosition,
-                layers = layers,
-                locale = locale,
+            // 2L. Landscape top HUD stack (heading tape + optional notices, measured as one block)
+            Column(
                 modifier = Modifier
                     .align(Alignment.TopStart)
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coords ->
+                        measuredLandscapeTopHudBottomPx = coords.boundsInParent().bottom
+                    }
                     .statusBarsPadding()
-                    .padding(start = 64.dp, end = 208.dp, top = 8.dp),
-            )
+                    .padding(end = 208.dp, top = 8.dp),
+            ) {
+                VisorHeadingTape(
+                    headingDeg = pointing.azimuthDeg,
+                    winds = winds,
+                    sunPosition = sunPosition,
+                    moonPosition = moonPosition,
+                    layers = layers,
+                    locale = locale,
+                    modifier = Modifier.padding(start = 64.dp),
+                )
 
-            // 3L. Landscape notices below tape
-            if (!calibrated || pointingAtGround) {
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .statusBarsPadding()
-                        .padding(start = 12.dp, end = 208.dp, top = 54.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    if (!calibrated) VisorCalibrationNotice()
-                    if (pointingAtGround) {
-                        VisorGroundNotice(upDegrees = abs(pointing.elevationDeg).roundToInt().coerceAtLeast(1))
+                if (!calibrated || pointingAtGround) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 12.dp, top = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        if (!calibrated) VisorCalibrationNotice()
+                        if (pointingAtGround) {
+                            VisorGroundNotice(upDegrees = abs(pointing.elevationDeg).roundToInt().coerceAtLeast(1))
+                        }
                     }
                 }
             }
 
-            // 4L. Landscape right-hand side dock
+            // 3L. Landscape right-hand side dock
             VisorLandscapeDock(
                 placeName = state.activePlace.name,
                 formattedTime = formattedSelectedTime,
@@ -442,64 +553,73 @@ fun VisorOverlay(
                 phaseLabel = phaseLabel,
                 sunPosition = sunPosition,
                 selectedFraction = state.selectedFraction,
+                isLiveTime = isLiveTime,
                 layers = layers,
                 winds = winds,
                 clock = settings.clock,
                 withDecimals = settings.degreeDecimals,
                 locale = locale,
-                onOpenDatePicker = { showDatePicker = true },
-                onResetNow = { onStateChange(state.resetToNow(clock)) },
-                onFractionChange = { f -> onStateChange(state.selectFraction(f)) },
-                onStepMinutes = { d -> onStateChange(state.stepMinutes(d)) },
+                onOpenDatePicker = handleOpenDatePicker,
+                onResetNow = handleResetNow,
+                onFractionChange = handleFractionChange,
+                onStepMinutes = handleStepMinutes,
                 onToggleSun = { layers = layers.copy(sun = !layers.sun) },
                 onToggleMoon = { layers = layers.copy(moon = !layers.moon) },
                 onToggleSolstices = { layers = layers.copy(solstices = !layers.solstices) },
-                modifier = Modifier.align(Alignment.CenterEnd),
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .onGloballyPositioned { coords ->
+                        measuredLandscapeRightDockLeftPx = coords.boundsInParent().left
+                    },
             )
         } else {
-            // 2P. Portrait top HUD bar (beside CameraScreen's top-left 44 dp back button)
-            VisorTopBar(
-                placeName = state.activePlace.name,
-                moonPhase = moonPhase,
-                moonPhaseName = moonPhaseName,
+            // 2P. Portrait top HUD stack (top bar + heading tape + optional notices, measured together)
+            Column(
                 modifier = Modifier
                     .align(Alignment.TopStart)
+                    .fillMaxWidth()
+                    .onGloballyPositioned { coords ->
+                        measuredPortraitTopHudBottomPx = coords.boundsInParent().bottom
+                    }
                     .statusBarsPadding()
-                    .padding(start = 64.dp, end = 12.dp, top = 8.dp),
-            )
+                    .padding(top = 8.dp),
+            ) {
+                VisorTopBar(
+                    placeName = state.activePlace.name,
+                    moonPhase = moonPhase,
+                    moonPhaseName = moonPhaseName,
+                    modifier = Modifier.padding(start = 64.dp, end = 12.dp),
+                )
 
-            // 3P. Portrait heading tape right below the top bar
-            VisorHeadingTape(
-                headingDeg = pointing.azimuthDeg,
-                winds = winds,
-                sunPosition = sunPosition,
-                moonPosition = moonPosition,
-                layers = layers,
-                locale = locale,
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .statusBarsPadding()
-                    .padding(start = 12.dp, end = 12.dp, top = 58.dp),
-            )
+                Spacer(modifier = Modifier.height(6.dp))
 
-            // 4P. Calibration & ground-pointing notices below the heading tape
-            if (!calibrated || pointingAtGround) {
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .statusBarsPadding()
-                        .padding(start = 12.dp, end = 12.dp, top = 104.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    if (!calibrated) VisorCalibrationNotice()
-                    if (pointingAtGround) {
-                        VisorGroundNotice(upDegrees = abs(pointing.elevationDeg).roundToInt().coerceAtLeast(1))
+                VisorHeadingTape(
+                    headingDeg = pointing.azimuthDeg,
+                    winds = winds,
+                    sunPosition = sunPosition,
+                    moonPosition = moonPosition,
+                    layers = layers,
+                    locale = locale,
+                    modifier = Modifier.padding(horizontal = 12.dp),
+                )
+
+                if (!calibrated || pointingAtGround) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(start = 12.dp, end = 12.dp, top = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                    ) {
+                        if (!calibrated) VisorCalibrationNotice()
+                        if (pointingAtGround) {
+                            VisorGroundNotice(upDegrees = abs(pointing.elevationDeg).roundToInt().coerceAtLeast(1))
+                        }
                     }
                 }
             }
 
-            // 5P. Portrait bottom dock
+            // 3P. Portrait bottom dock
             VisorBottomDock(
                 formattedTime = formattedSelectedTime,
                 dateChipLabel = dateChipLabel,
@@ -507,19 +627,24 @@ fun VisorOverlay(
                 phaseLabel = phaseLabel,
                 sunPosition = sunPosition,
                 selectedFraction = state.selectedFraction,
+                isLiveTime = isLiveTime,
                 layers = layers,
                 winds = winds,
                 clock = settings.clock,
                 withDecimals = settings.degreeDecimals,
                 locale = locale,
-                onOpenDatePicker = { showDatePicker = true },
-                onResetNow = { onStateChange(state.resetToNow(clock)) },
-                onFractionChange = { f -> onStateChange(state.selectFraction(f)) },
-                onStepMinutes = { d -> onStateChange(state.stepMinutes(d)) },
+                onOpenDatePicker = handleOpenDatePicker,
+                onResetNow = handleResetNow,
+                onFractionChange = handleFractionChange,
+                onStepMinutes = handleStepMinutes,
                 onToggleSun = { layers = layers.copy(sun = !layers.sun) },
                 onToggleMoon = { layers = layers.copy(moon = !layers.moon) },
                 onToggleSolstices = { layers = layers.copy(solstices = !layers.solstices) },
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .onGloballyPositioned { coords ->
+                        measuredPortraitBottomDockTopPx = coords.boundsInParent().top
+                    },
             )
         }
     }
@@ -530,6 +655,7 @@ fun VisorOverlay(
             onDismiss = { showDatePicker = false },
             onConfirm = { pickedDate ->
                 showDatePicker = false
+                timeMode = transitionVisorTimeMode(timeMode, VisorTimeEvent.PICK_DATE)
                 onStateChange(state.selectDate(pickedDate))
             },
         )
@@ -550,6 +676,7 @@ private class ArCanvasResources(density: Density) {
     val dp1: Float = with(density) { 1.dp.toPx() }
     val dp2: Float = with(density) { 2.dp.toPx() }
     val dp4: Float = with(density) { 4.dp.toPx() }
+    val dp6: Float = with(density) { 6.dp.toPx() }
     val dp8: Float = with(density) { 8.dp.toPx() }
     val dp12: Float = with(density) { 12.dp.toPx() }
     val dp14: Float = with(density) { 14.dp.toPx() }
@@ -654,10 +781,7 @@ private fun VisorArCanvas(
     crosshairAimText: String,
     crossingPillText: String?,
     strings: VisorStrings,
-    safeLeftPx: Float,
-    safeTopPx: Float,
-    safeRightPx: Float,
-    safeBottomPx: Float,
+    safeRect: ViewportRect,
     resources: ArCanvasResources,
     contentDescription: String,
     modifier: Modifier = Modifier,
@@ -672,22 +796,26 @@ private fun VisorArCanvas(
         val h = size.height
         if (w <= 0f || h <= 0f || projector == null) return@Canvas
 
+        // Clamp the safe drawing rect to the Canvas size so clipRect is always valid.
+        val clipLeft = safeRect.left.coerceIn(0.0, w.toDouble())
+        val clipTop = safeRect.top.coerceIn(0.0, h.toDouble())
+        val clipRight = safeRect.right.coerceIn(clipLeft, w.toDouble())
+        val clipBottom = safeRect.bottom.coerceIn(clipTop, h.toDouble())
+        val activeSafeRect = ViewportRect(clipLeft, clipTop, clipRight, clipBottom)
+        if (activeSafeRect.width <= 0.0 || activeSafeRect.height <= 0.0) return@Canvas
+
         val cx0 = w / 2f
         val cy0 = h / 2f
-        val safeRightBound = (w - safeRightPx).coerceAtLeast(safeLeftPx + 1f)
-        val safeBottomBound = (h - safeBottomPx).coerceAtLeast(safeTopPx + 1f)
         val pathAlpha = if (calibrated) 1f else 0.45f
         val labelRollDeg = if (abs(pointing.rollDeg) > 1.5) (-pointing.rollDeg).toFloat() else 0f
 
-        val placer = resources.placer
-        placer.reset(
-            ViewportRect(
-                left = safeLeftPx.toDouble(),
-                top = safeTopPx.toDouble(),
-                right = safeRightBound.toDouble(),
-                bottom = safeBottomBound.toDouble(),
-            ),
+        val labelBounds = insetVisorSafeRect(
+            safeRect = activeSafeRect,
+            horizontalInsetPx = resources.dp12.toDouble(),
+            verticalInsetPx = resources.dp6.toDouble(),
         )
+        val placer = resources.placer
+        placer.reset(labelBounds)
 
         // Reserve crosshair + aim pill + crossing pill first (highest visual priority)
         val crossR = resources.dp18
@@ -710,7 +838,7 @@ private fun VisorArCanvas(
         val crossingPillCy = cy0 + crossOuter + resources.pillHeightPx * 0.78f
         val crossingPillW = if (crossingPillText != null) {
             (resources.pillTextPaint.measureText(crossingPillText) + resources.dp18)
-                .coerceAtMost((safeRightBound - safeLeftPx - resources.dp8).coerceAtLeast(80f))
+                .coerceAtMost((labelBounds.width.toFloat() - resources.dp8).coerceAtLeast(80f))
         } else {
             0f
         }
@@ -725,9 +853,7 @@ private fun VisorArCanvas(
 
         // Reserve current sun & moon marker footprints before placing path labels
         val sunProjected = if (layers.sun) projector.project(rotation, sunPosition) else null
-        val sunInSafeView = sunProjected != null &&
-            sunProjected.x >= safeLeftPx && sunProjected.x <= safeRightBound &&
-            sunProjected.y >= safeTopPx && sunProjected.y <= safeBottomBound
+        val sunInSafeView = sunProjected != null && isInsideSafeRect(sunProjected.x, sunProjected.y, activeSafeRect)
         if (sunInSafeView) {
             placer.reserve(
                 sunProjected.x - resources.dp14,
@@ -738,9 +864,7 @@ private fun VisorArCanvas(
         }
 
         val moonProjected = if (layers.moon) projector.project(rotation, moonPosition) else null
-        val moonInSafeView = moonProjected != null &&
-            moonProjected.x >= safeLeftPx && moonProjected.x <= safeRightBound &&
-            moonProjected.y >= safeTopPx && moonProjected.y <= safeBottomBound
+        val moonInSafeView = moonProjected != null && isInsideSafeRect(moonProjected.x, moonProjected.y, activeSafeRect)
         if (moonInSafeView && moonPosition.elevation > Cenit.RISE_SET_ALTITUDE_DEG) {
             placer.reserve(
                 moonProjected.x - resources.dp14,
@@ -750,124 +874,136 @@ private fun VisorArCanvas(
             )
         }
 
-        // 1. Horizon line (0°) + 15° azimuth ticks + 45° cardinal labels
-        drawHorizonLayer(
-            projector = projector,
-            rotation = rotation,
-            pointingAtGround = pointingAtGround,
-            labelRollDeg = labelRollDeg,
-            strings = strings,
-            resources = resources,
-            w = w,
-            h = h,
-        )
-
-        // 2. Solstice & equinox reference paths (thin, dashed/dotted, labelled jun / eq / dic)
-        if (layers.solstices && paths != null) {
-            drawSolsticeLayer(
+        // Clip all overlay drawing to the safe rect so paths, labels, markers and edge arrows
+        // never draw over the status bar, top HUD/heading tape, bottom dock, or landscape side dock.
+        clipRect(
+            left = activeSafeRect.left.toFloat(),
+            top = activeSafeRect.top.toFloat(),
+            right = activeSafeRect.right.toFloat(),
+            bottom = activeSafeRect.bottom.toFloat(),
+        ) {
+            // 1. Horizon line (0°) + 15° azimuth ticks + 45° cardinal labels
+            drawHorizonLayer(
                 projector = projector,
                 rotation = rotation,
-                paths = paths,
-                pathAlpha = pathAlpha,
                 pointingAtGround = pointingAtGround,
                 labelRollDeg = labelRollDeg,
                 strings = strings,
+                safeRect = activeSafeRect,
                 resources = resources,
                 w = w,
                 h = h,
             )
-        }
 
-        // 3. Moon path (dashed) + 2h dots + moon marker with phase glyph
-        if (layers.moon && paths != null) {
-            drawMoonLayer(
-                projector = projector,
-                rotation = rotation,
-                paths = paths,
-                moonPosition = moonPosition,
-                moonProjected = moonProjected,
-                moonInSafeView = moonInSafeView,
-                moonPhase = moonPhase,
-                pathAlpha = pathAlpha,
-                pointingAtGround = pointingAtGround,
-                labelRollDeg = labelRollDeg,
-                strings = strings,
-                resources = resources,
-                w = w,
-                h = h,
-            )
-        }
-
-        // 4. Sun path (solid above horizon, dotted below) + hour dots & labels + rise/set + sun marker
-        if (layers.sun && paths != null) {
-            drawSunLayer(
-                projector = projector,
-                rotation = rotation,
-                paths = paths,
-                sunPosition = sunPosition,
-                sunProjected = sunProjected,
-                sunInSafeView = sunInSafeView,
-                pathAlpha = pathAlpha,
-                pointingAtGround = pointingAtGround,
-                labelRollDeg = labelRollDeg,
-                strings = strings,
-                resources = resources,
-                w = w,
-                h = h,
-            )
-        }
-
-        // 5. Centre crosshair + aim readout pill + crossing pill
-        val hitColor = when (crossing) {
-            is VisorCrossing.Sun, is VisorCrossing.SunBelowHorizon -> VisorHudSun
-            is VisorCrossing.Moon -> VisorHudMoon
-            else -> VisorHudFg
-        }
-        drawCrosshairAndPills(
-            cx = cx0,
-            cy = cy0,
-            crossR = crossR,
-            crossOuter = crossOuter,
-            hitColor = hitColor,
-            aimText = crosshairAimText,
-            aimPillW = aimPillW,
-            aimPillCy = aimPillCy,
-            crossingText = crossingPillText,
-            crossingPillW = crossingPillW,
-            crossingPillCy = crossingPillCy,
-            resources = resources,
-        )
-
-        // 6. Off-screen edge arrows with body glyph and azimuth (suppressed when pointing at ground)
-        if (!pointingAtGround) {
-            if (layers.sun && !sunInSafeView) {
-                val sunArrowLabel = if (sunPosition.elevation <= Cenit.RISE_SET_ALTITUDE_DEG) {
-                    strings.sunEdgeBelow
-                } else {
-                    strings.sunEdgeAbove
-                }
-                drawEdgeArrowPill(
+            // 2. Solstice & equinox reference paths (thin, dashed/dotted, labelled jun / eq / dic)
+            if (layers.solstices && paths != null) {
+                drawSolsticeLayer(
                     projector = projector,
                     rotation = rotation,
-                    position = sunPosition,
-                    label = sunArrowLabel,
-                    accent = VisorHudSun,
-                    isSun = true,
-                    moonPhase = moonPhase,
+                    paths = paths,
+                    pathAlpha = pathAlpha,
+                    pointingAtGround = pointingAtGround,
+                    labelRollDeg = labelRollDeg,
+                    strings = strings,
                     resources = resources,
+                    w = w,
+                    h = h,
                 )
             }
-            if (layers.moon && !moonInSafeView && moonPosition.elevation > Cenit.RISE_SET_ALTITUDE_DEG) {
-                drawEdgeArrowPill(
+
+            // 3. Moon path (dashed) + 2h dots + moon marker with phase glyph
+            if (layers.moon && paths != null) {
+                drawMoonLayer(
                     projector = projector,
                     rotation = rotation,
-                    position = moonPosition,
-                    label = strings.moonEdgeAbove,
-                    accent = VisorHudMoon,
-                    isSun = false,
+                    paths = paths,
+                    moonPosition = moonPosition,
+                    moonProjected = moonProjected,
+                    moonInSafeView = moonInSafeView,
                     moonPhase = moonPhase,
+                    pathAlpha = pathAlpha,
+                    pointingAtGround = pointingAtGround,
+                    labelRollDeg = labelRollDeg,
+                    strings = strings,
                     resources = resources,
+                    w = w,
+                    h = h,
                 )
+            }
+
+            // 4. Sun path (solid above horizon, dotted below) + hour dots & labels + rise/set + sun marker
+            if (layers.sun && paths != null) {
+                drawSunLayer(
+                    projector = projector,
+                    rotation = rotation,
+                    paths = paths,
+                    sunPosition = sunPosition,
+                    sunProjected = sunProjected,
+                    sunInSafeView = sunInSafeView,
+                    pathAlpha = pathAlpha,
+                    pointingAtGround = pointingAtGround,
+                    labelRollDeg = labelRollDeg,
+                    strings = strings,
+                    resources = resources,
+                    w = w,
+                    h = h,
+                )
+            }
+
+            // 5. Centre crosshair + aim readout pill + crossing pill (stays at preview centre)
+            val hitColor = when (crossing) {
+                is VisorCrossing.Sun, is VisorCrossing.SunBelowHorizon -> VisorHudSun
+                is VisorCrossing.Moon -> VisorHudMoon
+                else -> VisorHudFg
+            }
+            drawCrosshairAndPills(
+                cx = cx0,
+                cy = cy0,
+                crossR = crossR,
+                crossOuter = crossOuter,
+                hitColor = hitColor,
+                aimText = crosshairAimText,
+                aimPillW = aimPillW,
+                aimPillCy = aimPillCy,
+                crossingText = crossingPillText,
+                crossingPillW = crossingPillW,
+                crossingPillCy = crossingPillCy,
+                resources = resources,
+            )
+
+            // 6. Off-screen / HUD-occluded edge arrows clamped inside safeRect
+            if (!pointingAtGround) {
+                if (layers.sun && !sunInSafeView) {
+                    val sunArrowLabel = if (sunPosition.elevation <= Cenit.RISE_SET_ALTITUDE_DEG) {
+                        strings.sunEdgeBelow
+                    } else {
+                        strings.sunEdgeAbove
+                    }
+                    drawEdgeArrowPill(
+                        projector = projector,
+                        rotation = rotation,
+                        position = sunPosition,
+                        safeRect = activeSafeRect,
+                        label = sunArrowLabel,
+                        accent = VisorHudSun,
+                        isSun = true,
+                        moonPhase = moonPhase,
+                        resources = resources,
+                    )
+                }
+                if (layers.moon && !moonInSafeView && moonPosition.elevation > Cenit.RISE_SET_ALTITUDE_DEG) {
+                    drawEdgeArrowPill(
+                        projector = projector,
+                        rotation = rotation,
+                        position = moonPosition,
+                        safeRect = activeSafeRect,
+                        label = strings.moonEdgeAbove,
+                        accent = VisorHudMoon,
+                        isSun = false,
+                        moonPhase = moonPhase,
+                        resources = resources,
+                    )
+                }
             }
         }
     }
@@ -879,6 +1015,7 @@ private fun DrawScope.drawHorizonLayer(
     pointingAtGround: Boolean,
     labelRollDeg: Float,
     strings: VisorStrings,
+    safeRect: ViewportRect,
     resources: ArCanvasResources,
     w: Float,
     h: Float,
@@ -937,7 +1074,9 @@ private fun DrawScope.drawHorizonLayer(
         val pt = projector.project(rotation, az.toDouble(), 0.0) ?: continue
         val px = pt.x.toFloat()
         val py = pt.y.toFloat()
-        if (px < resources.dp18 || px > w - resources.dp18 || py < resources.dp18 || py > h - resources.dp18) continue
+        if (px < safeRect.left + resources.dp18 || px > safeRect.right - resources.dp18 ||
+            py < safeRect.top + resources.dp18 || py > safeRect.bottom - resources.dp18
+        ) continue
 
         val isCardinal = az % 45 == 0
         val half = if (isCardinal) tickMajorHalf else tickMinorHalf
@@ -1389,20 +1528,28 @@ private fun DrawScope.drawEdgeArrowPill(
     projector: ArProjector,
     rotation: DeviceRotation,
     position: SkyPosition,
+    safeRect: ViewportRect,
     label: String,
     accent: Color,
     isSun: Boolean,
     moonPhase: MoonPhase,
     resources: ArCanvasResources,
 ) {
-    val arrow = projector.edgeArrow(rotation, position, insetPx = resources.dp14.toDouble()) ?: return
+    val arrow = computeSafeEdgeArrow(
+        projector = projector,
+        rotation = rotation,
+        position = position,
+        safeRect = safeRect,
+        insetPx = resources.dp14.toDouble(),
+    ) ?: return
     val bounds = resources.placer.bounds
     val pillH = resources.edgePillHeightPx.toDouble()
     val textW = resources.pillTextPaint.measureText(label)
     // Left section holds arrow (16 dp) + body glyph (14 dp) + spacing
     val leadingW = 36.dp.toPx()
-    val pillW = (leadingW + textW + resources.dp12).toDouble()
-        .coerceAtMost((bounds.width - resources.dp8).coerceAtLeast(80.0))
+    val maxPillW = (bounds.width - resources.dp8).coerceAtLeast(0.0)
+    val pillW = (leadingW + textW + resources.dp12).toDouble().coerceAtMost(maxPillW)
+    if (pillW <= 0.0 || bounds.width < pillW || bounds.height < pillH) return
 
     val targetCx = arrow.x.coerceIn(bounds.left + pillW / 2.0, bounds.right - pillW / 2.0)
     val targetCy = arrow.y.coerceIn(bounds.top + pillH / 2.0, bounds.bottom - pillH / 2.0)

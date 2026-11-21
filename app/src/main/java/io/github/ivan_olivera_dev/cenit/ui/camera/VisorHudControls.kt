@@ -64,6 +64,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.setProgress
 import androidx.compose.ui.semantics.stateDescription
@@ -453,6 +454,7 @@ internal fun VisorBottomDock(
     phaseLabel: String,
     sunPosition: SkyPosition,
     selectedFraction: Float,
+    isLiveTime: Boolean,
     layers: VisorLayers,
     winds: Array<String>,
     clock: ClockFormat,
@@ -521,7 +523,7 @@ internal fun VisorBottomDock(
                 onClick = onOpenDatePicker,
             )
 
-            VisorNowButton(onClick = onResetNow)
+            VisorNowButton(isLive = isLiveTime, onClick = onResetNow)
         }
 
         Spacer(modifier = Modifier.height(2.dp))
@@ -591,6 +593,7 @@ internal fun VisorLandscapeDock(
     phaseLabel: String,
     sunPosition: SkyPosition,
     selectedFraction: Float,
+    isLiveTime: Boolean,
     layers: VisorLayers,
     winds: Array<String>,
     clock: ClockFormat,
@@ -680,7 +683,7 @@ internal fun VisorLandscapeDock(
                     onClick = onOpenDatePicker,
                     modifier = Modifier.weight(1f),
                 )
-                VisorNowButton(onClick = onResetNow)
+                VisorNowButton(isLive = isLiveTime, onClick = onResetNow)
             }
 
             VisorTimeScrubber(
@@ -759,27 +762,54 @@ private fun VisorDateChip(
 
 @Composable
 private fun VisorNowButton(
+    isLive: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val desc = stringResource(R.string.cd_back_to_now)
+    val liveStateDesc = stringResource(
+        if (isLive) R.string.visor_now_live_state else R.string.visor_now_manual_state,
+    )
     val shape = RoundedCornerShape(999.dp)
+    val bgColor = if (isLive) VisorHudSubtle else VisorHudScrim
+    val borderColor = if (isLive) VisorHudSun else VisorHudBorder
+    val labelColor = if (isLive) VisorHudFg else VisorHudMuted
+
     Box(
         modifier = modifier
             .heightIn(min = 40.dp)
             .cenitFocusRing(VisorHudFocus, cornerRadius = 20.dp)
             .clip(shape)
-            .background(VisorHudScrim)
-            .border(1.dp, VisorHudBorder, shape)
+            .background(bgColor)
+            .drawBehind {
+                if (isLive) {
+                    val inset = 12.dp.toPx().coerceAtMost(size.width / 4f)
+                    val lineHeight = 2.dp.toPx()
+                    drawRect(
+                        color = VisorHudSun,
+                        topLeft = Offset(inset, size.height - lineHeight),
+                        size = Size((size.width - inset * 2f).coerceAtLeast(0f), lineHeight),
+                    )
+                }
+            }
+            .border(1.dp, borderColor, shape)
             .clickable(role = Role.Button, onClick = onClick)
             .padding(horizontal = 12.dp, vertical = 6.dp)
-            .semantics { contentDescription = desc },
+            .semantics {
+                contentDescription = desc
+                selected = isLive
+                stateDescription = liveStateDesc
+            },
         contentAlignment = Alignment.Center,
     ) {
         Text(
             text = stringResource(R.string.action_now),
-            style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 16.sp),
-            color = VisorHudFg,
+            style = MaterialTheme.typography.bodySmall.copy(
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                fontWeight = if (isLive) FontWeight.Medium else FontWeight.Normal,
+            ),
+            color = labelColor,
             maxLines = 1,
         )
     }
