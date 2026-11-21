@@ -130,7 +130,7 @@ Puntos de confianza de la compilación: `distributionSha256Sum` fija el wrapper 
 ./gradlew :app:assembleRelease
 ```
 
-Sin propiedades de firma genera `app/build/outputs/apk/release/app-release-unsigned.apk` (minificado, unos 4,6 MB).
+Sin propiedades de firma genera `app/build/outputs/apk/release/app-release-unsigned.apk` (minificado, unos 5,9 MB).
 
 Para firmar una release en local, guarda la clave fuera del repositorio y define cuatro propiedades en `~/.gradle/gradle.properties`:
 

@@ -130,7 +130,7 @@ Build trust notes: `distributionSha256Sum` pins the Gradle wrapper in `gradle/wr
 ./gradlew :app:assembleRelease
 ```
 
-Without signing properties, this produces `app/build/outputs/apk/release/app-release-unsigned.apk` (minified, around 4.6 MB).
+Without signing properties, this produces `app/build/outputs/apk/release/app-release-unsigned.apk` (minified, around 5.9 MB).
 
 To sign a local release, keep the keystore outside the repository and define four properties in `~/.gradle/gradle.properties`:
 

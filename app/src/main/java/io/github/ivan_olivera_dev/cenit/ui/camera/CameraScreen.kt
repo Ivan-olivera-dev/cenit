@@ -50,6 +50,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -134,7 +135,13 @@ fun CameraScreen(
         }
     }
 
-    var uiState by remember(context) {
+    val uiStateSaver = remember {
+        Saver<CameraScreenUiState, String>(
+            save = { CameraScreenStateMachine.encode(it) },
+            restore = { CameraScreenStateMachine.decode(it) },
+        )
+    }
+    var uiState by rememberSaveable(stateSaver = uiStateSaver) {
         mutableStateOf(
             CameraScreenStateMachine.initialState(
                 hasCamera = hasBackCamera(context),

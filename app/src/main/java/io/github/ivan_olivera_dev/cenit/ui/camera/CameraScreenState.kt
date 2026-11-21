@@ -35,6 +35,32 @@ sealed interface CameraScreenUiState {
  * edge case is verifiable with JVM unit tests.
  */
 object CameraScreenStateMachine {
+    /** Saved form of [state] for `rememberSaveable`, so rotation never re-asks a denied permission. */
+    fun encode(state: CameraScreenUiState): String = when (state) {
+        CameraScreenUiState.RequestingPermission -> "RequestingPermission"
+        CameraScreenUiState.PermissionRationale -> "PermissionRationale"
+        CameraScreenUiState.PermissionDenied -> "PermissionDenied"
+        CameraScreenUiState.PermissionPermanentlyDenied -> "PermissionPermanentlyDenied"
+        CameraScreenUiState.NoCamera -> "NoCamera"
+        CameraScreenUiState.NoSensor -> "NoSensor"
+        is CameraScreenUiState.CameraError -> "CameraError:" + (state.detail ?: "")
+        CameraScreenUiState.Ready -> "Ready"
+    }
+
+    /** Inverse of [encode]; an unknown value starts over by asking for the permission. */
+    fun decode(saved: String): CameraScreenUiState = when {
+        saved == "RequestingPermission" -> CameraScreenUiState.RequestingPermission
+        saved == "PermissionRationale" -> CameraScreenUiState.PermissionRationale
+        saved == "PermissionDenied" -> CameraScreenUiState.PermissionDenied
+        saved == "PermissionPermanentlyDenied" -> CameraScreenUiState.PermissionPermanentlyDenied
+        saved == "NoCamera" -> CameraScreenUiState.NoCamera
+        saved == "NoSensor" -> CameraScreenUiState.NoSensor
+        saved.startsWith("CameraError:") ->
+            CameraScreenUiState.CameraError(saved.removePrefix("CameraError:").ifEmpty { null })
+        saved == "Ready" -> CameraScreenUiState.Ready
+        else -> CameraScreenUiState.RequestingPermission
+    }
+
 
     fun initialState(
         hasCamera: Boolean,
