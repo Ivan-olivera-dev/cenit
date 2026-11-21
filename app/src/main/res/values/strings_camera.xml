@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Entry & navigation -->
+    <string name="camera_cd_open">Open camera</string>
+    <string name="camera_cd_back">Back to Compass</string>
+    <string name="camera_cd_screen">Camera viewfinder</string>
+
+    <!-- Permission rationale -->
+    <string name="camera_rationale_title">Camera access needed</string>
+    <string name="camera_rationale_body">Cenit uses the camera live only to draw the sun and moon paths over the scene. Nothing is recorded, saved, or sent anywhere.</string>
+    <string name="camera_action_allow">Allow camera</string>
+
+    <!-- Permission denied / permanently denied -->
+    <string name="camera_denied_title">Camera permission denied</string>
+    <string name="camera_denied_body">Cenit uses the camera live only to draw the sun and moon paths. No photos, no internet.</string>
+    <string name="camera_permanently_denied_body">Camera access is disabled in Android settings. Enable it there to use the live viewfinder, or continue with the flat compass.</string>
+    <string name="camera_action_open_settings">Open settings</string>
+    <string name="camera_action_use_compass">Use flat compass</string>
+
+    <!-- Hardware & runtime error states -->
+    <string name="camera_no_camera_title">No camera available</string>
+    <string name="camera_no_camera_body">This device does not expose a back camera for the live viewfinder. You can still plan sun and moon directions on the flat compass.</string>
+
+    <string name="camera_no_sensor_title">No orientation sensor</string>
+    <string name="camera_no_sensor_body">This phone does not have a rotation sensor to align the sun and moon paths with the camera. You can still plan directions on the flat compass.</string>
+
+    <string name="camera_error_title">Could not start camera</string>
+    <string name="camera_error_body">Another app may be using the camera or the hardware could not be initialized.</string>
+    <string name="camera_action_retry">Retry</string>
+
+    <!-- Visor AR overlay -->
+    <string name="visor_layer_sun">Sun</string>
+    <string name="visor_layer_moon">Moon</string>
+    <string name="visor_layer_solstices">Solstices</string>
+    <string name="visor_solstice_equinox">eq</string>
+
+    <string name="visor_horizon_label">0° · Horiz.</string>
+    <string name="visor_sun_marker_below">%1$s · below horiz.</string>
+    <string name="visor_moon_marker">Moon %1$d %%</string>
+    <string name="visor_rise_set_label">%1$s %2$s</string>
+
+    <string name="visor_edge_sun">Sun · %1$s</string>
+    <string name="visor_edge_sun_below">Sun below horiz. · %1$s</string>
+    <string name="visor_edge_moon">Moon · %1$s</string>
+
+    <string name="visor_crosshair_aim">%1$s %2$s · %3$s</string>
+    <string name="visor_crossing_sun">Sun passes here at %1$s · %2$s</string>
+    <string name="visor_crossing_sun_below">Sun below horizon here at %1$s</string>
+    <string name="visor_crossing_moon">Moon passes here at %1$s · %2$d %%</string>
+    <string name="visor_crossing_solstice_jun">June solstice passes here at %1$s</string>
+    <string name="visor_crossing_solstice_eq">Equinox passes here at %1$s</string>
+    <string name="visor_crossing_solstice_dec">Dec. solstice passes here at %1$s</string>
+
+    <string name="visor_ground_hint">↑ Horizon %1$d° up · raise the phone</string>
+    <string name="visor_calibration_dimmed">Lines dimmed · low accuracy</string>
+
+    <string name="visor_dock_sun_above">%1$s · Sun %2$s %3$s · %4$s</string>
+    <string name="visor_dock_sun_below">%1$s · Sun %2$s %3$s · below horizon</string>
+    <string name="visor_moon_pill">%1$d %%</string>
+
+    <!-- Accessibility (mirroring 01-visor.html aria-labels) -->
+    <string name="visor_cd_overlay">Full-screen camera viewfinder with sun, moon, and solstice paths</string>
+    <string name="visor_cd_heading_tape">Heading tape: %1$s %2$s</string>
+    <string name="visor_cd_date_chip">Selected date: %1$s. Tap to choose another date</string>
+    <string name="visor_cd_place_pill">Active place: %1$s</string>
+    <string name="visor_now_live_state">Live time</string>
+    <string name="visor_now_manual_state">Manual time</string>
+</resources>

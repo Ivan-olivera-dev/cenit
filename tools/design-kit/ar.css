@@ -1,0 +1,158 @@
+/* Cenit stage 2 (AR camera) styles. All colors reference design/system.md tokens only. */
+:root{
+  --hud-bg:#111318;
+  --hud-surface:#171A21;
+  --hud-subtle:#1F232C;
+  --hud-fg:#E9E7E2;
+  --hud-muted:#A6ABB5;
+  --hud-border:#6C7382;
+  --hud-hairline:#272B35;
+  --hud-sun:#D6C07E;
+  --hud-moon:#AFBDE3;
+  --hud-blue:#7F93D0;
+  --hud-warn:#D6C07E;
+  --hud-scrim:rgba(17,19,24,.84);
+  --hud-scrim-strong:rgba(17,19,24,.92);
+  --hud-scrim-soft:rgba(17,19,24,.68);
+}
+
+.board.stage2{padding:28px 36px 36px;max-width:1580px}
+.board.stage2 .board-head{margin-bottom:22px;padding-bottom:16px;align-items:center}
+.board.stage2 .board-head p{max-width:560px;font-size:14px;line-height:20px}
+.board.stage2 .board-tools{gap:8px;flex-wrap:nowrap}
+.board.stage2 .tool{padding:0 12px;font-size:13px;white-space:nowrap}
+.board.stage2 .tool-range{gap:7px;white-space:nowrap}
+.board.stage2 .tool-range input{width:92px}
+
+.stage2-grid{display:grid;grid-template-columns:360px 580px 480px;gap:32px;align-items:start}
+.col-main{display:flex;flex-direction:column;gap:8px}
+.col-main .phone-cap{margin-left:4px;white-space:nowrap}
+.col-states{display:grid;grid-template-columns:280px 280px;gap:20px;align-items:start}
+.col-extra{display:flex;flex-direction:column;gap:20px}
+.frame-wrap{display:flex;flex-direction:column;gap:8px}
+.frame-wrap .phone-cap{margin-left:4px;white-space:nowrap}
+
+/* Full-height non-scrolling camera screens */
+.phone.ar-phone{background:var(--bg-color)}
+.phone.ar-phone .screen.ar-screen{padding:0;overflow:hidden;position:relative;flex:1;display:flex;flex-direction:column}
+.tabbar.tabs-5{grid-template-columns:repeat(5,1fr)}
+.tabbar.tabs-5 .tab{font-size:11px;gap:3px}
+
+/* Live camera viewport */
+.cam-view{position:relative;overflow:hidden;background:var(--hud-bg);color:var(--hud-fg);user-select:none}
+.cam-view svg.cam-svg{display:block;width:100%;height:100%}
+.cam-status{position:absolute;top:0;left:0;right:0;height:30px;padding:6px 24px 0;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--hud-fg);background:linear-gradient(to bottom,var(--hud-scrim-strong),rgba(17,19,24,0));z-index:6;pointer-events:none}
+.cam-status .status-icons i{background:var(--hud-fg);opacity:.85}
+.cam-status .status-icons b{border-color:var(--hud-fg)}
+
+/* Translucent HUD bar & pills (always legible on bright or dark sky) */
+.hud-top{position:absolute;top:30px;left:0;right:0;z-index:5;padding:4px 12px 0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hud-pill{min-height:36px;padding:0 11px;border-radius:var(--radius-pill);background:var(--hud-scrim);border:1px solid var(--hud-border);color:var(--hud-fg);display:inline-flex;align-items:center;gap:6px;font-size:12px;line-height:16px;white-space:nowrap}
+.hud-btn{min-height:44px;min-width:44px;padding:0 12px;border-radius:var(--radius-pill);background:var(--hud-scrim);border:1px solid var(--hud-border);color:var(--hud-fg);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;white-space:nowrap}
+.hud-btn.icon-only{padding:0;width:44px}
+.hud-btn.compact{min-height:36px;min-width:36px;padding:0 10px;font-size:12px}
+.hud-btn[aria-pressed=true]{background:var(--hud-surface);border-color:var(--hud-sun);color:var(--hud-sun)}
+.hud-btn.moon-tog[aria-pressed=true]{border-color:var(--hud-moon);color:var(--hud-moon)}
+.hud-btn.sol-tog[aria-pressed=true]{border-color:var(--hud-fg);color:var(--hud-fg)}
+.hud-stepper{display:inline-flex;align-items:center;background:var(--hud-scrim);border:1px solid var(--hud-border);border-radius:var(--radius-pill);overflow:hidden}
+.hud-stepper button{width:34px;height:36px;border:none;background:transparent;color:var(--hud-fg);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.hud-stepper span{padding:0 4px;font-size:12px;color:var(--hud-fg);white-space:nowrap}
+.hud-sim-tag{position:absolute;right:10px;bottom:8px;z-index:4;padding:2px 7px;border-radius:var(--radius-pill);background:var(--hud-scrim-soft);border:1px solid var(--hud-hairline);color:var(--hud-muted);font-size:10px;line-height:14px;letter-spacing:.4px;text-transform:uppercase;pointer-events:none}
+
+/* Top heading tape for Direction 01 · Visor */
+.hud-tape-wrap{position:absolute;top:80px;left:12px;right:12px;z-index:4;pointer-events:none}
+
+/* Direction 01 · Visor bottom dock */
+.visor-dock{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--hud-scrim-strong);border-top:1px solid var(--hud-hairline);padding:12px 18px 14px;color:var(--hud-fg)}
+.visor-dock .dock-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.visor-dock .dock-time{font:300 30px/34px var(--font-serif);letter-spacing:-.8px;margin:0;color:var(--hud-fg)}
+.visor-dock .dock-meta{font-size:12px;line-height:16px;color:var(--hud-muted);margin:0;flex:1}
+.visor-dock .dock-meta b{color:var(--hud-fg);font-weight:500}
+.visor-dock .scrub::-webkit-slider-runnable-track{background:var(--hud-border)}
+.visor-dock .scrub::-webkit-slider-thumb{background:var(--hud-fg);border-color:var(--hud-bg);box-shadow:0 0 0 1px var(--hud-border)}
+.visor-dock .scrub::-moz-range-track{background:var(--hud-border)}
+.visor-dock .scrub::-moz-range-thumb{background:var(--hud-fg);border-color:var(--hud-bg)}
+.visor-dock .scrub-ticks{color:var(--hud-muted);margin-top:-8px;margin-bottom:8px;font-size:11px}
+.layer-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.layer-btn{min-height:44px;border-radius:var(--radius-control);border:1px solid var(--hud-border);background:transparent;color:var(--hud-muted);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:0 8px}
+.layer-btn[aria-pressed=true]{background:var(--hud-subtle);color:var(--hud-fg);border-color:var(--hud-fg)}
+.layer-btn.l-sun[aria-pressed=true]{border-color:var(--hud-sun);color:var(--hud-sun)}
+.layer-btn.l-moon[aria-pressed=true]{border-color:var(--hud-moon);color:var(--hud-moon)}
+
+/* Theme-aware layer chips for opaque sheets (Directions 02 & 03) */
+.chip-row{display:flex;gap:6px;align-items:center}
+.layer-chip{min-height:36px;padding:0 10px;border-radius:var(--radius-control);border:var(--border-control);background:transparent;color:var(--text-secondary);display:inline-flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap}
+.layer-chip[aria-pressed=true]{background:var(--surface-subtle);color:var(--text-primary);border-color:var(--text-primary)}
+.layer-chip.l-sun[aria-pressed=true]{border-color:var(--sun)}
+.layer-chip.l-moon[aria-pressed=true]{border-color:var(--moon)}
+.sw-dot{display:inline-block;width:7px;height:7px;border-radius:50%}
+.sw-dot.sun{background:var(--sun)}.sw-dot.moon{border:1.5px solid var(--moon);background:transparent}.sw-dot.sol{width:10px;height:0;border-radius:0;border-top:1.5px dashed currentColor}
+.hud-dot{display:inline-block;width:7px;height:7px;border-radius:50%}
+.hud-dot.sun{background:var(--hud-sun)}.hud-dot.moon{border:1.5px solid var(--hud-moon);background:transparent}.hud-dot.sol{width:10px;height:0;border-radius:0;border-top:1.5px dashed currentColor}
+
+/* Direction 02 · Mira bottom sheet */
+.mira-sheet{height:268px;flex:none;background:var(--bg-color);border-top:var(--border-hairline);padding:12px 18px 10px;display:flex;flex-direction:column;justify-content:space-between}
+.mira-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mira-time{font:300 28px/32px var(--font-serif);letter-spacing:-.8px;margin:0}
+.mira-phase{font-size:12px;line-height:16px;color:var(--text-secondary);margin:0}
+.mira-keys{display:grid;grid-template-columns:repeat(3,1fr);border-top:var(--border-hairline);padding-top:8px}
+.mira-keys div+div{border-left:var(--border-hairline);padding-left:10px}
+.mira-keys dt{font-size:11px;line-height:14px;color:var(--text-secondary)}
+.mira-keys dd{margin:2px 0 0;font:400 18px/22px var(--font-sans);letter-spacing:-.3px}
+.mira-keys dl{margin:0}
+.mira-moon-line{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:6px;border-top:var(--border-hairline);font-size:11.5px;line-height:16px;color:var(--text-secondary);white-space:nowrap}
+.mira-moon-line span{display:inline-flex;align-items:center;gap:5px}
+.btn-now-sm{min-height:36px;padding:0 11px;border-radius:var(--radius-pill);border:var(--border-control);background:transparent;color:var(--text-primary);font-size:12px;cursor:pointer;white-space:nowrap}
+
+/* Direction 03 · Cámara + cúpula split panel */
+.split-dome-panel{height:298px;flex:none;background:var(--bg-color);border-top:var(--border-hairline);padding:10px 16px 8px;display:flex;flex-direction:column;justify-content:space-between}
+.split-dome-main{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dome-tap-wrap{position:relative;cursor:crosshair;border-radius:50%;flex:none}
+.dome-tap-wrap:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.split-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.split-side .split-time{font:300 30px/32px var(--font-serif);letter-spacing:-.8px;margin:0}
+.split-side .split-meta{font-size:12px;line-height:16px;color:var(--text-secondary);margin:0}
+.split-side .split-meta b{color:var(--text-primary);font-weight:500}
+.split-hint{font-size:11px;line-height:14px;color:var(--text-secondary);margin:-4px 0 0;display:flex;justify-content:space-between;align-items:center}
+
+/* Secondary state mini-phones (280 x 370) */
+.mini-phone{width:280px;height:370px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:26px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.mini-bar{height:24px;flex:none;padding:4px 16px 0;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-secondary)}
+.mini-bar.on-cam{position:absolute;top:0;left:0;right:0;z-index:5;color:var(--hud-fg);background:linear-gradient(to bottom,var(--hud-scrim-strong),rgba(17,19,24,0))}
+.mini-state-body{flex:1;padding:18px 18px 16px;display:flex;flex-direction:column;justify-content:center;gap:12px;background:var(--bg-color);color:var(--text-primary)}
+.mini-icon-ring{width:48px;height:48px;border-radius:50%;border:var(--border-control);background:var(--surface-color);display:flex;align-items:center;justify-content:center;color:var(--sun)}
+.mini-state-body h3{font:400 18px/22px var(--font-serif);margin:0;letter-spacing:-.3px}
+.mini-state-body p{font-size:13px;line-height:18px;color:var(--text-secondary);margin:0}
+.mini-state-body .btn-primary{min-height:44px;font-size:14px;width:100%}
+.mini-state-body .btn-secondary{min-height:42px;font-size:13px;width:100%}
+
+/* Calibration notice overlay on mini camera */
+.cam-notice{position:absolute;left:10px;right:10px;z-index:6;background:var(--hud-scrim-strong);border:1px solid var(--hud-hairline);border-left:3px solid var(--hud-warn);border-radius:0 10px 10px 0;padding:8px 10px;color:var(--hud-fg);font-size:12px;line-height:16px;display:flex;align-items:center;gap:8px}
+.cam-notice b{display:block;font-weight:500;color:var(--hud-sun);font-size:12px}
+.cam-notice span{color:var(--hud-fg)}
+
+/* Column 3: Landscape + Bright-sky proof + Sensor missing */
+.land-phone{width:480px;height:256px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:26px;overflow:hidden;display:flex;position:relative}
+.bright-box{width:480px;height:246px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.bright-foot{padding:9px 14px;background:var(--surface-color);border-top:var(--border-hairline);font-size:11.5px;line-height:16px;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap}
+.bright-foot b{color:var(--text-primary);font-weight:500}
+
+.sensor-card{width:480px;height:194px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between}
+.sensor-top{display:flex;align-items:flex-start;gap:12px}
+.sensor-top h3{font:400 18px/22px var(--font-serif);margin:0 0 4px;letter-spacing:-.3px}
+.sensor-top p{font-size:13px;line-height:18px;color:var(--text-secondary);margin:0}
+.sensor-actions{display:flex;gap:10px}
+.sensor-actions button{flex:1;min-height:42px;font-size:13px}
+
+/* Landscape layouts per direction */
+.land-visor-dock{width:138px;flex:none;background:var(--hud-scrim-strong);border-left:1px solid var(--hud-hairline);padding:10px 10px;display:flex;flex-direction:column;justify-content:space-between;color:var(--hud-fg)}
+.land-mira-sheet{width:176px;flex:none;background:var(--bg-color);border-left:var(--border-hairline);padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between}
+.land-dome-panel{width:196px;flex:none;background:var(--bg-color);border-left:var(--border-hairline);padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+
+/* SVG text casing for guaranteed legibility over both bright and dark sky */
+.ar-txt{font:500 11px var(--font-sans);fill:var(--hud-fg);paint-order:stroke;stroke:var(--hud-bg);stroke-width:3.5px;stroke-linejoin:round}
+.ar-txt.sun{fill:var(--hud-sun)}
+.ar-txt.moon{fill:var(--hud-moon)}
+.ar-txt.muted{fill:var(--hud-muted);font-weight:400}
+.ar-txt.big{font:500 13px var(--font-sans)}
+.ar-txt.serif{font:400 15px var(--font-serif)}

@@ -19,6 +19,8 @@ import io.github.ivan_olivera_dev.cenit.alerts.AlertSubscription
 import io.github.ivan_olivera_dev.cenit.alerts.AlertSubscriptionsStore
 import io.github.ivan_olivera_dev.cenit.settings.AppSettings
 import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
+import io.github.ivan_olivera_dev.cenit.ui.camera.CameraScreen
+import io.github.ivan_olivera_dev.cenit.ui.camera.VisorOverlay
 import io.github.ivan_olivera_dev.cenit.ui.compass.CompassScreen
 import io.github.ivan_olivera_dev.cenit.ui.places.PlacesScreen
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
@@ -47,6 +49,7 @@ fun CenitApp(
     val settings = LocalAppSettings.current
     var selectedTab by rememberSaveable { mutableStateOf(CenitTab.HOY) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    var showCamera by rememberSaveable { mutableStateOf(false) }
     val context = LocalContext.current
     val plannerSaver = remember(zone) { plannerStateSaver(zone) }
     var plannerState by rememberSaveable(zone.id, stateSaver = plannerSaver) {
@@ -72,6 +75,23 @@ fun CenitApp(
             settings = settings,
             onSettingsChange = onSettingsChange,
             onBack = { showSettings = false },
+        )
+        return
+    }
+
+    if (showCamera) {
+        BackHandler { showCamera = false }
+        CameraScreen(
+            state = plannerState,
+            onBack = { showCamera = false },
+            overlay = { arInputs ->
+                VisorOverlay(
+                    inputs = arInputs,
+                    state = plannerState,
+                    onStateChange = { plannerState = it },
+                    clock = clock,
+                )
+            },
         )
         return
     }
@@ -129,7 +149,10 @@ fun CenitApp(
                     state = plannerState,
                     onStateChange = { plannerState = it },
                 )
-                CenitTab.BRUJULA -> CompassScreen(state = plannerState)
+                CenitTab.BRUJULA -> CompassScreen(
+                    state = plannerState,
+                    onOpenCamera = { showCamera = true },
+                )
                 CenitTab.LUGARES -> PlacesScreen(
                     state = plannerState,
                     onStateChange = { plannerState = it },

@@ -32,6 +32,7 @@ enum class CenitIconKind {
     CALENDAR,
     SETTINGS,
     BACK,
+    CAMERA,
 }
 
 @Composable
@@ -60,6 +61,7 @@ fun CenitIcon(
             CenitIconKind.CALENDAR -> drawCalendar(tint, sx, sy, stroke)
             CenitIconKind.SETTINGS -> drawSettings(tint, sx, sy, stroke)
             CenitIconKind.BACK -> drawBack(tint, sx, sy, stroke)
+            CenitIconKind.CAMERA -> drawCamera(tint, sx, sy, stroke)
         }
     }
 }
@@ -199,4 +201,23 @@ private fun DrawScope.drawBack(color: Color, sx: Float, sy: Float, stroke: Strok
         lineTo(11f * sx, 18f * sy)
     }
     drawPath(head, color, style = stroke)
+}
+
+private fun DrawScope.drawCamera(color: Color, sx: Float, sy: Float, stroke: Stroke) {
+    // Matches tools/design-kit/ar.js ICON.camara: 24×24 viewBox, 1.5 stroke, round caps & joins.
+    drawRoundRect(
+        color = color,
+        topLeft = Offset(3f * sx, 6.5f * sy),
+        size = Size(18f * sx, 13f * sy),
+        cornerRadius = androidx.compose.ui.geometry.CornerRadius(2.5f * sx, 2.5f * sy),
+        style = stroke,
+    )
+    val viewfinder = Path().apply {
+        moveTo(8.5f * sx, 6.5f * sy)
+        lineTo(10f * sx, 4f * sy)
+        lineTo(14f * sx, 4f * sy)
+        lineTo(15.5f * sx, 6.5f * sy)
+    }
+    drawPath(viewfinder, color, style = stroke)
+    drawCircle(color, radius = 3.2f * sx, center = Offset(12f * sx, 13f * sy), style = stroke)
 }

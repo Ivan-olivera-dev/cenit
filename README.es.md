@@ -61,7 +61,7 @@ Puedes comprobar los permisos de cualquier APK con:
 aapt2 dump permissions cenit-<versión>.apk
 ```
 
-Aparecen `ACCESS_COARSE_LOCATION` y `ACCESS_FINE_LOCATION` (GPS, solo cuando tocas *Mi ubicación*), `POST_NOTIFICATIONS` y `RECEIVE_BOOT_COMPLETED` (avisos), `SCHEDULE_EXACT_ALARM` (opcional, para avisos puntuales con el móvil en reposo), y además `io.github.ivan_olivera_dev.cenit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, que añade AndroidX para que solo la propia Cenit pueda enviar mensajes a sus receptores.
+Aparecen `ACCESS_COARSE_LOCATION` y `ACCESS_FINE_LOCATION` (GPS, solo cuando tocas *Mi ubicación*), `CAMERA` (vista de cámara en directo, solo cuando la abres; las imágenes nunca salen del teléfono y no se graba ni se guarda nada), `POST_NOTIFICATIONS` y `RECEIVE_BOOT_COMPLETED` (avisos), `SCHEDULE_EXACT_ALARM` (opcional, para avisos puntuales con el móvil en reposo), y además `io.github.ivan_olivera_dev.cenit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, que añade AndroidX para que solo la propia Cenit pueda enviar mensajes a sus receptores.
 
 ### Compilación sin firmar reproducible
 
@@ -130,7 +130,7 @@ Puntos de confianza de la compilación: `distributionSha256Sum` fija el wrapper 
 ./gradlew :app:assembleRelease
 ```
 
-Sin propiedades de firma genera `app/build/outputs/apk/release/app-release-unsigned.apk` (minificado, unos 4,6 MB).
+Sin propiedades de firma genera `app/build/outputs/apk/release/app-release-unsigned.apk` (minificado, unos 5,9 MB).
 
 Para firmar una release en local, guarda la clave fuera del repositorio y define cuatro propiedades en `~/.gradle/gradle.properties`:
 
