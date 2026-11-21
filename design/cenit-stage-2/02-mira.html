@@ -1,0 +1,1770 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cenit · 02 Mira</title>
+<style>
+:root,[data-theme=dark]{--bg-color:#111318;--surface-color:#171A21;--surface-subtle:#1F232C;--text-primary:#E9E7E2;--text-secondary:#A6ABB5;--border-color:#272B35;--control-border:#6C7382;--sun:#D6C07E;--moon:#AFBDE3;--blue-hour:#7F93D0;--sky-day:#272C38;--sky-civil:#212532;--sky-nautical:#1B1F29;--sky-astro:#161920;--chart-night:#111318;--success:#8DB38F;--warning:#D6C07E;--danger:#E39A93;--focus-ring:#AFBDE3;color-scheme:dark}
+[data-theme=light]{--bg-color:#FAF9F6;--surface-color:#F3F1EC;--surface-subtle:#ECE9E2;--text-primary:#2C2C2C;--text-secondary:#5C5A54;--border-color:#E6E3DC;--control-border:#857F74;--sun:#7A6220;--moon:#3D5896;--blue-hour:#4F67A6;--sky-day:#FAF9F6;--sky-civil:#EEEBE4;--sky-nautical:#E5E1D8;--sky-astro:#DCD7CB;--chart-night:#DCD7CB;--success:#4A784E;--warning:#7A6220;--danger:#A2443C;--focus-ring:#3D5896;color-scheme:light}
+:root{--font-sans:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;--font-serif:"Iowan Old Style","Noto Serif",Georgia,serif;--space-screen-x:22px;--space-section:28px;--space-group:16px;--space-inner:12px;--space-tight:6px;--space-panel:20px;--radius-pill:999px;--radius-panel:20px;--radius-button:16px;--radius-button-secondary:14px;--radius-cell:12px;--radius-control:10px;--border-hairline:1px solid var(--border-color);--border-control:1px solid var(--control-border)}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--surface-color);color:var(--text-primary);font:400 15px/22px var(--font-sans);font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+button,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.board{padding:32px 40px 40px}
+.board-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:28px;border-bottom:var(--border-hairline);padding-bottom:20px}
+.board-head h1{font:300 26px/32px var(--font-sans);letter-spacing:-1px;margin:0 0 4px;display:flex;align-items:center;gap:12px}
+.board-head p{margin:0;color:var(--text-secondary);max-width:760px}
+.board-tools{display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.tool{min-height:44px;padding:0 16px;border-radius:var(--radius-button-secondary);border:var(--border-control);background:transparent;display:inline-flex;align-items:center;gap:8px;cursor:pointer}
+.tool-range{display:flex;align-items:center;gap:10px;color:var(--text-secondary);font-size:13px}
+.tool-range input{width:150px;accent-color:var(--text-primary)}
+.phones{display:flex;gap:32px;align-items:flex-start}
+.phone-wrap{display:flex;flex-direction:column;gap:12px}
+.phone-cap{font:500 12px/16px var(--font-sans);letter-spacing:1px;text-transform:uppercase;color:var(--text-secondary);margin:0 0 0 6px}
+.phone{width:360px;height:780px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:36px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.status{height:30px;flex:none;padding:6px 26px 0;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--text-secondary)}
+.status-icons{display:flex;gap:5px;align-items:center}.status-icons i{width:14px;height:9px;border-radius:2px;background:var(--text-secondary);opacity:.8}.status-icons b{width:20px;height:10px;border:1px solid var(--text-secondary);border-radius:3px}
+.screen>*{flex-shrink:0}
+.screen{flex:1;overflow:auto;padding:14px var(--space-screen-x) 16px;display:flex;flex-direction:column;scrollbar-width:none}
+.tabbar{height:64px;flex:none;border-top:var(--border-hairline);display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg-color)}
+.tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--text-secondary);text-decoration:none;font-size:12px;position:relative;min-height:44px}
+.tab.on{color:var(--text-primary)}.tab.on::before{content:"";position:absolute;top:-1px;left:50%;width:28px;margin-left:-14px;height:2px;background:var(--sun);border-radius:2px}
+.eyebrow{font:500 12px/16px var(--font-sans);letter-spacing:1px;text-transform:uppercase;color:var(--text-secondary);margin:0}
+.headline{font:300 26px/32px var(--font-sans);letter-spacing:-1px;margin:0 0 var(--space-group)}
+.serif{font-family:var(--font-serif)}
+.focal{font:300 52px/56px var(--font-serif);letter-spacing:-.03em;margin:0}
+.display{font:300 36px/40px var(--font-serif);letter-spacing:-1.2px;margin:0}
+.title{font:400 20px/26px var(--font-sans);letter-spacing:-.4px}
+.muted{color:var(--text-secondary)}
+.small{font-size:13px;line-height:18px}
+.fine{font-size:13px;line-height:18px;color:var(--text-secondary);margin:auto 0 0;padding-top:12px}
+.place-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.place-name{font:400 22px/28px var(--font-serif);margin:0;letter-spacing:-.3px}
+.place-sub{font-size:13px;line-height:18px;color:var(--text-secondary);margin:2px 0 0}
+.chip{min-height:44px;padding:0 14px;border-radius:var(--radius-pill);background:var(--surface-subtle);border:1px solid transparent;display:inline-flex;align-items:center;gap:6px;font-size:13px;white-space:nowrap;cursor:pointer}
+.stepper{display:inline-flex;align-items:center;gap:2px}
+.icon-btn{width:44px;height:44px;border-radius:var(--radius-control);border:none;background:transparent;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-primary)}
+.icon-btn:hover{background:var(--surface-subtle)}
+.strip{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.day{height:56px;border-radius:var(--radius-cell);border:1px solid transparent;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;padding:0}
+.day span{font-size:12px;line-height:16px;color:var(--text-secondary);text-transform:uppercase}.day b{font:400 18px/22px var(--font-sans)}
+.day.on{background:var(--surface-subtle)}.day.today{border:1.5px solid var(--sun)}
+.scrub{-webkit-appearance:none;appearance:none;width:100%;height:44px;background:transparent;margin:0;cursor:pointer}
+.scrub::-webkit-slider-runnable-track{height:2px;background:var(--control-border);border-radius:2px}
+.scrub::-moz-range-track{height:2px;background:var(--control-border)}
+.scrub::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;margin-top:-10px;border-radius:50%;background:var(--text-primary);border:3px solid var(--bg-color);box-shadow:0 0 0 1px var(--control-border)}
+.scrub::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--text-primary);border:3px solid var(--bg-color)}
+.scrub-ticks{display:flex;justify-content:space-between;font-size:12px;color:var(--text-secondary);margin-top:-6px}
+.plate{background:var(--surface-color);border-radius:var(--radius-panel);border:var(--border-hairline);overflow:hidden}
+.svg-label{font:400 12px var(--font-sans);fill:var(--text-secondary)}.svg-label.strong{fill:var(--text-primary)}
+.svg-card{font:500 15px var(--font-sans);fill:var(--text-secondary)}.svg-card.n{fill:var(--text-primary);font-weight:600}
+.rows{margin:0;padding:0;list-style:none}
+.row{display:grid;grid-template-columns:62px 1fr auto;align-items:baseline;gap:10px;min-height:44px;padding:10px 0;border-bottom:var(--border-hairline)}
+.row:last-child{border-bottom:none}
+.row .t{font:400 20px/26px var(--font-sans);letter-spacing:-.4px}.row .l{font-size:15px}.row .a{font-size:13px;color:var(--text-secondary)}
+.row.past .t,.row.past .l{color:var(--text-secondary)}
+.tag{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.tag.golden{background:var(--sun)}.tag.blue{background:var(--blue-hour)}.tag.moon{background:transparent;border:1.5px solid var(--moon)}.tag.sun{background:var(--sun);border-radius:2px}.tag.night{background:var(--sky-astro);border:1px solid var(--control-border)}
+.readout{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0}
+.readout>div{background:var(--surface-color);border-radius:16px;padding:12px 14px;border:var(--border-hairline)}
+.readout dt{display:flex;align-items:center;gap:6px;font:500 12px/16px var(--font-sans);letter-spacing:1px;text-transform:uppercase;color:var(--text-secondary)}
+.readout dd{margin:6px 0 0;font:400 20px/26px var(--font-sans);letter-spacing:-.4px}.readout dd small{font-size:13px;color:var(--text-secondary);letter-spacing:0}
+.readout dd.sub{margin-top:2px;font-size:13px;line-height:18px;color:var(--text-secondary);letter-spacing:0}
+.search{display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;border-radius:var(--radius-button-secondary);border:var(--border-control);color:var(--text-secondary);margin-bottom:var(--space-group)}
+.search:focus-within{outline:2px solid var(--focus-ring);outline-offset:2px}
+.search input{flex:1;border:none;background:transparent;outline:none;font-size:17px;color:var(--text-primary);min-width:0}
+.search input::placeholder{color:var(--text-secondary)}
+.list{display:flex;flex-direction:column;margin-bottom:var(--space-inner)}
+.place{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 0;border:none;border-bottom:var(--border-hairline);background:transparent;text-align:left;cursor:pointer;width:100%}
+.place .pl-text{flex:1;display:flex;flex-direction:column}.pl-name{font-size:17px;line-height:24px;letter-spacing:-.3px}.pl-sub{font-size:13px;line-height:18px;color:var(--text-secondary)}
+.place.gps{border:var(--border-control);border-radius:var(--radius-button-secondary);padding:8px 14px;margin-bottom:var(--space-section)}
+.pl-icon{color:var(--sun);display:flex}.pl-check{color:var(--sun);display:flex}
+.eyebrow+.list{margin-top:6px}
+.actions{display:flex;flex-direction:column;gap:10px}
+.btn-primary{min-height:54px;border:none;border-radius:var(--radius-button);background:var(--text-primary);color:var(--bg-color);font-size:17px;letter-spacing:-.3px;cursor:pointer}
+.btn-secondary{min-height:46px;border:var(--border-control);border-radius:var(--radius-button-secondary);background:transparent;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.btn-danger{min-height:44px;border:none;background:transparent;color:var(--danger);font-size:15px;cursor:pointer}
+.notice{background:var(--surface-color);border-left:3px solid var(--warning);border-radius:0 12px 12px 0;padding:10px 14px;font-size:13px;line-height:18px}
+.seg{display:inline-grid;grid-auto-flow:column;border:var(--border-control);border-radius:var(--radius-control);overflow:hidden}
+.seg button{min-height:42px;min-width:72px;padding:0 14px;border:none;background:transparent;color:var(--text-secondary);cursor:pointer;position:relative}
+.seg button[aria-pressed=true]{background:var(--surface-subtle);color:var(--text-primary)}.seg button[aria-pressed=true]::after{content:"";position:absolute;left:14px;right:14px;bottom:0;height:2px;background:var(--sun)}
+.hair{border:none;border-top:var(--border-hairline);margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+.icon-btn.alert{border:var(--border-control)}.icon-btn.alert[aria-pressed=true]{color:var(--bg-color);background:var(--sun);border-color:var(--sun)}
+/* Cenit stage 2 (AR camera) styles. All colors reference design/system.md tokens only. */
+:root{
+  --hud-bg:#111318;
+  --hud-surface:#171A21;
+  --hud-subtle:#1F232C;
+  --hud-fg:#E9E7E2;
+  --hud-muted:#A6ABB5;
+  --hud-border:#6C7382;
+  --hud-hairline:#272B35;
+  --hud-sun:#D6C07E;
+  --hud-moon:#AFBDE3;
+  --hud-blue:#7F93D0;
+  --hud-warn:#D6C07E;
+  --hud-scrim:rgba(17,19,24,.84);
+  --hud-scrim-strong:rgba(17,19,24,.92);
+  --hud-scrim-soft:rgba(17,19,24,.68);
+}
+
+.board.stage2{padding:28px 36px 36px;max-width:1580px}
+.board.stage2 .board-head{margin-bottom:22px;padding-bottom:16px;align-items:center}
+.board.stage2 .board-head p{max-width:560px;font-size:14px;line-height:20px}
+.board.stage2 .board-tools{gap:8px;flex-wrap:nowrap}
+.board.stage2 .tool{padding:0 12px;font-size:13px;white-space:nowrap}
+.board.stage2 .tool-range{gap:7px;white-space:nowrap}
+.board.stage2 .tool-range input{width:92px}
+
+.stage2-grid{display:grid;grid-template-columns:360px 580px 480px;gap:32px;align-items:start}
+.col-main{display:flex;flex-direction:column;gap:8px}
+.col-main .phone-cap{margin-left:4px;white-space:nowrap}
+.col-states{display:grid;grid-template-columns:280px 280px;gap:20px;align-items:start}
+.col-extra{display:flex;flex-direction:column;gap:20px}
+.frame-wrap{display:flex;flex-direction:column;gap:8px}
+.frame-wrap .phone-cap{margin-left:4px;white-space:nowrap}
+
+/* Full-height non-scrolling camera screens */
+.phone.ar-phone{background:var(--bg-color)}
+.phone.ar-phone .screen.ar-screen{padding:0;overflow:hidden;position:relative;flex:1;display:flex;flex-direction:column}
+.tabbar.tabs-5{grid-template-columns:repeat(5,1fr)}
+.tabbar.tabs-5 .tab{font-size:11px;gap:3px}
+
+/* Live camera viewport */
+.cam-view{position:relative;overflow:hidden;background:var(--hud-bg);color:var(--hud-fg);user-select:none}
+.cam-view svg.cam-svg{display:block;width:100%;height:100%}
+.cam-status{position:absolute;top:0;left:0;right:0;height:30px;padding:6px 24px 0;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--hud-fg);background:linear-gradient(to bottom,var(--hud-scrim-strong),rgba(17,19,24,0));z-index:6;pointer-events:none}
+.cam-status .status-icons i{background:var(--hud-fg);opacity:.85}
+.cam-status .status-icons b{border-color:var(--hud-fg)}
+
+/* Translucent HUD bar & pills (always legible on bright or dark sky) */
+.hud-top{position:absolute;top:30px;left:0;right:0;z-index:5;padding:4px 12px 0;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hud-pill{min-height:36px;padding:0 11px;border-radius:var(--radius-pill);background:var(--hud-scrim);border:1px solid var(--hud-border);color:var(--hud-fg);display:inline-flex;align-items:center;gap:6px;font-size:12px;line-height:16px;white-space:nowrap}
+.hud-btn{min-height:44px;min-width:44px;padding:0 12px;border-radius:var(--radius-pill);background:var(--hud-scrim);border:1px solid var(--hud-border);color:var(--hud-fg);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;white-space:nowrap}
+.hud-btn.icon-only{padding:0;width:44px}
+.hud-btn.compact{min-height:36px;min-width:36px;padding:0 10px;font-size:12px}
+.hud-btn[aria-pressed=true]{background:var(--hud-surface);border-color:var(--hud-sun);color:var(--hud-sun)}
+.hud-btn.moon-tog[aria-pressed=true]{border-color:var(--hud-moon);color:var(--hud-moon)}
+.hud-btn.sol-tog[aria-pressed=true]{border-color:var(--hud-fg);color:var(--hud-fg)}
+.hud-stepper{display:inline-flex;align-items:center;background:var(--hud-scrim);border:1px solid var(--hud-border);border-radius:var(--radius-pill);overflow:hidden}
+.hud-stepper button{width:34px;height:36px;border:none;background:transparent;color:var(--hud-fg);display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
+.hud-stepper span{padding:0 4px;font-size:12px;color:var(--hud-fg);white-space:nowrap}
+.hud-sim-tag{position:absolute;right:10px;bottom:8px;z-index:4;padding:2px 7px;border-radius:var(--radius-pill);background:var(--hud-scrim-soft);border:1px solid var(--hud-hairline);color:var(--hud-muted);font-size:10px;line-height:14px;letter-spacing:.4px;text-transform:uppercase;pointer-events:none}
+
+/* Top heading tape for Direction 01 · Visor */
+.hud-tape-wrap{position:absolute;top:80px;left:12px;right:12px;z-index:4;pointer-events:none}
+
+/* Direction 01 · Visor bottom dock */
+.visor-dock{position:absolute;left:0;right:0;bottom:0;z-index:6;background:var(--hud-scrim-strong);border-top:1px solid var(--hud-hairline);padding:12px 18px 14px;color:var(--hud-fg)}
+.visor-dock .dock-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.visor-dock .dock-time{font:300 30px/34px var(--font-serif);letter-spacing:-.8px;margin:0;color:var(--hud-fg)}
+.visor-dock .dock-meta{font-size:12px;line-height:16px;color:var(--hud-muted);margin:0;flex:1}
+.visor-dock .dock-meta b{color:var(--hud-fg);font-weight:500}
+.visor-dock .scrub::-webkit-slider-runnable-track{background:var(--hud-border)}
+.visor-dock .scrub::-webkit-slider-thumb{background:var(--hud-fg);border-color:var(--hud-bg);box-shadow:0 0 0 1px var(--hud-border)}
+.visor-dock .scrub::-moz-range-track{background:var(--hud-border)}
+.visor-dock .scrub::-moz-range-thumb{background:var(--hud-fg);border-color:var(--hud-bg)}
+.visor-dock .scrub-ticks{color:var(--hud-muted);margin-top:-8px;margin-bottom:8px;font-size:11px}
+.layer-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.layer-btn{min-height:44px;border-radius:var(--radius-control);border:1px solid var(--hud-border);background:transparent;color:var(--hud-muted);display:inline-flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:0 8px}
+.layer-btn[aria-pressed=true]{background:var(--hud-subtle);color:var(--hud-fg);border-color:var(--hud-fg)}
+.layer-btn.l-sun[aria-pressed=true]{border-color:var(--hud-sun);color:var(--hud-sun)}
+.layer-btn.l-moon[aria-pressed=true]{border-color:var(--hud-moon);color:var(--hud-moon)}
+
+/* Theme-aware layer chips for opaque sheets (Directions 02 & 03) */
+.chip-row{display:flex;gap:6px;align-items:center}
+.layer-chip{min-height:36px;padding:0 10px;border-radius:var(--radius-control);border:var(--border-control);background:transparent;color:var(--text-secondary);display:inline-flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap}
+.layer-chip[aria-pressed=true]{background:var(--surface-subtle);color:var(--text-primary);border-color:var(--text-primary)}
+.layer-chip.l-sun[aria-pressed=true]{border-color:var(--sun)}
+.layer-chip.l-moon[aria-pressed=true]{border-color:var(--moon)}
+.sw-dot{display:inline-block;width:7px;height:7px;border-radius:50%}
+.sw-dot.sun{background:var(--sun)}.sw-dot.moon{border:1.5px solid var(--moon);background:transparent}.sw-dot.sol{width:10px;height:0;border-radius:0;border-top:1.5px dashed currentColor}
+.hud-dot{display:inline-block;width:7px;height:7px;border-radius:50%}
+.hud-dot.sun{background:var(--hud-sun)}.hud-dot.moon{border:1.5px solid var(--hud-moon);background:transparent}.hud-dot.sol{width:10px;height:0;border-radius:0;border-top:1.5px dashed currentColor}
+
+/* Direction 02 · Mira bottom sheet */
+.mira-sheet{height:268px;flex:none;background:var(--bg-color);border-top:var(--border-hairline);padding:12px 18px 10px;display:flex;flex-direction:column;justify-content:space-between}
+.mira-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.mira-time{font:300 28px/32px var(--font-serif);letter-spacing:-.8px;margin:0}
+.mira-phase{font-size:12px;line-height:16px;color:var(--text-secondary);margin:0}
+.mira-keys{display:grid;grid-template-columns:repeat(3,1fr);border-top:var(--border-hairline);padding-top:8px}
+.mira-keys div+div{border-left:var(--border-hairline);padding-left:10px}
+.mira-keys dt{font-size:11px;line-height:14px;color:var(--text-secondary)}
+.mira-keys dd{margin:2px 0 0;font:400 18px/22px var(--font-sans);letter-spacing:-.3px}
+.mira-keys dl{margin:0}
+.mira-moon-line{display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:6px;border-top:var(--border-hairline);font-size:11.5px;line-height:16px;color:var(--text-secondary);white-space:nowrap}
+.mira-moon-line span{display:inline-flex;align-items:center;gap:5px}
+.btn-now-sm{min-height:36px;padding:0 11px;border-radius:var(--radius-pill);border:var(--border-control);background:transparent;color:var(--text-primary);font-size:12px;cursor:pointer;white-space:nowrap}
+
+/* Direction 03 · Cámara + cúpula split panel */
+.split-dome-panel{height:298px;flex:none;background:var(--bg-color);border-top:var(--border-hairline);padding:10px 16px 8px;display:flex;flex-direction:column;justify-content:space-between}
+.split-dome-main{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.dome-tap-wrap{position:relative;cursor:crosshair;border-radius:50%;flex:none}
+.dome-tap-wrap:focus-visible{outline:2px solid var(--focus-ring);outline-offset:2px}
+.split-side{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.split-side .split-time{font:300 30px/32px var(--font-serif);letter-spacing:-.8px;margin:0}
+.split-side .split-meta{font-size:12px;line-height:16px;color:var(--text-secondary);margin:0}
+.split-side .split-meta b{color:var(--text-primary);font-weight:500}
+.split-hint{font-size:11px;line-height:14px;color:var(--text-secondary);margin:-4px 0 0;display:flex;justify-content:space-between;align-items:center}
+
+/* Secondary state mini-phones (280 x 370) */
+.mini-phone{width:280px;height:370px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:26px;overflow:hidden;display:flex;flex-direction:column;position:relative}
+.mini-bar{height:24px;flex:none;padding:4px 16px 0;display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-secondary)}
+.mini-bar.on-cam{position:absolute;top:0;left:0;right:0;z-index:5;color:var(--hud-fg);background:linear-gradient(to bottom,var(--hud-scrim-strong),rgba(17,19,24,0))}
+.mini-state-body{flex:1;padding:18px 18px 16px;display:flex;flex-direction:column;justify-content:center;gap:12px;background:var(--bg-color);color:var(--text-primary)}
+.mini-icon-ring{width:48px;height:48px;border-radius:50%;border:var(--border-control);background:var(--surface-color);display:flex;align-items:center;justify-content:center;color:var(--sun)}
+.mini-state-body h3{font:400 18px/22px var(--font-serif);margin:0;letter-spacing:-.3px}
+.mini-state-body p{font-size:13px;line-height:18px;color:var(--text-secondary);margin:0}
+.mini-state-body .btn-primary{min-height:44px;font-size:14px;width:100%}
+.mini-state-body .btn-secondary{min-height:42px;font-size:13px;width:100%}
+
+/* Calibration notice overlay on mini camera */
+.cam-notice{position:absolute;left:10px;right:10px;z-index:6;background:var(--hud-scrim-strong);border:1px solid var(--hud-hairline);border-left:3px solid var(--hud-warn);border-radius:0 10px 10px 0;padding:8px 10px;color:var(--hud-fg);font-size:12px;line-height:16px;display:flex;align-items:center;gap:8px}
+.cam-notice b{display:block;font-weight:500;color:var(--hud-sun);font-size:12px}
+.cam-notice span{color:var(--hud-fg)}
+
+/* Column 3: Landscape + Bright-sky proof + Sensor missing */
+.land-phone{width:480px;height:256px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:26px;overflow:hidden;display:flex;position:relative}
+.bright-box{width:480px;height:246px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:20px;overflow:hidden;display:flex;flex-direction:column}
+.bright-foot{padding:9px 14px;background:var(--surface-color);border-top:var(--border-hairline);font-size:11.5px;line-height:16px;color:var(--text-secondary);display:flex;justify-content:space-between;align-items:center;gap:8px;white-space:nowrap}
+.bright-foot b{color:var(--text-primary);font-weight:500}
+
+.sensor-card{width:480px;height:194px;background:var(--bg-color);border:1px solid var(--control-border);border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;justify-content:space-between}
+.sensor-top{display:flex;align-items:flex-start;gap:12px}
+.sensor-top h3{font:400 18px/22px var(--font-serif);margin:0 0 4px;letter-spacing:-.3px}
+.sensor-top p{font-size:13px;line-height:18px;color:var(--text-secondary);margin:0}
+.sensor-actions{display:flex;gap:10px}
+.sensor-actions button{flex:1;min-height:42px;font-size:13px}
+
+/* Landscape layouts per direction */
+.land-visor-dock{width:138px;flex:none;background:var(--hud-scrim-strong);border-left:1px solid var(--hud-hairline);padding:10px 10px;display:flex;flex-direction:column;justify-content:space-between;color:var(--hud-fg)}
+.land-mira-sheet{width:176px;flex:none;background:var(--bg-color);border-left:var(--border-hairline);padding:10px 12px;display:flex;flex-direction:column;justify-content:space-between}
+.land-dome-panel{width:196px;flex:none;background:var(--bg-color);border-left:var(--border-hairline);padding:8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:space-between}
+
+/* SVG text casing for guaranteed legibility over both bright and dark sky */
+.ar-txt{font:500 11px var(--font-sans);fill:var(--hud-fg);paint-order:stroke;stroke:var(--hud-bg);stroke-width:3.5px;stroke-linejoin:round}
+.ar-txt.sun{fill:var(--hud-sun)}
+.ar-txt.moon{fill:var(--hud-moon)}
+.ar-txt.muted{fill:var(--hud-muted);font-weight:400}
+.ar-txt.big{font:500 13px var(--font-sans)}
+.ar-txt.serif{font:400 15px var(--font-serif)}
+
+</style>
+</head>
+<body>
+<main class="board stage2"><div id="bhead"></div><div class="stage2-grid">
+    <div class="col-main">
+      <p class="phone-cap">Cámara · mira central y hoja de horas</p>
+      <section class="phone ar-phone" aria-label="Pantalla Cámara — 02 Mira">
+        <div class="screen ar-screen">
+          <div class="cam-view" style="width:100%;flex:1;min-height:0">
+            <div data-slot="status"></div>
+            <div class="hud-top" data-slot="hudTop"></div>
+            <div data-slot="cam" style="width:100%;height:100%"></div>
+            <span class="hud-sim-tag">Vista simulada · cámara</span>
+          </div>
+          <div class="mira-sheet">
+            <div class="mira-head" data-slot="sheetHead"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:6px" data-slot="layers"></div>
+            <div id="scrub-slot"></div>
+            <div data-slot="keys"></div>
+            <div class="mira-moon-line" data-slot="moonLine"></div>
+          </div>
+        </div>
+        <div id="tab-slot"></div>
+      </section>
+    </div>
+    <div class="col-states">
+  <div class="frame-wrap"><p class="phone-cap">Permiso de cámara denegado</p><div data-slot="stPerm"></div></div>
+  <div class="frame-wrap"><p class="phone-cap">Calibración necesaria</p><div data-slot="stCal"></div></div>
+  <div class="frame-wrap"><p class="phone-cap">Sol fuera de vista / bajo el horiz.</p><div data-slot="stOut"></div></div>
+  <div class="frame-wrap"><p class="phone-cap">Apuntando al suelo</p><div data-slot="stGround"></div></div>
+</div>
+    <div class="col-extra">
+  <div class="frame-wrap"><p class="phone-cap">Vista apaisada · Mira</p><div data-slot="land"></div></div>
+  <div class="frame-wrap"><p class="phone-cap">Legibilidad en cielo brillante (contraluz)</p><div data-slot="bright"></div></div>
+  <div class="frame-wrap"><p class="phone-cap">Sin sensor de orientación</p><div data-slot="noSensor"></div></div>
+</div>
+  </div></main>
+<script>
+/* Cenit artboard ephemeris — low-precision sun (NOAA) and moon (Schlyter) for design mockups only.
+   The app uses Astronomy Engine; these values are accurate to about a minute / a few tenths of a degree. */
+const Astro = (() => {
+  const R = Math.PI / 180, D = 180 / Math.PI;
+  const sin = (x) => Math.sin(x * R), cos = (x) => Math.cos(x * R);
+  const norm = (x) => ((x % 360) + 360) % 360;
+  const jd = (ms) => ms / 86400000 + 2440587.5;
+
+  function sunEcl(ms) {
+    const T = (jd(ms) - 2451545) / 36525;
+    const L0 = norm(280.46646 + T * (36000.76983 + T * 0.0003032));
+    const M = 357.52911 + T * (35999.05029 - 0.0001537 * T);
+    const C = sin(M) * (1.914602 - T * (0.004817 + 0.000014 * T)) + sin(2 * M) * (0.019993 - 0.000101 * T) + sin(3 * M) * 0.000289;
+    const om = 125.04 - 1934.136 * T;
+    const lam = L0 + C - 0.00569 - 0.00478 * sin(om);
+    const eps = 23 + (26 + (21.448 - T * (46.815 + T * (0.00059 - T * 0.001813))) / 60) / 60 + 0.00256 * cos(om);
+    return { lam: norm(lam), eps };
+  }
+  function equToHor(ms, ra, dec, lat, lon) {
+    const d = jd(ms) - 2451545, T = d / 36525;
+    const gmst = norm(280.46061837 + 360.98564736629 * d + 0.000387933 * T * T);
+    const H = norm(gmst + lon - ra);
+    const alt = Math.asin(sin(lat) * sin(dec) + cos(lat) * cos(dec) * cos(H)) * D;
+    const az = norm(Math.atan2(sin(H), cos(H) * sin(lat) - Math.tan(dec * R) * cos(lat)) * D + 180);
+    return { alt, az };
+  }
+  function eclToEqu(lam, beta, eps) {
+    const ra = norm(Math.atan2(sin(lam) * cos(eps) - Math.tan(beta * R) * sin(eps), cos(lam)) * D);
+    const dec = Math.asin(sin(beta) * cos(eps) + cos(beta) * sin(eps) * sin(lam)) * D;
+    return { ra, dec };
+  }
+  function sun(ms, lat, lon) {
+    const { lam, eps } = sunEcl(ms);
+    const { ra, dec } = eclToEqu(lam, 0, eps);
+    return equToHor(ms, ra, dec, lat, lon);
+  }
+  function moonEcl(ms) {
+    const d = jd(ms) - 2451543.5;
+    const N = 125.1228 - 0.0529538083 * d, i = 5.1454, w = 318.0634 + 0.1643573223 * d;
+    const a = 60.2666, e = 0.0549, M = norm(115.3654 + 13.0649929509 * d);
+    let E = M + e * D * sin(M) * (1 + e * cos(M));
+    for (let k = 0; k < 5; k++) E = E - (E - e * D * sin(E) - M) / (1 - e * cos(E));
+    const xv = a * (cos(E) - e), yv = a * Math.sqrt(1 - e * e) * sin(E);
+    const v = Math.atan2(yv, xv) * D; let r = Math.hypot(xv, yv);
+    const xh = r * (cos(N) * cos(v + w) - sin(N) * sin(v + w) * cos(i));
+    const yh = r * (sin(N) * cos(v + w) + cos(N) * sin(v + w) * cos(i));
+    const zh = r * sin(v + w) * sin(i);
+    let lon = Math.atan2(yh, xh) * D, lat = Math.atan2(zh, Math.hypot(xh, yh)) * D;
+    const Ms = norm(356.047 + 0.9856002585 * d), ws = 282.9404 + 4.70935e-5 * d;
+    const Lm = N + w + M, Ls = Ms + ws, Dm = Lm - Ls, F = Lm - N;
+    lon += -1.274 * sin(M - 2 * Dm) + 0.658 * sin(2 * Dm) - 0.186 * sin(Ms) - 0.059 * sin(2 * M - 2 * Dm)
+      - 0.057 * sin(M - 2 * Dm + Ms) + 0.053 * sin(M + 2 * Dm) + 0.046 * sin(2 * Dm - Ms) + 0.041 * sin(M - Ms)
+      - 0.035 * sin(Dm) - 0.031 * sin(M + Ms) - 0.015 * sin(2 * F - 2 * Dm) + 0.011 * sin(M - 4 * Dm);
+    lat += -0.173 * sin(F - 2 * Dm) - 0.055 * sin(M - F - 2 * Dm) - 0.046 * sin(M + F - 2 * Dm) + 0.033 * sin(F + 2 * Dm) + 0.017 * sin(2 * M + F);
+    r += -0.58 * cos(M - 2 * Dm) - 0.46 * cos(2 * Dm);
+    return { lon: norm(lon), lat, r, eps: 23.4393 - 3.563e-7 * d };
+  }
+  function moon(ms, lat, lon) {
+    const m = moonEcl(ms);
+    const { ra, dec } = eclToEqu(m.lon, m.lat, m.eps);
+    const h = equToHor(ms, ra, dec, lat, lon);
+    const par = Math.asin(1 / m.r) * D;
+    return { alt: h.alt - par * cos(h.alt), az: h.az };
+  }
+  function phase(ms) {
+    const m = moonEcl(ms), s = sunEcl(ms);
+    const el = norm(m.lon - s.lam);
+    const cosE = cos(m.lat) * cos(el);
+    const illum = (1 - cosE) / 2;
+    const age = (el / 360) * 29.530589;
+    const names = ['Luna nueva', 'Luna creciente', 'Cuarto creciente', 'Gibosa creciente', 'Luna llena', 'Gibosa menguante', 'Cuarto menguante', 'Luna menguante'];
+    return { illum, age, waxing: el < 180, elong: el, name: names[Math.floor(norm(el + 22.5) / 45) % 8] };
+  }
+  /* Spain: Europe/Madrid (UTC+1) or Atlantic/Canary (UTC+0), EU summer time. */
+  function lastSunday(y, m) { const d = new Date(Date.UTC(y, m + 1, 0)); return Date.UTC(y, m, d.getUTCDate() - d.getUTCDay(), 1); }
+  function tzOffset(ms, base) { const y = new Date(ms).getUTCFullYear(); return base + (ms >= lastSunday(y, 2) && ms < lastSunday(y, 9) ? 1 : 0); }
+  /* Local-midnight UTC ms for a civil date in a place. */
+  function dayStart(y, mo, d, base) { const guess = Date.UTC(y, mo, d) - base * 3600000; return Date.UTC(y, mo, d) - tzOffset(guess, base) * 3600000; }
+  function crossings(start, f, h0, step = 60000) {
+    const out = []; let prev = f(start) - h0;
+    for (let t = start + step; t <= start + 86400000; t += step) {
+      const cur = f(t) - h0;
+      if ((prev < 0) !== (cur < 0)) out.push({ t: t - step * (cur / (cur - prev)), rising: cur > 0 });
+      prev = cur;
+    }
+    return out;
+  }
+  function day(place, y, mo, d) {
+    const base = place.tz, start = dayStart(y, mo, d, base);
+    const S = (t) => sun(t, place.lat, place.lon).alt, Mf = (t) => moon(t, place.lat, place.lon).alt;
+    const up = (list, rising) => (list.find((c) => c.rising === rising) || {}).t;
+    const at = (h) => crossings(start, S, h);
+    const r = {};
+    [['astro', -18], ['nautical', -12], ['civil', -6], ['blue', -4], ['set', -0.833], ['golden', 6]].forEach(([k, h]) => {
+      const c = at(h); r[k + 'Am'] = up(c, true); r[k + 'Pm'] = up(c, false);
+    });
+    let best = start, bestAlt = -99;
+    for (let t = start; t <= start + 86400000; t += 60000) { const a = S(t); if (a > bestAlt) { bestAlt = a; best = t; } }
+    r.noon = best; r.noonAlt = bestAlt;
+    const mc = crossings(start, Mf, -0.833);
+    r.moonrise = up(mc, true); r.moonset = up(mc, false);
+    r.riseAz = r.setAm && sun(r.setAm, place.lat, place.lon).az;
+    r.setAz = r.setPm && sun(r.setPm, place.lat, place.lon).az;
+    r.moonriseAz = r.moonrise && moon(r.moonrise, place.lat, place.lon).az;
+    r.moonsetAz = r.moonset && moon(r.moonset, place.lat, place.lon).az;
+    r.start = start; r.tz = (t) => tzOffset(t, base);
+    return r;
+  }
+  function fmt(ms, base) {
+    if (ms == null || isNaN(ms)) return '—';
+    const t = new Date(ms + tzOffset(ms, base) * 3600000);
+    return String(t.getUTCHours()).padStart(2, '0') + ':' + String(t.getUTCMinutes()).padStart(2, '0');
+  }
+  return { sun, moon, phase, day, fmt, tzOffset, dayStart };
+})();
+
+
+/* Cenit artboard kit: shared state, formatting and renderers (SVG + HTML strings). */
+const PLACES = [
+  { id: 'perello', name: 'El Perelló', region: 'Sueca, Valencia', lat: 39.2817, lon: -0.2763, tz: 1 },
+  { id: 'pujol', name: 'Gola de Pujol', region: "L'Albufera, Valencia", lat: 39.3406, lon: -0.3122, tz: 1 },
+  { id: 'cac', name: 'Ciudad de las Artes', region: 'Valencia', lat: 39.4545, lon: -0.3505, tz: 1 },
+  { id: 'montanejos', name: 'Montanejos', region: 'Castellón', lat: 40.0667, lon: -0.5236, tz: 1 },
+  { id: 'teide', name: 'Parque Nacional del Teide', region: 'Tenerife', lat: 28.2724, lon: -16.6425, tz: 0 },
+];
+const CITIES = [
+  { id: 'c1', name: 'El Perelló', region: 'Sueca, Valencia · España', lat: 39.2817, lon: -0.2763, tz: 1 },
+  { id: 'c2', name: 'El Perelló', region: 'Tarragona · España', lat: 40.874, lon: 0.713, tz: 1 },
+  { id: 'c3', name: 'El Perellonet', region: 'Valencia · España', lat: 39.3083, lon: -0.3011, tz: 1 },
+  { id: 'c4', name: 'Peñíscola', region: 'Castellón · España', lat: 40.3594, lon: 0.4067, tz: 1 },
+  { id: 'c5', name: 'Pedraza', region: 'Segovia · España', lat: 41.1307, lon: -3.8099, tz: 1 },
+  { id: 'c6', name: 'Montanejos', region: 'Castellón · España', lat: 40.0667, lon: -0.5236, tz: 1 },
+];
+const S = { alert: false, place: PLACES[0], y: 2026, mo: 10, d: 20, today: [2026, 10, 20], min: 16 * 60 + 20, heading: 247, query: '' };
+const _days = {};
+let _uid = 0;
+function day() {
+  const k = S.place.id + S.y + '-' + S.mo + '-' + S.d;
+  if (!_days[k]) {
+    const d = Astro.day(S.place, S.y, S.mo, S.d); const p = S.place; d.samples = [];
+    for (let m = 0; m <= 1440; m += 5) { const t = d.start + m * 60000; d.samples.push([m, Astro.sun(t, p.lat, p.lon), Astro.moon(t, p.lat, p.lon)]); }
+    _days[k] = d;
+  }
+  return _days[k];
+}
+const nowT = () => day().start + S.min * 60000;
+const sunNow = () => Astro.sun(nowT(), S.place.lat, S.place.lon);
+const moonNow = () => Astro.moon(nowT(), S.place.lat, S.place.lon);
+const phaseNow = () => Astro.phase(nowT());
+const T = (ms) => Astro.fmt(ms, S.place.tz);
+const minOf = (ms) => (ms - day().start) / 60000;
+const num = (x, dec = 0) => x.toFixed(dec).replace('.', ',').replace(/^-/, '−');
+const deg = (x, dec = 0) => num(x, dec) + '°';
+const WINDS = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSO', 'SO', 'OSO', 'O', 'ONO', 'NO', 'NNO'];
+const wind = (az) => WINDS[Math.round(((az % 360) + 360) % 360 / 22.5) % 16];
+const inDur = (ms) => (ms < 60000 ? 'ahora' : 'en ' + dur(ms));
+function dur(ms) { const m = Math.round(Math.abs(ms) / 60000); return m < 60 ? m + ' min' : Math.floor(m / 60) + ' h ' + String(m % 60).padStart(2, '0') + ' min'; }
+const coords = (p) => num(Math.abs(p.lat), 2) + '° ' + (p.lat >= 0 ? 'N' : 'S') + ' · ' + num(Math.abs(p.lon), 2) + '° ' + (p.lon >= 0 ? 'E' : 'O');
+const dateLabel = (y = S.y, mo = S.mo, d = S.d, opts = { weekday: 'short', day: 'numeric', month: 'short' }) =>
+  new Intl.DateTimeFormat('es-ES', Object.assign({ timeZone: 'UTC' }, opts)).format(Date.UTC(y, mo, d)).replace(',', '');
+const hhmm = (m) => String(Math.floor(m / 60) % 24).padStart(2, '0') + ':' + String(Math.round(m % 60)).padStart(2, '0');
+const isToday = () => S.y === S.today[0] && S.mo === S.today[1] && S.d === S.today[2];
+
+/* Light phases a photographer plans around (sun centre elevation). */
+function skyPhase(alt) {
+  if (alt > 6) return { id: 'day', name: 'Día', fill: 'var(--sky-day)' };
+  if (alt >= -4) return { id: 'golden', name: 'Hora dorada', fill: 'var(--sun)' };
+  if (alt >= -6) return { id: 'blue', name: 'Hora azul', fill: 'var(--blue-hour)' };
+  if (alt >= -12) return { id: 'nautical', name: 'Crepúsculo náutico', fill: 'var(--sky-civil)' };
+  if (alt >= -18) return { id: 'astro', name: 'Crepúsculo astronómico', fill: 'var(--sky-nautical)' };
+  return { id: 'night', name: 'Noche', fill: 'var(--sky-astro)' };
+}
+function events() {
+  const d = day();
+  return [
+    [d.astroAm, 'Empieza el crepúsculo astronómico', 'astro'], [d.nauticalAm, 'Empieza el crepúsculo náutico', 'nautical'],
+    [d.civilAm, 'Hora azul', 'blue', d.blueAm], [d.blueAm, 'Hora dorada', 'golden', d.goldenAm],
+    [d.setAm, 'Amanecer', 'sunrise', null, d.riseAz], [d.noon, 'Mediodía solar', 'noon', null, null, d.noonAlt],
+    [d.goldenPm, 'Hora dorada', 'golden', d.bluePm], [d.setPm, 'Atardecer', 'sunset', null, d.setAz],
+    [d.bluePm, 'Hora azul', 'blue', d.civilPm], [d.nauticalPm, 'Termina el crepúsculo náutico', 'nautical'],
+    [d.astroPm, 'Empieza la noche', 'night'],
+    [d.moonrise, 'Salida de la luna', 'moonrise', null, d.moonriseAz], [d.moonset, 'Puesta de la luna', 'moonset', null, d.moonsetAz],
+  ].filter((e) => e[0]).map(([t, label, kind, end, az, alt]) => ({ t, label, kind, end, az, alt })).sort((a, b) => a.t - b.t);
+}
+function nextEvent() {
+  const t = nowT(); const list = events().filter((e) => e.kind !== 'nautical' && e.kind !== 'astro');
+  return list.find((e) => e.t > t) || null;
+}
+const dayLength = (d = day()) => d.setPm - d.setAm;
+
+/* ---------- icons ---------- */
+const ICON = {
+  hoy: '<path d="M3 17h18M6.5 17a5.5 5.5 0 0 1 11 0M12 5v2.5M4.6 9.6l1.8 1.8M19.4 9.6l-1.8 1.8"/>',
+  cielo: '<path d="M2.5 18h19M4.5 18C6 9.5 18 9.5 19.5 18"/><circle cx="12" cy="11.6" r="1.8"/>',
+  brujula: '<circle cx="12" cy="12" r="9"/><path d="M14.8 9.2l-1.9 4.9-3.7 1.7 1.9-4.9z"/>',
+  lugares: '<path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+  gps: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/><circle cx="12" cy="12" r="7"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>', prev: '<path d="M15 5l-7 7 7 7"/>', next: '<path d="M9 5l7 7-7 7"/>',
+  cal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"/>',
+  moon: '<path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/>',
+  bell: '<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+};
+const icon = (n, s = 22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
+function logo(s = 28) {
+  return `<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke-linecap="round">
+  <path d="M5 22a11 11 0 0 1 22 0" style="stroke:var(--text-primary)" stroke-width="1.4"/>
+  <circle cx="16" cy="11" r="2.6" style="fill:var(--sun)"/>
+  <path d="M3 22h26M10 25.5h12M13 28.5h6" style="stroke:var(--text-secondary)" stroke-width="1.4"/></svg>`;
+}
+
+/* ---------- chrome ---------- */
+const statusBar = () => `<div class="status" aria-hidden="true"><span>16:20</span><span class="status-icons"><i></i><i></i><b></b></span></div>`;
+function tabBar(active) {
+  const tabs = [['hoy', 'Hoy'], ['cielo', 'Cielo'], ['brujula', 'Brújula'], ['lugares', 'Lugares']];
+  return `<nav class="tabbar" aria-label="Secciones">${tabs.map(([id, l]) => `<a href="#" class="tab${id === active ? ' on' : ''}"${id === active ? ' aria-current="page"' : ''}>${icon(id)}<span>${l}</span></a>`).join('')}</nav>`;
+}
+function phaseGlyph(ph, r = 11, label = true) {
+  const k = ph.illum, c = r + 1, rx = Math.abs(1 - 2 * k) * r;
+  const d = `M${c},${c - r} A${r},${r} 0 0 ${ph.waxing ? 1 : 0} ${c},${c + r} A${rx},${r} 0 0 ${(k > 0.5) === ph.waxing ? 1 : 0} ${c},${c - r}Z`;
+  return `<svg width="${2 * c}" height="${2 * c}" viewBox="0 0 ${2 * c} ${2 * c}" role="img" aria-label="${label ? ph.name + ', ' + Math.round(k * 100) + ' % iluminada' : ''}"${label ? '' : ' aria-hidden="true"'}>
+  <circle cx="${c}" cy="${c}" r="${r}" style="fill:var(--surface-subtle);stroke:var(--control-border)" stroke-width="1"/><path d="${d}" style="fill:var(--moon)"/></svg>`;
+}
+
+/* ---------- day ribbon: 24 h of light phases ---------- */
+function ribbonSegments() {
+  const segs = []; day().samples.forEach(([m, s]) => {
+    const ph = skyPhase(s.alt); const last = segs[segs.length - 1];
+    if (last && last.id === ph.id) last.to = m; else segs.push(Object.assign({ from: m, to: m }, ph));
+  });
+  return segs;
+}
+function ribbon(w = 316, h = 14, nowMark = true) {
+  const segs = ribbonSegments(), X = (m) => (m / 1440) * w, id = 'rb' + (++_uid);
+  return `<svg class="ribbon" width="${w}" height="${h + 4}" viewBox="0 0 ${w} ${h + 4}" role="img" aria-label="Luz del día: ${segs.filter((s) => s.id === 'golden').map((s) => 'hora dorada ' + hhmm(s.from) + '–' + hhmm(s.to)).join(', ')}">
+  <defs><clipPath id="${id}"><rect x="0" y="2" width="${w}" height="${h}" rx="${h / 2}"/></clipPath></defs>
+  <g clip-path="url(#${id})">${segs.map((s) => `<rect x="${X(s.from)}" y="2" width="${Math.max(1, X(s.to + 5) - X(s.from))}" height="${h}" style="fill:${s.fill}"/>`).join('')}</g>
+  <rect x="0.5" y="2.5" width="${w - 1}" height="${h - 1}" rx="${(h - 1) / 2}" style="fill:none;stroke:var(--control-border)"/>
+  ${nowMark ? `<rect x="${X(S.min) - 1.5}" y="0" width="3" height="${h + 4}" rx="1.5" style="fill:var(--text-primary);stroke:var(--bg-color)" stroke-width="1"/>` : ''}</svg>`;
+}
+
+/* ---------- elevation chart (sun path diagram) ---------- */
+function chart({ w = 316, h = 150, labels = false, ticks = true, now = true } = {}) {
+  const d = day(), padT = 8, padB = ticks ? 20 : 4, id = 'cp' + (++_uid);
+  const top = Math.max(...d.samples.map((s) => Math.max(s[1].alt, s[2].alt)));
+  const ymax = Math.max(30, Math.ceil((top + 6) / 10) * 10), ymin = -20;
+  const X = (m) => (m / 1440) * w, Y = (a) => padT + ((ymax - a) / (ymax - ymin)) * (h - padT - padB);
+  const bands = [[ymax, 0, 'var(--sky-day)', 'Día'], [0, -6, 'var(--sky-civil)', 'Civil'], [-6, -12, 'var(--sky-nautical)', 'Náutico'], [-12, -18, 'var(--sky-astro)', 'Astron.'], [-18, -20, 'var(--chart-night)', '']];
+  const line = (sel, k) => d.samples.filter(sel).map((s) => X(s[0]).toFixed(1) + ',' + Y(s[k].alt).toFixed(1));
+  const runs = (pred) => { const out = []; let cur = []; d.samples.forEach((s) => { if (pred(s[1].alt)) cur.push(X(s[0]).toFixed(1) + ',' + Y(s[1].alt).toFixed(1)); else if (cur.length) { out.push(cur); cur = []; } }); if (cur.length) out.push(cur); return out; };
+  const s = sunNow(), mo = moonNow(), nx = X(S.min);
+  const golden = runs((a) => a >= -4 && a <= 6), blue = runs((a) => a >= -6 && a < -4);
+  return `<svg class="chart" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Elevación del sol (línea continua) y de la luna (discontinua) el ${dateLabel()}. Máxima del sol ${deg(d.noonAlt)} a las ${T(d.noon)}.">
+  <defs><clipPath id="${id}"><rect x="0" y="0" width="${w}" height="${h - padB}"/></clipPath></defs>
+  <g clip-path="url(#${id})">${bands.map(([a, b, f]) => `<rect x="0" y="${Y(a)}" width="${w}" height="${Y(b) - Y(a)}" style="fill:${f}"/>`).join('')}<rect x="0" y="0" width="${w}" height="${padT}" style="fill:var(--sky-day)"/>
+  ${golden.map((r) => `<polyline points="${r.join(' ')}" style="fill:none;stroke:var(--sun)" stroke-width="6" stroke-linecap="round"/>`).join('')}
+  ${blue.map((r) => `<polyline points="${r.join(' ')}" style="fill:none;stroke:var(--blue-hour)" stroke-width="6" stroke-linecap="round"/>`).join('')}
+  <line x1="0" x2="${w}" y1="${Y(0)}" y2="${Y(0)}" style="stroke:var(--control-border)"/>
+  <polyline points="${line(() => true, 2).join(' ')}" style="fill:none;stroke:var(--moon)" stroke-width="2" stroke-dasharray="5 4"/>
+  <polyline points="${line(() => true, 1).join(' ')}" style="fill:none;stroke:var(--sun)" stroke-width="2"/>
+  ${labels ? bands.filter((b) => b[3] && Y(b[1]) - Y(b[0]) >= 13).map(([a, b, , l]) => `<text x="${w - 8}" y="${(Y(a) + Y(b)) / 2 + 4}" text-anchor="end" class="svg-label">${l}</text>`).join('') : ''}
+  ${now ? `<line x1="${nx}" x2="${nx}" y1="0" y2="${h - padB}" style="stroke:var(--text-primary)" stroke-width="1"/>
+  <circle cx="${nx}" cy="${Y(mo.alt)}" r="4.5" style="fill:var(--bg-color);stroke:var(--moon)" stroke-width="2"/>
+  <circle cx="${nx}" cy="${Y(s.alt)}" r="5.5" style="fill:var(--sun);stroke:var(--bg-color)" stroke-width="2"/>` : ''}</g>
+  ${ticks ? [0, 6, 12, 18, 24].map((hh) => `<text x="${Math.min(w - 2, Math.max(2, X(hh * 60)))}" y="${h - 4}" text-anchor="${hh === 0 ? 'start' : hh === 24 ? 'end' : 'middle'}" class="svg-label">${String(hh).padStart(2, '0')}</text>`).join('') : ''}</svg>`;
+}
+
+/* ---------- sky dome: flat compass view (Sun Seeker style) ----------
+   Top-down sky: zenith at the centre, horizon circle, twilight rings outside it.
+   Day path solid with hour dots, night path dotted outside the horizon,
+   June/December solstice and equinox reference paths; N up unless a heading is given. */
+const _ref = {};
+function refPaths() {
+  const p = S.place; if (_ref[p.id]) return _ref[p.id];
+  const mk = (y, mo, d) => { const st = Astro.dayStart(y, mo, d, p.tz), out = []; for (let m = 0; m <= 1440; m += 10) out.push(Astro.sun(st + m * 60000, p.lat, p.lon)); return out; };
+  return (_ref[p.id] = { summer: mk(2026, 5, 21), equinox: mk(2026, 2, 20), winter: mk(2026, 11, 21) });
+}
+function dome({ size = 300, heading = 0, labels = true, refs = true } = {}) {
+  const d = day(), c = size / 2, R = (c - 6) / (102 / 90), s = sunNow(), mo = moonNow();
+  const rad = (alt) => (R * (90 - Math.max(-12, alt))) / 90;
+  const P = (az, alt) => { const r = rad(alt), a = ((az - heading) * Math.PI) / 180; return [c + r * Math.sin(a), c - r * Math.cos(a)]; };
+  const runs = (pts, pred) => { const out = []; let cur = []; pts.forEach((q) => { if (pred(q.alt)) cur.push(P(q.az, q.alt).map((v) => v.toFixed(1)).join(',')); else if (cur.length) { out.push(cur); cur = []; } }); if (cur.length) out.push(cur); return out; };
+  const line = (pts, pred, style, dash) => runs(pts, pred).map((p) => `<polyline points="${p.join(' ')}" style="fill:none;${style}"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`).join('');
+  const sun = d.samples.map((q) => q[1]), moon = d.samples.map((q) => q[2]);
+  const at = (az, r) => { const a = ((az - heading) * Math.PI) / 180; return [c + r * Math.sin(a), c - r * Math.cos(a)]; };
+  let refSvg = '';
+  if (refs) {
+    const rp = refPaths(), apex = (pts) => pts.reduce((b, q) => (q.alt > b.alt ? q : b));
+    refSvg = line(rp.summer, (a) => a > 0, 'stroke:var(--text-secondary);stroke-width:1') + line(rp.winter, (a) => a > 0, 'stroke:var(--text-secondary);stroke-width:1') + line(rp.equinox, (a) => a > 0, 'stroke:var(--text-secondary);stroke-width:1', '2 3');
+    if (labels) [[rp.summer, 'jun'], [rp.winter, 'dic']].forEach(([pts, l]) => { const q = apex(pts), [x, y] = P(q.az, q.alt); refSvg += `<text x="${x}" y="${l === 'dic' ? y + 16 : y - 5}" text-anchor="middle" class="svg-label">${l}</text>`; });
+  }
+  let dots = '';
+  d.samples.forEach(([m, q]) => { if (m % 60 || q.alt <= 0.5) return; const [x, y] = P(q.az, q.alt), h = m / 60;
+    dots += `<circle cx="${x}" cy="${y}" r="3" style="fill:var(--bg-color);stroke:var(--sun)" stroke-width="1.5"/>`;
+    if (labels && h % 3 === 0) { const dx = c - x, dy = c - y, n = Math.hypot(dx, dy) || 1; dots += `<text x="${x + (dx / n) * 13}" y="${y + (dy / n) * 13 + 4}" text-anchor="middle" class="svg-label strong">${h}</text>`; } });
+  const tick = (az, col, t) => { const [x1, y1] = at(az, R), [x2, y2] = at(az, R - 9), [lx, ly] = at(az, R - 24);
+    return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" style="stroke:var(--${col})" stroke-width="2"/>${labels ? `<text x="${lx}" y="${ly + 4}" text-anchor="middle" class="svg-label strong">${t}</text>` : ''}`; };
+  return `<svg class="dome" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="Brújula plana: recorrido del sol con sus horas y de la luna. Amanecer a ${deg(d.riseAz)} a las ${T(d.setAm)}, atardecer a ${deg(d.setAz)} a las ${T(d.setPm)}. Líneas finas: solsticios de junio y diciembre y equinoccio.">
+  <circle cx="${c}" cy="${c}" r="${rad(-12)}" style="fill:var(--sky-nautical);stroke:var(--border-color)"/>
+  <circle cx="${c}" cy="${c}" r="${rad(-6)}" style="fill:var(--sky-civil)"/>
+  <circle cx="${c}" cy="${c}" r="${R}" style="fill:var(--sky-day);stroke:var(--control-border)"/>
+  <circle cx="${c}" cy="${c}" r="${(R * 2) / 3}" style="fill:none;stroke:var(--border-color)"/><circle cx="${c}" cy="${c}" r="${R / 3}" style="fill:none;stroke:var(--border-color)"/>
+  ${labels ? [[0, 'N'], [90, 'E'], [180, 'S'], [270, 'O']].map(([az, l]) => { const [x, y] = at(az, R - 11); return `<text x="${x}" y="${y + 4}" text-anchor="middle" class="svg-label${l === 'N' ? ' strong' : ''}">${l}</text>`; }).join('') : ''}
+  ${refSvg}
+  ${line(sun, (a) => a <= 0, 'stroke:var(--text-secondary);stroke-width:1.5', '1 4')}
+  ${line(moon, (a) => a > -0.5, 'stroke:var(--moon);stroke-width:2', '5 4')}
+  ${line(sun, (a) => a > -0.5, 'stroke:var(--sun);stroke-width:2.5')}
+  ${dots}
+  ${d.riseAz ? tick(d.riseAz, 'sun', T(d.setAm)) : ''}${d.setAz ? tick(d.setAz, 'sun', T(d.setPm)) : ''}
+  ${mo.alt > 0 ? (() => { const [x, y] = P(mo.az, mo.alt); return `<circle cx="${x}" cy="${y}" r="6" style="fill:var(--bg-color);stroke:var(--moon)" stroke-width="2"/>`; })() : ''}
+  ${(() => { const [x, y] = P(s.az, s.alt); return s.alt > 0 ? `<circle cx="${x}" cy="${y}" r="7.5" style="fill:var(--sun);stroke:var(--bg-color)" stroke-width="2"/>` : `<circle cx="${x}" cy="${y}" r="6" style="fill:var(--bg-color);stroke:var(--sun)" stroke-width="2"/>`; })()}
+  <circle cx="${c}" cy="${c}" r="2" style="fill:var(--text-secondary)"/></svg>`;
+}
+const shadowRatio = (alt) => (alt <= 0.5 ? null : 1 / Math.tan((alt * Math.PI) / 180));
+
+/* ---------- compass rose (rotates with the heading; index fixed at the top) ---------- */
+function rose({ size = 300 } = {}) {
+  const d = day(), c = size / 2, R = c - 8, hd = S.heading, s = sunNow(), mo = moonNow();
+  const A = (az) => ((az - hd) * Math.PI) / 180, pt = (az, r) => [c + r * Math.sin(A(az)), c - r * Math.cos(A(az))];
+  let ticks = ''; for (let a = 0; a < 360; a += 5) { const [x1, y1] = pt(a, R), [x2, y2] = pt(a, R - (a % 30 === 0 ? 12 : 6)); ticks += `<line x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" style="stroke:var(--${a % 90 === 0 ? 'text-primary' : 'control-border'})" stroke-width="${a % 30 === 0 ? 1.5 : 1}"/>`; }
+  const ray = (az, col, dash, label) => { const [x, y] = pt(az, R - 58), [lx, ly] = pt(az, R - 44); return `<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" style="stroke:var(--${col})" stroke-width="2"${dash ? ' stroke-dasharray="5 4"' : ''}/><text x="${lx}" y="${ly + 4}" text-anchor="middle" class="svg-label strong">${label}</text>`; };
+  const card = [[0, 'N'], [90, 'E'], [180, 'S'], [270, 'O']].map(([a, l]) => { const [x, y] = pt(a, R - 26); return `<text x="${x}" y="${y + 5}" text-anchor="middle" class="svg-card${l === 'N' ? ' n' : ''}">${l}</text>`; }).join('');
+  return `<svg class="rose" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="Brújula: rumbo ${deg(hd)} ${wind(hd)}. Atardecer a ${deg(d.setAz)}, salida de la luna a ${deg(d.moonriseAz || 0)}.">
+  <circle cx="${c}" cy="${c}" r="${R}" style="fill:var(--surface-color);stroke:var(--control-border)"/>${ticks}${card}
+  ${d.riseAz ? ray(d.riseAz, 'sun', false, T(d.setAm)) : ''}${d.setAz ? ray(d.setAz, 'sun', false, T(d.setPm)) : ''}
+  ${d.moonriseAz ? ray(d.moonriseAz, 'moon', true, T(d.moonrise)) : ''}${d.moonsetAz ? ray(d.moonsetAz, 'moon', true, T(d.moonset)) : ''}
+  ${s.alt > -1 ? (() => { const [x, y] = pt(s.az, R - 18); return `<circle cx="${x}" cy="${y}" r="7.5" style="fill:var(--sun);stroke:var(--bg-color)" stroke-width="2"/>`; })() : ''}
+  ${mo.alt > -1 ? (() => { const [x, y] = pt(mo.az, R - 18); return `<circle cx="${x}" cy="${y}" r="6" style="fill:var(--bg-color);stroke:var(--moon)" stroke-width="2"/>`; })() : ''}
+  <circle cx="${c}" cy="${c}" r="3" style="fill:var(--text-primary)"/>
+  <path d="M${c - 8},4 L${c + 8},4 L${c},18 Z" style="fill:var(--text-primary)"/></svg>`;
+}
+
+/* ---------- heading tape (horizontal compass, ±60° around the heading) ---------- */
+function tape({ w = 316, h = 92 } = {}) {
+  const d = day(), hd = S.heading, span = 120, X = (az) => { let dd = ((az - hd + 540) % 360) - 180; return w / 2 + (dd / span) * w; }, s = sunNow(), mo = moonNow();
+  let t = ''; for (let a = Math.floor((hd - 70) / 5) * 5; a <= hd + 70; a += 5) { const az = ((a % 360) + 360) % 360, x = X(az); if (x < 0 || x > w) continue;
+    const major = az % 15 === 0; t += `<line x1="${x}" x2="${x}" y1="${h - 30}" y2="${h - (major ? 16 : 22)}" style="stroke:var(--${major ? 'text-secondary' : 'control-border'})"/>`;
+    if (major) t += `<text x="${x}" y="${h - 2}" text-anchor="middle" class="svg-label${az % 90 === 0 ? ' strong' : ''}">${az % 45 === 0 ? WINDS[az / 22.5] : az}</text>`; }
+  const mark = (az, kind, label) => { const x = X(az); if (x < 6 || x > w - 6) return ''; return `<g>${kind === 'sun' ? `<circle cx="${x}" cy="22" r="7.5" style="fill:var(--sun);stroke:var(--bg-color)" stroke-width="2"/>` : kind === 'moon' ? `<circle cx="${x}" cy="22" r="6.5" style="fill:var(--bg-color);stroke:var(--moon)" stroke-width="2"/>` : `<line x1="${x}" x2="${x}" y1="20" y2="${h - 30}" style="stroke:var(--${kind.replace('-line', '')})" stroke-width="2"${kind === 'moon-line' ? ' stroke-dasharray="4 3"' : ''}/>`}${label ? `<text x="${Math.min(w - 40, Math.max(40, x))}" y="${kind === 'sun' || kind === 'moon' ? 45 : 15}" text-anchor="middle" class="svg-label strong">${label}</text>` : ''}</g>`; };
+  return `<svg class="tape" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Rumbo ${deg(hd)}. Atardecer a ${deg(d.setAz)}.">
+  <rect x="0.5" y="0.5" width="${w - 1}" height="${h - 1}" rx="14" style="fill:var(--surface-color);stroke:var(--border-color)"/>${t}
+  ${d.setAz ? mark(d.setAz, 'sun-line', 'Atardecer ' + T(d.setPm)) : ''}
+  ${d.riseAz ? mark(d.riseAz, 'sun-line', 'Amanecer ' + T(d.setAm)) : ''}${d.moonriseAz ? mark(d.moonriseAz, 'moon-line', 'Luna ' + T(d.moonrise)) : ''}
+  ${s.alt > -1 ? mark(s.az, 'sun', '') : ''}${mo.alt > -1 ? mark(mo.az, 'moon', '') : ''}
+  <path d="M${w / 2 - 7},${h - 31} L${w / 2 + 7},${h - 31} L${w / 2},${h - 41} Z" style="fill:var(--text-primary)"/><line x1="${w / 2}" x2="${w / 2}" y1="${h - 31}" y2="${h - 14}" style="stroke:var(--text-primary)" stroke-width="2"/></svg>`;
+}
+/* Signed angle from the heading to a target: "3° a la izquierda". */
+function relative(az) { const dd = ((az - S.heading + 540) % 360) - 180; return Math.abs(dd) < 1 ? 'de frente' : deg(Math.abs(dd)) + (dd < 0 ? ' izq.' : ' der.'); }
+
+/* ---------- planner controls ---------- */
+function dateStrip() {
+  const base = Date.UTC(S.today[0], S.today[1], S.today[2]), sel = Date.UTC(S.y, S.mo, S.d), dow = (new Date(base).getUTCDay() + 6) % 7;
+  let cells = ''; for (let i = 0; i < 7; i++) { const ms = base + (i - dow) * 86400000, dt = new Date(ms), y = dt.getUTCFullYear(), mo = dt.getUTCMonth(), d = dt.getUTCDate();
+    const today = ms === base, on = ms === sel; cells += `<button class="day${today ? ' today' : ''}${on ? ' on' : ''}" data-act="date" data-ms="${ms}" data-key="day${i}" aria-pressed="${on}" aria-label="${dateLabel(y, mo, d, { weekday: 'long', day: 'numeric', month: 'long' })}${today ? ', hoy' : ''}"><span>${dateLabel(y, mo, d, { weekday: 'narrow' })}</span><b>${d}</b></button>`; }
+  return `<div class="strip" role="group" aria-label="Fecha">${cells}</div>`;
+}
+const scrubber = (id = 'time') => `<label class="sr" for="${id}">Hora</label><input class="scrub" id="${id}" type="range" min="0" max="1435" step="5" value="${S.min}" data-input="time" aria-valuetext="${hhmm(S.min)}">`;
+function readout() {
+  const s = sunNow(), m = moonNow(), ph = phaseNow();
+  return `<dl class="readout"><div><dt>${icon('sun', 16)} Sol</dt><dd>${deg(s.az)} <small>${wind(s.az)}</small></dd><dd class="sub">${s.alt < -0.833 ? 'bajo el horizonte' : 'elev. ' + deg(s.alt, 1)}</dd></div>
+  <div><dt>${icon('moon', 16)} Luna</dt><dd>${deg(m.az)} <small>${wind(m.az)}</small></dd><dd class="sub">${m.alt < -0.833 ? 'bajo el horizonte' : 'elev. ' + deg(m.alt, 1)} · ${Math.round(ph.illum * 100)} %</dd></div></dl>`;
+}
+
+/* ---------- places (shared by every direction) ---------- */
+function placesSlot() {
+  const q = S.query.trim().toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+  const row = (p, act) => `<button class="place" data-act="place" data-id="${p.id}" data-key="pl-${p.id}"${p.id === S.place.id || (p.lat === S.place.lat && p.lon === S.place.lon) ? ' aria-current="true"' : ''}><span class="pl-text"><span class="pl-name">${p.name}</span><span class="pl-sub">${p.region} · ${coords(p)}</span></span>${p.lat === S.place.lat && p.lon === S.place.lon ? `<span class="pl-check">${icon('check', 20)}<span class="sr">Lugar activo</span></span>` : ''}</button>`;
+  if (q) {
+    const hits = CITIES.filter((c) => c.name.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').includes(q));
+    return `<p class="eyebrow">${hits.length ? hits.length + (hits.length === 1 ? ' resultado' : ' resultados') : 'Sin resultados'}</p>
+    ${hits.length ? `<div class="list">${hits.map((c) => row(c)).join('')}</div>` : `<p class="muted">No hay ninguna ciudad con «${S.query}». Prueba con otro nombre o introduce las coordenadas.</p>`}`;
+  }
+  return `<button class="place gps" data-act="gps"><span class="pl-icon">${icon('gps', 20)}</span><span class="pl-text"><span class="pl-name">Mi ubicación</span><span class="pl-sub">GPS del móvil · sin conexión</span></span></button>
+  <p class="eyebrow">Guardados</p><div class="list">${PLACES.map((p) => row(p)).join('')}</div>`;
+}
+function placesPhone() {
+  return `<section class="phone" aria-label="Pantalla Lugares">${statusBar()}<div class="screen">
+  <h2 class="headline">Lugares</h2>
+  <label class="search">${icon('search', 20)}<span class="sr">Buscar ciudad</span><input type="search" placeholder="Buscar ciudad" data-input="search" autocomplete="off" value="${S.query}"></label>
+  <div data-slot="places"></div>
+  <div class="actions"><button class="btn-secondary" data-act="manual">${icon('edit', 18)} Coordenadas manuales</button></div>
+  <p class="fine">Búsqueda sin conexión. Datos de ciudades: GeoNames (CC BY 4.0).</p>
+  </div>${tabBar('lugares')}</section>`;
+}
+
+/* ---------- mount: slots re-render on every change, inputs live outside slots ---------- */
+const SLOTS = { places: placesSlot };
+function update() {
+  const a = document.activeElement, key = a && a.dataset && a.dataset.key;
+  document.querySelectorAll('[data-slot]').forEach((el) => { const f = SLOTS[el.dataset.slot]; if (f) el.innerHTML = f(); });
+  document.querySelectorAll('[data-input=time]').forEach((el) => { if (el !== a) el.value = S.min; el.setAttribute('aria-valuetext', hhmm(S.min)); });
+  document.querySelectorAll('[data-input=heading]').forEach((el) => { if (el !== a) el.value = S.heading; });
+  if (key) { const el = document.querySelector(`[data-key="${key}"]`); if (el) el.focus(); }
+}
+function mount(slots) {
+  Object.assign(SLOTS, slots);
+  document.addEventListener('input', (e) => {
+    const t = e.target.dataset && e.target.dataset.input;
+    if (t === 'time') S.min = +e.target.value; else if (t === 'heading') S.heading = +e.target.value; else if (t === 'search') S.query = e.target.value; else return;
+    update();
+  });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-act]'); if (!b) return; const act = b.dataset.act;
+    if (b.tagName === 'A') e.preventDefault();
+    if (act === 'date') { const dt = new Date(+b.dataset.ms); S.y = dt.getUTCFullYear(); S.mo = dt.getUTCMonth(); S.d = dt.getUTCDate(); }
+    else if (act === 'shift') { const dt = new Date(Date.UTC(S.y, S.mo, S.d) + +b.dataset.days * 86400000); S.y = dt.getUTCFullYear(); S.mo = dt.getUTCMonth(); S.d = dt.getUTCDate(); }
+    else if (act === 'now') { S.y = S.today[0]; S.mo = S.today[1]; S.d = S.today[2]; S.min = 16 * 60 + 20; }
+    else if (act === 'place') { S.place = PLACES.concat(CITIES).find((p) => p.id === b.dataset.id) || S.place; }
+    else if (act === 'alert') { S.alert = !S.alert; }
+    else if (act === 'gps') { S.place = PLACES[0]; S.query = ''; document.querySelectorAll('[data-input=search]').forEach((i) => (i.value = '')); }
+    else if (act === 'theme') { const r = document.documentElement; r.dataset.theme = r.dataset.theme === 'dark' ? 'light' : 'dark'; b.setAttribute('aria-pressed', r.dataset.theme === 'light'); b.querySelector('span').textContent = r.dataset.theme === 'dark' ? 'Oscuro' : 'Claro'; }
+    else return;
+    update();
+  });
+  document.querySelectorAll('a.tab').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  update();
+}
+
+/* Golden-hour / event alert toggle (local notification; works offline). */
+function alertBtn() {
+  const e = nextEvent(); const what = e ? e.label.toLowerCase() : 'el próximo evento';
+  return `<button class="icon-btn alert" data-act="alert" data-key="alert" aria-pressed="${S.alert}" aria-label="Avisarme 30 minutos antes de ${what}">${icon('bell', 22)}</button>`;
+}
+
+/* Cenit stage 2 (AR camera): real 3D projection, drawn Valencia dusk/day/night scene,
+   path-crossing detection, edge arrows, synced flat dome, and key states.
+   All hex values come strictly from design/system.md. */
+
+Object.assign(S, {
+  heading: 239,
+  pitch: 5,
+  scene: 'dusk', /* 'dusk' | 'bright' | 'night' */
+  layers: { sun: true, moon: true, solstices: true },
+});
+
+Object.assign(ICON, {
+  camara: '<rect x="3" y="6.5" width="18" height="13" rx="2.5"/><path d="M8.5 6.5L10 4h4l1.5 2.5"/><circle cx="12" cy="13" r="3.2"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  camOff: '<path d="M3 3l18 18"/><path d="M9 5h5l1.5 2H19a2 2 0 0 1 2 2v7.5"/><path d="M17.5 18.5H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.5"/><path d="M9.5 11.5a3 3 0 0 0 4 3.8"/>',
+  figure8: '<path d="M7.5 15.5c-2.5 0-4-1.6-4-3.5s1.5-3.5 4-3.5c3 0 6 7 9 7 2.5 0 4-1.6 4-3.5s-1.5-3.5-4-3.5c-3 0-6 7-9 7z"/>',
+  sensorOff: '<circle cx="12" cy="12" r="9"/><path d="M4.5 4.5l15 15"/><path d="M14.5 9.5l-1.5 4-3.5 1.5"/>',
+  ground: '<path d="M12 19V5M7 10l5-5 5 5"/><path d="M4 20h16"/>',
+});
+
+function tabBar5(active) {
+  const tabs = [
+    ['hoy', 'Hoy'],
+    ['cielo', 'Cielo'],
+    ['brujula', 'Brújula'],
+    ['camara', 'Cámara'],
+    ['lugares', 'Lugares'],
+  ];
+  return `<nav class="tabbar tabs-5" aria-label="Secciones">${tabs.map(([id, l]) =>
+    `<a href="#" class="tab${id === active ? ' on' : ''}"${id === active ? ' aria-current="page"' : ''}>${icon(id, 20)}<span>${l}</span></a>`
+  ).join('')}</nav>`;
+}
+
+const camStatus = () => `<div class="cam-status" aria-hidden="true"><span>${hhmm(S.min)}</span><span class="status-icons"><i></i><i></i><b></b></span></div>`;
+
+/* ---------- 3D spherical -> screen perspective projection ---------- */
+function arProject(azDeg, altDeg, cam, w, h) {
+  const R = Math.PI / 180;
+  const az = azDeg * R, alt = altDeg * R;
+  const az0 = cam.heading * R, alt0 = cam.pitch * R;
+  const cy0 = cam.cy != null ? cam.cy : h / 2;
+  const vx = Math.cos(alt) * Math.sin(az);
+  const vy = Math.cos(alt) * Math.cos(az);
+  const vz = Math.sin(alt);
+
+  const fx = Math.cos(alt0) * Math.sin(az0);
+  const fy = Math.cos(alt0) * Math.cos(az0);
+  const fz = Math.sin(alt0);
+
+  const rx = Math.cos(az0), ry = -Math.sin(az0), rz = 0;
+  const ux = -Math.sin(alt0) * Math.sin(az0);
+  const uy = -Math.sin(alt0) * Math.cos(az0);
+  const uz = Math.cos(alt0);
+
+  const cx = vx * rx + vy * ry + vz * rz;
+  const cy = vx * ux + vy * uy + vz * uz;
+  const cz = vx * fx + vy * fy + vz * fz;
+
+  const f = (w / 2) / Math.tan(((cam.fovH || 64) * R) / 2);
+  if (cz <= 0.14) return { vis: false, cx, cy, cz, x: w / 2 + cx * w, y: cy0 - cy * h };
+  const x = w / 2 + f * (cx / cz);
+  const y = cy0 - f * (cy / cz);
+  const inBox = x >= -24 && x <= w + 24 && y >= -24 && y <= h + 24;
+  return { vis: true, inBox, x, y, cx, cy, cz };
+}
+
+/* ---------- Crosshair crossing detection (real astro.js samples) ---------- */
+function angDiff(a, b) { return ((a - b + 540) % 360) - 180; }
+function angularDist(az1, alt1, az2, alt2) {
+  const dAz = angDiff(az1, az2) * Math.cos(((alt1 + alt2) / 2) * Math.PI / 180);
+  const dAlt = alt1 - alt2;
+  return Math.hypot(dAz, dAlt);
+}
+
+function nearestOnTrack(samples, az0, alt0) {
+  let best = null;
+  for (let i = 0; i < samples.length; i++) {
+    const [m, pos] = samples[i];
+    const dist = angularDist(pos.az, pos.alt, az0, alt0);
+    if (!best || dist < best.dist) best = { m, pos, dist, idx: i };
+  }
+  /* Refine linearly between adjacent 5-min samples for minute-accurate crossing */
+  if (best && best.idx > 0 && best.idx < samples.length - 1) {
+    const neighbors = [best.idx - 1, best.idx + 1];
+    neighbors.forEach((j) => {
+      const [m1, p1] = samples[best.idx], [m2, p2] = samples[j];
+      for (let k = 1; k < 5; k++) {
+        const t = k / 5;
+        const az = p1.az + angDiff(p2.az, p1.az) * t;
+        const alt = p1.alt + (p2.alt - p1.alt) * t;
+        const dist = angularDist(az, alt, az0, alt0);
+        if (dist < best.dist) best = { m: m1 + (m2 - m1) * t, pos: { az, alt }, dist, idx: best.idx };
+      }
+    });
+  }
+  return best;
+}
+
+function crosshairHit(heading, pitch, layers = S.layers) {
+  if (pitch <= -28) {
+    return { kind: 'ground', text: 'Apuntando al suelo · eleva hacia el horizonte', short: 'Eleva hacia el horizonte' };
+  }
+  const d = day();
+  const sunSamples = d.samples.map((s) => [s[0], s[1]]);
+  const bestSun = nearestOnTrack(sunSamples, heading, pitch);
+  if (layers.sun && bestSun && bestSun.dist <= 4.0) {
+    const ph = skyPhase(bestSun.pos.alt);
+    const tStr = hhmm(bestSun.m);
+    if (bestSun.pos.alt < -0.833) {
+      return { kind: 'sun-below', time: tStr, text: `Sol bajo el horizonte aquí a las ${tStr}`, short: `Sol ${tStr} · bajo horiz.` };
+    }
+    return {
+      kind: 'sun',
+      time: tStr,
+      phase: ph.name.toLowerCase(),
+      text: `El sol pasa por aquí a las ${tStr} · ${ph.name.toLowerCase()}`,
+      short: `Sol ${tStr} · ${ph.name.toLowerCase()}`,
+    };
+  }
+  if (layers.moon) {
+    const moonSamples = d.samples.map((s) => [s[0], s[2]]);
+    const bestMoon = nearestOnTrack(moonSamples, heading, pitch);
+    if (bestMoon && bestMoon.dist <= 4.0 && bestMoon.pos.alt > -0.833) {
+      const tStr = hhmm(bestMoon.m);
+      const ill = Math.round(phaseNow().illum * 100);
+      return {
+        kind: 'moon',
+        time: tStr,
+        text: `La luna pasa por aquí a las ${tStr} · ${ill} %`,
+        short: `Luna ${tStr} · ${ill} %`,
+      };
+    }
+  }
+  if (layers.solstices) {
+    const rp = refPaths();
+    const checks = [
+      ['Solsticio jun.', rp.summer],
+      ['Equinoccio', rp.equinox],
+      ['Solsticio dic.', rp.winter],
+    ];
+    for (const [label, pts] of checks) {
+      const mapped = pts.map((q, idx) => [idx * 10, q]);
+      const b = nearestOnTrack(mapped, heading, pitch);
+      if (b && b.dist <= 3.5 && b.pos.alt > -0.833) {
+        const tStr = hhmm(b.m);
+        return { kind: 'solstice', time: tStr, text: `${label} pasa aquí a las ${tStr}`, short: `${label} · ${tStr}` };
+      }
+    }
+  }
+  if (layers.sun && bestSun && bestSun.dist <= 13 && bestSun.pos.alt > -1) {
+    const dir = bestSun.pos.alt > pitch ? 'arriba' : 'abajo';
+    const dAlt = Math.max(1, Math.round(Math.abs(bestSun.pos.alt - pitch)));
+    return {
+      kind: 'near',
+      text: `Trayectoria del sol a ${dAlt}° ${dir} · ${hhmm(bestSun.m)}`,
+      short: `Sol ${dAlt}° ${dir} (${hhmm(bestSun.m)})`,
+    };
+  }
+  return { kind: 'none', text: 'El sol no cruza este punto hoy', short: 'Sin cruce hoy' };
+}
+
+/* ---------- Drawn camera placeholder scene (Valencia rooftops / sea horizon) ----------
+   Strictly uses design/system.md hexes (no photos, no external URLs). */
+function camBackdrop(cam, w, h, scene = S.scene, sunPos = sunNow()) {
+  const uid = 'sc' + (++_uid);
+  const hzP = arProject(cam.heading, 0, cam, w, h);
+  const hy = hzP.vis ? hzP.y : (cam.pitch > 0 ? h + 220 : -220);
+  const hyClamped = Math.max(-60, Math.min(h + 80, hy));
+
+  /* Sky & water palettes using ONLY design/system.md hex values */
+  const pal = scene === 'bright'
+    ? {
+        sky: [['0%', '#AFBDE3'], ['36%', '#EEEBE4'], ['76%', '#FAF9F6'], ['100%', '#F3F1EC']],
+        sea: [['0%', '#DCD7CB'], ['55%', '#857F74'], ['100%', '#5C5A54']],
+        hill: '#857F74', roofFar: '#5C5A54', roofNear: '#2C2C2C', glow: '#FAF9F6', cloud: '#FAF9F6',
+      }
+    : scene === 'night'
+    ? {
+        sky: [['0%', '#111318'], ['45%', '#161920'], ['80%', '#1B1F29'], ['100%', '#212532']],
+        sea: [['0%', '#1B1F29'], ['55%', '#161920'], ['100%', '#111318']],
+        hill: '#1F232C', roofFar: '#171A21', roofNear: '#111318', glow: '#7F93D0', cloud: '#272B35',
+      }
+    : { /* golden hour dusk */
+        sky: [['0%', '#1B1F29'], ['26%', '#212532'], ['52%', '#3D5896'], ['76%', '#7F93D0'], ['91%', '#D6C07E'], ['100%', '#F3F1EC']],
+        sea: [['0%', '#272C38'], ['48%', '#1F232C'], ['100%', '#111318']],
+        hill: '#272B35', roofFar: '#1F232C', roofNear: '#171A21', glow: '#D6C07E', cloud: '#E9E7E2',
+      };
+
+  const stops = (arr) => arr.map(([o, c]) => `<stop offset="${o}" stop-color="${c}"/>`).join('');
+
+  /* Project angular panorama features around the horizon so panning moves Valencia's skyline */
+  const px = (az) => {
+    const d = angDiff(az, cam.heading);
+    const f = (w / 2) / Math.tan(((cam.fovH || 64) * Math.PI / 180) / 2);
+    return w / 2 + f * Math.tan(d * Math.PI / 180);
+  };
+
+  /* Distant ridge curve anchored in azimuth (180..320 W/SW hills, flat sea E) */
+  let ridgePts = [];
+  for (let i = -2; i <= 34; i++) {
+    const x = (i / 32) * w;
+    const az = ((cam.heading + ((x - w / 2) / w) * (cam.fovH || 64)) % 360 + 360) % 360;
+    /* Coastal hills to West/North-West, flat Mediterranean sea to East */
+    const landFactor = Math.max(0, Math.sin(((az - 165) * Math.PI) / 180));
+    const bump = landFactor * (10 + 7 * Math.sin(az * 0.14) + 5 * Math.cos(az * 0.29));
+    ridgePts.push(`${x.toFixed(1)},${(hyClamped - bump).toFixed(1)}`);
+  }
+  const ridgePath = `M-10,${(hyClamped + 8).toFixed(1)} L${ridgePts.join(' L')} L${w + 10},${(hyClamped + 8).toFixed(1)} Z`;
+
+  /* Iconic Valencia silhouettes anchored at real compass bearings */
+  let skyline = '';
+  const drawIfVis = (az, fn) => {
+    const d = angDiff(az, cam.heading);
+    if (Math.abs(d) > (cam.fovH || 64) * 0.8) return;
+    skyline += fn(px(az), hyClamped);
+  };
+  /* Micalet bell tower + cathedral dome near 232° */
+  drawIfVis(231, (x, y) => `
+    <g fill="${pal.roofFar}" opacity="0.92">
+      <rect x="${(x - 10).toFixed(1)}" y="${(y - 34).toFixed(1)}" width="14" height="36" rx="1"/>
+      <rect x="${(x - 12).toFixed(1)}" y="${(y - 37).toFixed(1)}" width="18" height="4"/>
+      <rect x="${(x - 5).toFixed(1)}" y="${(y - 44).toFixed(1)}" width="4" height="8"/>
+      <path d="M${(x + 8).toFixed(1)},${y.toFixed(1)} v-15 a11,10 0 0 1 22,0 v15 z"/>
+    </g>`);
+  /* Mediterranean rooftops cluster around 218°..252° */
+  drawIfVis(220, (x, y) => `
+    <g fill="${pal.roofNear}">
+      <path d="M${(x - 42).toFixed(1)},${(y + 18).toFixed(1)} v-24 l14,-7 l14,7 v24 z"/>
+      <path d="M${(x - 16).toFixed(1)},${(y + 18).toFixed(1)} v-30 h24 v30 z"/>
+      <path d="M${(x + 10).toFixed(1)},${(y + 18).toFixed(1)} v-20 l16,-6 l14,6 v20 z"/>
+    </g>`);
+  drawIfVis(254, (x, y) => `
+    <g fill="${pal.roofNear}">
+      <path d="M${(x - 28).toFixed(1)},${(y + 22).toFixed(1)} v-22 l18,-8 l18,8 v22 z"/>
+      <rect x="${(x + 10).toFixed(1)}" y="${(y - 14).toFixed(1)}" width="34" height="36"/>
+      <path d="M${(x - 42).toFixed(1)},${(y + 22).toFixed(1)} q2,-26 8,-44" fill="none" stroke="${pal.roofNear}" stroke-width="3"/>
+      <path d="M${(x - 34).toFixed(1)},${(y - 22).toFixed(1)} q-12,-4 -18,4 m18,-4 q-10,-10 -16,-6 m16,6 q10,-8 18,-2 m-18,2 q12,-2 17,6" fill="none" stroke="${pal.roofNear}" stroke-width="2" stroke-linecap="round"/>
+    </g>`);
+  /* Albufera shoreline / jetty on east-southeast */
+  drawIfVis(115, (x, y) => `
+    <g fill="${pal.roofNear}" opacity="0.88">
+      <rect x="${(x - 36).toFixed(1)}" y="${(y + 4).toFixed(1)}" width="72" height="5" rx="1"/>
+      <rect x="${(x + 18).toFixed(1)}" y="${(y - 18).toFixed(1)}" width="6" height="23"/>
+      <rect x="${(x + 16).toFixed(1)}" y="${(y - 21).toFixed(1)}" width="10" height="4"/>
+    </g>`);
+
+  /* Foreground low rooftop sill when tilting downward */
+  const groundFill = `<rect x="0" y="${(hyClamped + 16).toFixed(1)}" width="${w}" height="${Math.max(0, h - hyClamped + 80).toFixed(1)}" fill="url(#${uid}-sea)"/>`;
+
+  /* Atmospheric sun glare & water reflection when sun is above -3° */
+  const sp = arProject(sunPos.az, Math.max(-2, sunPos.alt), cam, w, h);
+  let sunGlow = '';
+  if (sp.vis && sunPos.alt > -4 && scene !== 'night') {
+    const gx = Math.max(-60, Math.min(w + 60, sp.x));
+    const gy = Math.max(-40, Math.min(hyClamped + 10, sp.y));
+    sunGlow = `<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${Math.round(w * 0.34)}" fill="url(#${uid}-glow)" opacity="${scene === 'bright' ? '0.65' : '0.45'}"/>`;
+    if (hyClamped < h - 14) {
+      sunGlow += `<g opacity="0.28" stroke="${pal.glow}" stroke-linecap="round">
+        <line x1="${(gx - 28).toFixed(1)}" y1="${(hyClamped + 16).toFixed(1)}" x2="${(gx + 28).toFixed(1)}" y2="${(hyClamped + 16).toFixed(1)}" stroke-width="2"/>
+        <line x1="${(gx - 18).toFixed(1)}" y1="${(hyClamped + 28).toFixed(1)}" x2="${(gx + 18).toFixed(1)}" y2="${(hyClamped + 28).toFixed(1)}" stroke-width="1.5"/>
+        <line x1="${(gx - 10).toFixed(1)}" y1="${(hyClamped + 42).toFixed(1)}" x2="${(gx + 10).toFixed(1)}" y2="${(hyClamped + 42).toFixed(1)}" stroke-width="1"/>
+      </g>`;
+    }
+  }
+
+  /* Subtle clouds */
+  const cShift = (angDiff(239, cam.heading) / 64) * w * 0.35;
+  const clouds = hyClamped > 40 ? `
+    <g fill="${pal.cloud}" opacity="${scene === 'bright' ? '0.42' : scene === 'night' ? '0.18' : '0.14'}">
+      <rect x="${(w * 0.1 + cShift).toFixed(1)}" y="${(hyClamped * 0.36).toFixed(1)}" width="${(w * 0.32).toFixed(1)}" height="8" rx="4"/>
+      <rect x="${(w * 0.56 + cShift * 0.7).toFixed(1)}" y="${(hyClamped * 0.24).toFixed(1)}" width="${(w * 0.26).toFixed(1)}" height="6" rx="3"/>
+      <rect x="${(w * 0.3 + cShift * 0.5).toFixed(1)}" y="${(hyClamped * 0.62).toFixed(1)}" width="${(w * 0.38).toFixed(1)}" height="5" rx="2.5"/>
+    </g>` : '';
+
+  /* Subtle viewfinder corner brackets so placeholder nature is unmistakable */
+  const brk = `
+    <g stroke="#E9E7E2" stroke-opacity="0.22" stroke-width="1" fill="none">
+      <path d="M12,26 v-14 h14 M${w - 26},12 h14 v14 M12,${h - 26} v14 h14 M${w - 26},${h - 12} h14 v-14"/>
+    </g>`;
+
+  return `
+  <defs>
+    <linearGradient id="${uid}-sky" x1="0" y1="0" x2="0" y2="1">${stops(pal.sky)}</linearGradient>
+    <linearGradient id="${uid}-sea" x1="0" y1="0" x2="0" y2="1">${stops(pal.sea)}</linearGradient>
+    <radialGradient id="${uid}-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="${pal.glow}" stop-opacity="0.9"/>
+      <stop offset="55%" stop-color="${pal.glow}" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="${pal.glow}" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="0" y="0" width="${w}" height="${h}" fill="url(#${uid}-sky)"/>
+  ${clouds}
+  ${sunGlow}
+  ${groundFill}
+  <rect x="0" y="${hyClamped.toFixed(1)}" width="${w}" height="18" fill="url(#${uid}-sea)"/>
+  <path d="${ridgePath}" fill="${pal.hill}" opacity="0.88"/>
+  ${skyline}
+  <rect x="0" y="${(hyClamped + 18).toFixed(1)}" width="${w}" height="${Math.max(0, h - hyClamped).toFixed(1)}" fill="${pal.roofNear}" opacity="${cam.pitch < -15 ? '0.68' : '0.32'}"/>
+  ${brk}`;
+}
+
+/* ---------- Outlined path helper (guaranteed ≥ 3:1 contrast on bright & dark sky) ---------- */
+function strokedPath(pts, coreColor, width, dash = '', opacity = 1) {
+  if (pts.length < 2) return '';
+  const d = 'M' + pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' L');
+  const dashAttr = dash ? ` stroke-dasharray="${dash}"` : '';
+  const opAttr = opacity < 1 ? ` opacity="${opacity}"` : '';
+  return `<g${opAttr} fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="${d}" stroke="#111318" stroke-width="${(width + 3).toFixed(1)}"${dashAttr}/>
+    <path d="${d}" stroke="${coreColor}" stroke-width="${width.toFixed(1)}"${dashAttr}/>
+  </g>`;
+}
+
+function splitProjectedRuns(samples, cam, w, h, pred = () => true) {
+  const runs = [];
+  let cur = [];
+  for (const q of samples) {
+    const p = arProject(q.az, q.alt, cam, w, h);
+    if (pred(q) && p.vis && p.x > -80 && p.x < w + 80 && p.y > -80 && p.y < h + 80) {
+      if (cur.length && Math.hypot(p.x - cur[cur.length - 1].x, p.y - cur[cur.length - 1].y) > w * 0.65) {
+        if (cur.length > 1) runs.push(cur);
+        cur = [p];
+      } else cur.push(p);
+    } else if (cur.length) {
+      if (cur.length > 1) runs.push(cur);
+      cur = [];
+    }
+  }
+  if (cur.length > 1) runs.push(cur);
+  return runs;
+}
+
+/* ---------- Bounding-box collision helpers so HUD pills & labels never collide ---------- */
+function rectHits(r, list, pad = 4) {
+  return list.some((b) => !(r.x + r.w + pad <= b.x || b.x + b.w + pad <= r.x || r.y + r.h + pad <= b.y || b.y + b.h + pad <= r.y));
+}
+
+/* ---------- Scrim pill helper inside SVG ---------- */
+function pillWidth(text, fontSize = 11) {
+  return Math.max(36, text.length * (fontSize * 0.59) + 18);
+}
+function svgPill(x, y, text, borderColor = '#6C7382', textColor = '#E9E7E2', align = 'middle', fontSize = 11) {
+  const h = 21;
+  const estW = pillWidth(text, fontSize);
+  let rx = align === 'middle' ? x - estW / 2 : align === 'end' ? x - estW : x;
+  const ry = y - h / 2;
+  return `<g>
+    <rect x="${rx.toFixed(1)}" y="${ry.toFixed(1)}" width="${estW.toFixed(1)}" height="${h}" rx="10.5" fill="#111318" fill-opacity="0.88" stroke="${borderColor}" stroke-width="1"/>
+    <text x="${(rx + estW / 2).toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="middle" style="font:500 ${fontSize}px var(--font-sans);fill:${textColor}">${text}</text>
+  </g>`;
+}
+
+/* ---------- Edge arrow when sun is outside FOV or below horizon ---------- */
+function edgeArrowSvg(sunPos, cam, w, h, pad = { t: 88, b: 84, x: 14 }, blocked = []) {
+  const p = arProject(sunPos.az, sunPos.alt, cam, w, h);
+  const inside = p.vis && p.x >= pad.x + 12 && p.x <= w - pad.x - 12 && p.y >= pad.t + 10 && p.y <= h - pad.b - 10;
+  if (inside && sunPos.alt > -0.833) return '';
+
+  const dAz = angDiff(sunPos.az, cam.heading);
+  const below = sunPos.alt <= -0.833;
+  const dx = p.cx, dy = -p.cy;
+  const ang = Math.atan2(dy, dx);
+  const rot = (ang * 180) / Math.PI;
+
+  const dirTxt = Math.abs(dAz) < 6 ? '' : `${Math.round(Math.abs(dAz))}° ${dAz < 0 ? 'izq.' : 'der.'}`;
+  const label = below
+    ? `Sol bajo horiz. · ${dirTxt || deg(sunPos.alt, 1)}`
+    : `Sol · ${dirTxt || deg(sunPos.alt, 0)}`;
+  const pillW = Math.min(w - 24, Math.max(118, label.length * 6.3 + 30));
+  const pillH = 26;
+
+  /* Anchor cleanly to the perimeter edge in the direction of the sun */
+  const cy0 = cam.cy != null ? cam.cy : h / 2;
+  let px = dx >= 0 ? w - pillW - pad.x : pad.x;
+  let py = cy0 + Math.sin(ang) * ((h - pad.t - pad.b) * 0.42) - pillH / 2;
+  if (below && Math.abs(Math.sin(ang)) < 0.35) py = Math.max(py, cy0 + 46);
+  py = Math.max(pad.t + 4, Math.min(h - pad.b - pillH - 4, py));
+
+  /* Avoid colliding with center reticle / crossing pill */
+  const candYs = [py, cy0 + 52, cy0 - 78, h - pad.b - pillH - 6, pad.t + 6];
+  for (const ty of candYs) {
+    const clampedY = Math.max(pad.t + 4, Math.min(h - pad.b - pillH - 4, ty));
+    if (!rectHits({ x: px, y: clampedY, w: pillW, h: pillH }, blocked, 6)) { py = clampedY; break; }
+  }
+  blocked.push({ x: px, y: py, w: pillW, h: pillH });
+
+  return `<g aria-label="${label}">
+    <rect x="${px.toFixed(1)}" y="${py.toFixed(1)}" width="${pillW.toFixed(1)}" height="${pillH}" rx="13" fill="#111318" fill-opacity="0.92" stroke="#D6C07E" stroke-width="1.2"/>
+    <g transform="translate(${(px + 14).toFixed(1)},${(py + 13).toFixed(1)}) rotate(${rot.toFixed(1)})">
+      <path d="M-5,0 H4 M1,-3.5 L5,0 L1,3.5" fill="none" stroke="#D6C07E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+    <text x="${(px + 25).toFixed(1)}" y="${(py + 17).toFixed(1)}" style="font:500 11px var(--font-sans);fill:#E9E7E2">${label}</text>
+  </g>`;
+}
+
+/* ---------- Full AR overlay SVG ---------- */
+function arOverlay({
+  w = 360,
+  h = 460,
+  cy = null,
+  heading = S.heading,
+  pitch = S.pitch,
+  min = S.min,
+  fovH = 64,
+  scene = S.scene,
+  layers = S.layers,
+  calibrated = true,
+  reticle = 'standard', /* 'standard' | 'hero' | 'compact' */
+  quietPaths = false,
+  showCrossingPill = true,
+  edgePad = { t: 88, b: 84, x: 14 },
+  ariaLabel = 'Vista de cámara con trayectorias solares y lunares',
+} = {}) {
+  const d = day();
+  const tMs = d.start + min * 60000;
+  const sNow = Astro.sun(tMs, S.place.lat, S.place.lon);
+  const mNow = Astro.moon(tMs, S.place.lat, S.place.lon);
+  const phNow = Astro.phase(tMs);
+  const cy0 = cy != null ? cy : h / 2;
+  const cx0 = w / 2;
+  const cam = { heading, pitch, fovH, cy: cy0 };
+  const pathOpacity = calibrated ? 1 : 0.45;
+  const sunW = quietPaths ? 1.8 : 2.6;
+  const moonW = quietPaths ? 1.5 : 2.1;
+
+  /* Track occupied screen boxes so pills and labels never overlap */
+  const blocked = [];
+
+  /* Reserve reticle & crossing pill rectangles first (highest visual priority) */
+  const hit = crosshairHit(heading, pitch, layers);
+  const hitCol = hit.kind === 'sun' ? '#D6C07E' : hit.kind === 'moon' ? '#AFBDE3' : '#E9E7E2';
+  const pitchStr = (pitch >= 0 ? '+' : '') + deg(pitch);
+  const aimStr = `${deg(heading)} ${wind(heading)} · ${pitchStr}`;
+  let retSvg = '';
+
+  if (reticle === 'hero') {
+    const R = 33;
+    let ticks = '';
+    for (let a = 0; a < 360; a += 30) {
+      const rad = (a * Math.PI) / 180;
+      const r1 = R - (a % 90 === 0 ? 7 : 4), r2 = R + 2;
+      ticks += `<line x1="${(cx0 + r1 * Math.cos(rad)).toFixed(1)}" y1="${(cy0 + r1 * Math.sin(rad)).toFixed(1)}" x2="${(cx0 + r2 * Math.cos(rad)).toFixed(1)}" y2="${(cy0 + r2 * Math.sin(rad)).toFixed(1)}"/>`;
+    }
+    const aimW = pillWidth(aimStr, 11);
+    const aimY = cy0 - R - 19;
+    blocked.push({ x: cx0 - R - 10, y: cy0 - R - 10, w: (R + 10) * 2, h: (R + 10) * 2 });
+    blocked.push({ x: cx0 - aimW / 2, y: aimY - 11, w: aimW, h: 22 });
+    retSvg = `
+      <g fill="none" stroke-linecap="round">
+        <g stroke="#111318" stroke-width="4.2">
+          <circle cx="${cx0}" cy="${cy0}" r="${R}"/>
+          <path d="M${cx0 - R - 9},${cy0} h13 M${cx0 + R - 4},${cy0} h13 M${cx0},${cy0 - R - 9} v13 M${cx0},${cy0 + R - 4} v13"/>
+          ${ticks}
+        </g>
+        <g stroke="${hitCol}" stroke-width="1.6">
+          <circle cx="${cx0}" cy="${cy0}" r="${R}"/>
+          <path d="M${cx0 - R - 9},${cy0} h13 M${cx0 + R - 4},${cy0} h13 M${cx0},${cy0 - R - 9} v13 M${cx0},${cy0 + R - 4} v13"/>
+          ${ticks}
+        </g>
+        <circle cx="${cx0}" cy="${cy0}" r="3" fill="${hitCol}" stroke="#111318" stroke-width="1.5"/>
+      </g>
+      ${svgPill(cx0, aimY, aimStr, '#6C7382', '#E9E7E2', 'middle', 11)}`;
+    if (showCrossingPill) {
+      const boxW = Math.min(w - 24, Math.max(196, hit.text.length * 6.3 + 22));
+      const bx = cx0 - boxW / 2, by = cy0 + R + 12;
+      blocked.push({ x: bx, y: by, w: boxW, h: 28 });
+      retSvg += `<g>
+        <rect x="${bx.toFixed(1)}" y="${by.toFixed(1)}" width="${boxW.toFixed(1)}" height="28" rx="14" fill="#111318" fill-opacity="0.90" stroke="${hitCol}" stroke-width="1.2"/>
+        <text x="${cx0}" y="${(by + 18).toFixed(1)}" text-anchor="middle" style="font:500 11.5px var(--font-sans);fill:#E9E7E2">${hit.text}</text>
+      </g>`;
+    }
+  } else if (reticle === 'compact') {
+    const R = 14;
+    blocked.push({ x: cx0 - 22, y: cy0 - 22, w: 44, h: 44 });
+    retSvg = `
+      <g fill="none" stroke-linecap="round">
+        <g stroke="#111318" stroke-width="3.6">
+          <circle cx="${cx0}" cy="${cy0}" r="${R}"/>
+          <path d="M${cx0 - 21},${cy0} h8 M${cx0 + 13},${cy0} h8 M${cx0},${cy0 - 21} v8 M${cx0},${cy0 + 13} v8"/>
+        </g>
+        <g stroke="${hitCol}" stroke-width="1.4">
+          <circle cx="${cx0}" cy="${cy0}" r="${R}"/>
+          <path d="M${cx0 - 21},${cy0} h8 M${cx0 + 13},${cy0} h8 M${cx0},${cy0 - 21} v8 M${cx0},${cy0 + 13} v8"/>
+        </g>
+        <circle cx="${cx0}" cy="${cy0}" r="2" fill="${hitCol}"/>
+      </g>`;
+    if (showCrossingPill) {
+      const cw = pillWidth(hit.short, 10.5);
+      blocked.push({ x: cx0 - cw / 2, y: cy0 + 18, w: cw, h: 22 });
+      retSvg += svgPill(cx0, cy0 + 29, hit.short, hitCol, '#E9E7E2', 'middle', 10.5);
+    }
+  } else {
+    /* Standard (Direction 01 · Visor): subtle crosshair + crisp inline readout */
+    const R = 18;
+    const aimW = pillWidth(aimStr, 11);
+    blocked.push({ x: cx0 - 26, y: cy0 - 26, w: 52, h: 52 });
+    blocked.push({ x: cx0 - aimW / 2, y: cy0 - 46, w: aimW, h: 22 });
+    retSvg = `
+      <g fill="none" stroke-linecap="round">
+        <g stroke="#111318" stroke-width="3.8">
+          <circle cx="${cx0}" cy="${cy0}" r="${R}"/>
+          <path d="M${cx0 - 26},${cy0} h9 M${cx0 + 17},${cy0} h9 M${cx0},${cy0 - 26} v9 M${cx0},${cy0 + 17} v9"/>
+        </g>
+        <g stroke="${hitCol}" stroke-width="1.5">
+          <circle cx="${cx0}" cy="${cy0}" r="${R}"/>
+          <path d="M${cx0 - 26},${cy0} h9 M${cx0 + 17},${cy0} h9 M${cx0},${cy0 - 26} v9 M${cx0},${cy0 + 17} v9"/>
+        </g>
+        <circle cx="${cx0}" cy="${cy0}" r="2.2" fill="${hitCol}"/>
+      </g>
+      ${svgPill(cx0, cy0 - 35, aimStr, '#6C7382', '#E9E7E2', 'middle', 11)}`;
+    if (showCrossingPill) {
+      const cw = pillWidth(hit.text, 11);
+      blocked.push({ x: cx0 - cw / 2, y: cy0 + 26, w: cw, h: 22 });
+      retSvg += svgPill(cx0, cy0 + 37, hit.text, hitCol, '#E9E7E2', 'middle', 11);
+    }
+  }
+
+  /* Helper to place a pill near (tx, ty) trying clean candidate offsets until collision-free */
+  function placePill(tx, ty, text, borderCol, textCol, fontSize = 10.5) {
+    const pw = pillWidth(text, fontSize), ph = 21;
+    const candidates = [
+      [tx, ty + 20],
+      [tx + pw * 0.45, ty + 22],
+      [tx - pw * 0.45, ty + 22],
+      [tx, ty + 44],
+      [tx, ty + 62],
+      [tx + pw * 0.55, ty - 18],
+      [tx - pw * 0.55, ty - 18],
+      [tx, ty - 22],
+    ];
+    for (const [cx, cy] of candidates) {
+      const clampedX = Math.max(pw / 2 + 10, Math.min(w - pw / 2 - 10, cx));
+      const clampedY = Math.max(edgePad.t + 10, Math.min(h - edgePad.b - 12, cy));
+      const box = { x: clampedX - pw / 2, y: clampedY - ph / 2, w: pw, h: ph };
+      if (!rectHits(box, blocked, 4)) {
+        blocked.push(box);
+        return svgPill(clampedX, clampedY, text, borderCol, textCol, 'middle', fontSize);
+      }
+    }
+    /* Last resort: place cleanly below blocked region */
+    const fx = Math.max(pw / 2 + 10, Math.min(w - pw / 2 - 10, tx));
+    const fy = Math.min(h - edgePad.b - 12, ty + 64);
+    blocked.push({ x: fx - pw / 2, y: fy - ph / 2, w: pw, h: ph });
+    return svgPill(fx, fy, text, borderCol, textCol, 'middle', fontSize);
+  }
+
+  /* 1. Horizon line (0°) with azimuth ticks */
+  const hzPts = [];
+  for (let a = -55; a <= 55; a += 2.5) {
+    const p = arProject(((heading + a) % 360 + 360) % 360, 0, cam, w, h);
+    if (p.vis) hzPts.push(p);
+  }
+  let hzSvg = strokedPath(hzPts, '#A6ABB5', 1.1, '5 4', 0.9);
+  for (let az = 0; az < 360; az += 15) {
+    if (Math.abs(angDiff(az, heading)) > fovH * 0.65) continue;
+    const p = arProject(az, 0, cam, w, h);
+    if (!p.vis || p.x < 18 || p.x > w - 18 || p.y < 18 || p.y > h - 18) continue;
+    const isCard = az % 45 === 0;
+    hzSvg += `<line x1="${p.x.toFixed(1)}" y1="${(p.y - (isCard ? 6 : 3)).toFixed(1)}" x2="${p.x.toFixed(1)}" y2="${(p.y + (isCard ? 6 : 3)).toFixed(1)}" stroke="#111318" stroke-width="3"/>
+      <line x1="${p.x.toFixed(1)}" y1="${(p.y - (isCard ? 6 : 3)).toFixed(1)}" x2="${p.x.toFixed(1)}" y2="${(p.y + (isCard ? 6 : 3)).toFixed(1)}" stroke="#E9E7E2" stroke-width="1.2"/>`;
+    if (isCard) {
+      const lb = { x: p.x - 14, y: p.y + 6, w: 28, h: 14 };
+      if (!rectHits(lb, blocked, 2)) {
+        blocked.push(lb);
+        hzSvg += `<text x="${p.x.toFixed(1)}" y="${(p.y + 18).toFixed(1)}" text-anchor="middle" class="ar-txt">${WINDS[Math.round(az / 22.5) % 16]}</text>`;
+      }
+    }
+  }
+
+  /* 2. Current sun marker reserved before labels */
+  const spNow = arProject(sNow.az, sNow.alt, cam, w, h);
+  if (layers.sun && spNow.vis && spNow.x >= 12 && spNow.x <= w - 12 && spNow.y >= 16 && spNow.y <= h - 16) {
+    blocked.push({ x: spNow.x - 14, y: spNow.y - 14, w: 28, h: 28 });
+  }
+
+  /* 3. Sun path (solid --sun above horizon, dotted below horizon) + hour dots + rise/set + sun now */
+  let sunSvg = '';
+  if (layers.sun) {
+    const sPts = d.samples.map((q) => q[1]);
+    splitProjectedRuns(sPts, cam, w, h, (q) => q.alt <= 0.2).forEach((r) => {
+      sunSvg += strokedPath(r, '#A6ABB5', 1.4, '2 4', 0.72 * pathOpacity);
+    });
+    splitProjectedRuns(sPts, cam, w, h, (q) => q.alt > -0.5).forEach((r) => {
+      sunSvg += strokedPath(r, '#D6C07E', sunW, '', pathOpacity);
+    });
+
+    /* Sunrise & sunset on horizon (collision-avoided) */
+    [[d.riseAz, d.setAm, 'Amanecer'], [d.setAz, d.setPm, 'Atardecer']].forEach(([az, ms, lbl]) => {
+      if (!az || !ms) return;
+      const p = arProject(az, 0, cam, w, h);
+      if (!p.vis || p.x < 24 || p.x > w - 24 || p.y < 24 || p.y > h - 24) return;
+      sunSvg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5.2" fill="#D6C07E" stroke="#111318" stroke-width="2"/>`;
+      sunSvg += placePill(p.x, p.y, `${lbl} ${T(ms)}`, '#D6C07E', '#E9E7E2', 10.5);
+    });
+
+    /* Current sun marker ("now") with smart label placement (above or left) */
+    if (spNow.vis && spNow.x >= 12 && spNow.x <= w - 12 && spNow.y >= 16 && spNow.y <= h - 16) {
+      if (sNow.alt > -0.833) {
+        const lbl = hhmm(min);
+        const topBox = { x: spNow.x - 20, y: spNow.y - 28, w: 40, h: 16 };
+        const leftBox = { x: spNow.x - 48, y: spNow.y - 7, w: 36, h: 14 };
+        const useLeft = rectHits(topBox, blocked, 6) || (reticle === 'hero' && spNow.x < cx0);
+        const lx = useLeft ? spNow.x - 14 : spNow.x;
+        const ly = useLeft ? spNow.y + 4 : spNow.y - 14;
+        const anchor = useLeft ? 'end' : 'middle';
+        blocked.push(useLeft ? leftBox : topBox);
+        sunSvg += `<circle cx="${spNow.x.toFixed(1)}" cy="${spNow.y.toFixed(1)}" r="12" fill="#D6C07E" fill-opacity="0.22" stroke="#111318" stroke-width="1"/>
+          <circle cx="${spNow.x.toFixed(1)}" cy="${spNow.y.toFixed(1)}" r="7.5" fill="#D6C07E" stroke="#111318" stroke-width="2.2"/>
+          <text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="${anchor}" class="ar-txt sun">${lbl}</text>`;
+      } else {
+        sunSvg += `<circle cx="${spNow.x.toFixed(1)}" cy="${spNow.y.toFixed(1)}" r="6.5" fill="#111318" stroke="#D6C07E" stroke-width="2" stroke-dasharray="3 2"/>
+          <text x="${spNow.x.toFixed(1)}" y="${(spNow.y - 12).toFixed(1)}" text-anchor="middle" class="ar-txt sun">${hhmm(min)} · bajo horiz.</text>`;
+      }
+    }
+
+    /* Hourly dots + labels avoiding all reserved boxes */
+    d.samples.forEach(([m, q]) => {
+      if (m % 60 || q.alt <= 1.2) return;
+      const p = arProject(q.az, q.alt, cam, w, h);
+      if (!p.vis || p.x < 16 || p.x > w - 16 || p.y < edgePad.t - 10 || p.y > h - edgePad.b + 10) return;
+      const hr = m / 60;
+      sunSvg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.2" fill="#111318" stroke="#D6C07E" stroke-width="1.8" opacity="${pathOpacity}"/>`;
+      const lb = { x: p.x + 6, y: p.y - 18, w: 26, h: 14 };
+      if (p.y > edgePad.t + 6 && p.y < h - edgePad.b - 4 && !rectHits(lb, blocked, 4)) {
+        blocked.push(lb);
+        sunSvg += `<text x="${(p.x + 8).toFixed(1)}" y="${(p.y - 8).toFixed(1)}" text-anchor="start" class="ar-txt sun">${String(hr).padStart(2, '0')}h</text>`;
+      }
+    });
+  }
+
+  /* 4. Moon path (dashed --moon) + moonset/rise + moon now */
+  let moonSvg = '';
+  if (layers.moon) {
+    const mPts = d.samples.map((q) => q[2]);
+    splitProjectedRuns(mPts, cam, w, h, (q) => q.alt > -1).forEach((r) => {
+      moonSvg += strokedPath(r, '#AFBDE3', moonW, '6 4', pathOpacity);
+    });
+    d.samples.forEach(([m, , q]) => {
+      if (m % 120 || q.alt <= 2) return;
+      const p = arProject(q.az, q.alt, cam, w, h);
+      if (!p.vis || p.x < 18 || p.x > w - 18 || p.y < edgePad.t || p.y > h - edgePad.b) return;
+      moonSvg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.2" fill="#111318" stroke="#AFBDE3" stroke-width="1.5" opacity="${pathOpacity}"/>`;
+    });
+    [[d.moonriseAz, d.moonrise, 'Sale luna'], [d.moonsetAz, d.moonset, 'Puesta luna']].forEach(([az, ms, lbl]) => {
+      if (!az || !ms) return;
+      const p = arProject(az, 0, cam, w, h);
+      if (!p.vis || p.x < 34 || p.x > w - 34 || p.y < 24 || p.y > h - 24) return;
+      moonSvg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4.5" fill="#111318" stroke="#AFBDE3" stroke-width="2"/>`;
+      const lx = Math.max(46, Math.min(w - 50, p.x));
+      const box = { x: lx - 44, y: p.y - 22, w: 88, h: 15 };
+      if (!rectHits(box, blocked, 3)) {
+        blocked.push(box);
+        moonSvg += `<text x="${lx.toFixed(1)}" y="${(p.y - 10).toFixed(1)}" text-anchor="middle" class="ar-txt moon">${lbl} ${T(ms)}</text>`;
+      }
+    });
+    const mp = arProject(mNow.az, mNow.alt, cam, w, h);
+    if (mp.vis && mNow.alt > -0.833 && mp.x > 16 && mp.x < w - 16 && mp.y > 24 && mp.y < h - 24) {
+      const r = 8, rx = Math.abs(1 - 2 * phNow.illum) * r;
+      const md = `M${mp.x},${mp.y - r} A${r},${r} 0 0 ${phNow.waxing ? 1 : 0} ${mp.x},${mp.y + r} A${rx},${r} 0 0 ${(phNow.illum > 0.5) === phNow.waxing ? 1 : 0} ${mp.x},${mp.y - r}Z`;
+      moonSvg += `<circle cx="${mp.x.toFixed(1)}" cy="${mp.y.toFixed(1)}" r="10.5" fill="#111318" stroke="#AFBDE3" stroke-width="1.5"/>
+        <path d="${md}" fill="#AFBDE3"/>
+        <text x="${mp.x.toFixed(1)}" y="${(mp.y + 21).toFixed(1)}" text-anchor="middle" class="ar-txt moon">Luna ${Math.round(phNow.illum * 100)} %</text>`;
+    }
+  }
+
+  /* 5. Solstice & equinox reference paths (labels pick collision-free point) */
+  let solSvg = '';
+  if (layers.solstices) {
+    const rp = refPaths();
+    const specs = [
+      [rp.summer, 'jun', '8 4'],
+      [rp.equinox, 'eq', '2 4'],
+      [rp.winter, 'dic', '8 4'],
+    ];
+    specs.forEach(([pts, label, dash]) => {
+      const runs = splitProjectedRuns(pts, cam, w, h, (q) => q.alt > -2);
+      runs.forEach((r) => { solSvg += strokedPath(r, '#A6ABB5', 1.1, dash, 0.78 * pathOpacity); });
+      const cand = pts.map((q) => ({ q, p: arProject(q.az, q.alt, cam, w, h) }))
+        .filter(({ q, p }) => q.alt > 4 && p.vis && p.x > 26 && p.x < w - 26 && p.y > edgePad.t + 10 && p.y < h - edgePad.b - 10);
+      /* Prefer a point clear of all blocked boxes */
+      const pick = cand.find(({ p }) => !rectHits({ x: p.x - 16, y: p.y - 18, w: 32, h: 16 }, blocked, 5));
+      if (pick) {
+        blocked.push({ x: pick.p.x - 16, y: pick.p.y - 18, w: 32, h: 16 });
+        solSvg += `<text x="${pick.p.x.toFixed(1)}" y="${(pick.p.y - 7).toFixed(1)}" text-anchor="middle" class="ar-txt muted">${label}</text>`;
+      }
+    });
+  }
+
+  /* 6. Horizon label ("0° · Horiz.") placed on right or left depending on collision */
+  const hzRight = arProject(((heading + fovH * 0.42) % 360 + 360) % 360, 0, cam, w, h);
+  const hzLeft = arProject(((heading - fovH * 0.42) % 360 + 360) % 360, 0, cam, w, h);
+  if (hzRight.vis && hzRight.y > edgePad.t && hzRight.y < h - edgePad.b) {
+    const rBox = { x: w - 66, y: hzRight.y - 18, w: 58, h: 14 };
+    const lBox = { x: 8, y: hzLeft.y - 18, w: 58, h: 14 };
+    if (!rectHits(rBox, blocked, 3)) {
+      blocked.push(rBox);
+      hzSvg += `<text x="${(w - 10).toFixed(1)}" y="${(hzRight.y - 6).toFixed(1)}" text-anchor="end" class="ar-txt muted">0° · Horiz.</text>`;
+    } else if (hzLeft.vis && !rectHits(lBox, blocked, 3)) {
+      blocked.push(lBox);
+      hzSvg += `<text x="10" y="${(hzLeft.y - 6).toFixed(1)}" text-anchor="start" class="ar-txt muted">0° · Horiz.</text>`;
+    }
+  }
+
+  /* 7. Edge arrow if sun is out of frame or below horizon (suppressed when pointing at ground) */
+  const edgeSvg = (layers.sun && pitch > -28) ? edgeArrowSvg(sNow, cam, w, h, edgePad, blocked) : '';
+
+  /* 8. Ground upward arrow when pointing down */
+  let groundSvg = '';
+  if (pitch <= -28) {
+    const upDeg = Math.round(Math.abs(pitch));
+    groundSvg = `<g>
+      <rect x="${(cx0 - 98).toFixed(1)}" y="${(edgePad.t - 6).toFixed(1)}" width="196" height="28" rx="14" fill="#111318" fill-opacity="0.90" stroke="#D6C07E" stroke-width="1.2"/>
+      <text x="${cx0}" y="${(edgePad.t + 12).toFixed(1)}" text-anchor="middle" style="font:500 11px var(--font-sans);fill:#E9E7E2">↑ Horizonte ${upDeg}° arriba · eleva el móvil</text>
+    </g>`;
+  }
+
+  return `<svg class="cam-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="${ariaLabel}">
+    ${camBackdrop(cam, w, h, scene, sNow)}
+    ${hzSvg}
+    ${solSvg}
+    ${moonSvg}
+    ${sunSvg}
+    ${retSvg}
+    ${edgeSvg}
+    ${groundSvg}
+  </svg>`;
+}
+
+/* ---------- Thin translucent heading tape (Direction 01 · Visor) ---------- */
+function arHeadingTape(w = 336, heading = S.heading) {
+  const h = 38, span = 96;
+  const d = day(), s = sunNow(), mo = moonNow();
+  const X = (az) => w / 2 + (angDiff(az, heading) / span) * w;
+  let ticks = '';
+  for (let a = Math.floor((heading - 55) / 5) * 5; a <= heading + 55; a += 5) {
+    const az = ((a % 360) + 360) % 360, x = X(az);
+    if (x < 8 || x > w - 8) continue;
+    const major = az % 15 === 0;
+    ticks += `<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="6" y2="${major ? 14 : 10}" stroke="${major ? '#E9E7E2' : '#6C7382'}" stroke-width="1"/>`;
+    if (major) {
+      const lbl = az % 45 === 0 ? WINDS[az / 22.5] : String(az);
+      ticks += `<text x="${x.toFixed(1)}" y="27" text-anchor="middle" style="font:${az % 90 === 0 ? '600' : '400'} 10.5px var(--font-sans);fill:${az % 90 === 0 ? '#E9E7E2' : '#A6ABB5'}">${lbl}</text>`;
+    }
+  }
+  const dot = (az, col, hollow) => {
+    const x = X(az); if (x < 10 || x > w - 10) return '';
+    return `<circle cx="${x.toFixed(1)}" cy="9" r="3.2" fill="${hollow ? '#111318' : col}" stroke="${col}" stroke-width="1.5"/>`;
+  };
+  return `<svg width="100%" height="${h}" viewBox="0 0 ${w} ${h}" role="img" aria-label="Cinta de rumbo: ${deg(heading)} ${wind(heading)}">
+    <rect x="0.5" y="0.5" width="${w - 1}" height="${h - 1}" rx="12" fill="#111318" fill-opacity="0.84" stroke="#6C7382"/>
+    ${ticks}
+    ${S.layers.sun && s.alt > -1 ? dot(s.az, '#D6C07E', false) : ''}
+    ${S.layers.moon && mo.alt > -1 ? dot(mo.az, '#AFBDE3', true) : ''}
+    <path d="M${w / 2 - 5},37 L${w / 2 + 5},37 L${w / 2},30 Z" fill="#D6C07E"/>
+    <rect x="${w / 2 - 24}" y="1" width="48" height="15" rx="7.5" fill="#111318" stroke="#D6C07E" stroke-width="1"/>
+    <text x="${w / 2}" y="12" text-anchor="middle" style="font:600 10.5px var(--font-sans);fill:#E9E7E2">${deg(heading)}</text>
+  </svg>`;
+}
+
+/* ---------- Interactive synced flat dome (Direction 03 · Cámara + cúpula) ---------- */
+function arDome({ size = 212, heading = S.heading, fovH = 64, layers = S.layers } = {}) {
+  const d = day(), c = size / 2, R = (c - 6) / (102 / 90), s = sunNow(), mo = moonNow();
+  const rad = (alt) => (R * (90 - Math.max(-12, alt))) / 90;
+  const P = (az, alt) => { const r = rad(alt), a = ((az - heading) * Math.PI) / 180; return [c + r * Math.sin(a), c - r * Math.cos(a)]; };
+  const runs = (pts, pred) => { const out = []; let cur = []; pts.forEach((q) => { if (pred(q.alt)) cur.push(P(q.az, q.alt).map((v) => v.toFixed(1)).join(',')); else if (cur.length) { out.push(cur); cur = []; } }); if (cur.length) out.push(cur); return out; };
+  const line = (pts, pred, style, dash) => runs(pts, pred).map((p) => `<polyline points="${p.join(' ')}" style="fill:none;${style}"${dash ? ` stroke-dasharray="${dash}"` : ''}/>`).join('');
+  const sun = d.samples.map((q) => q[1]), moon = d.samples.map((q) => q[2]);
+  const at = (az, r) => { const a = ((az - heading) * Math.PI) / 180; return [c + r * Math.sin(a), c - r * Math.cos(a)]; };
+
+  let refSvg = '';
+  if (layers.solstices) {
+    const rp = refPaths();
+    refSvg = line(rp.summer, (a) => a > 0, 'stroke:var(--text-secondary);stroke-width:1') +
+      line(rp.winter, (a) => a > 0, 'stroke:var(--text-secondary);stroke-width:1') +
+      line(rp.equinox, (a) => a > 0, 'stroke:var(--text-secondary);stroke-width:1', '2 3');
+  }
+  let dots = '';
+  if (layers.sun) {
+    d.samples.forEach(([m, q]) => {
+      if (m % 60 || q.alt <= 0.5) return;
+      const [x, y] = P(q.az, q.alt);
+      dots += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" style="fill:var(--bg-color);stroke:var(--sun)" stroke-width="1.3"/>`;
+    });
+  }
+
+  /* Camera FOV wedge pointing straight up (current heading) */
+  const half = ((fovH / 2) * Math.PI) / 180;
+  const x1 = c - R * Math.sin(half), y1 = c - R * Math.cos(half);
+  const x2 = c + R * Math.sin(half), y2 = c - R * Math.cos(half);
+
+  return `<svg class="dome" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" role="img" aria-label="Cúpula sincronizada al rumbo ${deg(heading)} ${wind(heading)}. Toca para orientar la cámara.">
+    <circle cx="${c}" cy="${c}" r="${rad(-12).toFixed(1)}" style="fill:var(--sky-nautical);stroke:var(--border-color)"/>
+    <circle cx="${c}" cy="${c}" r="${rad(-6).toFixed(1)}" style="fill:var(--sky-civil)"/>
+    <circle cx="${c}" cy="${c}" r="${R.toFixed(1)}" style="fill:var(--sky-day);stroke:var(--control-border)"/>
+    <circle cx="${c}" cy="${c}" r="${((R * 2) / 3).toFixed(1)}" style="fill:none;stroke:var(--border-color)"/>
+    <circle cx="${c}" cy="${c}" r="${(R / 3).toFixed(1)}" style="fill:none;stroke:var(--border-color)"/>
+    <path d="M${c},${c} L${x1.toFixed(1)},${y1.toFixed(1)} A${R.toFixed(1)},${R.toFixed(1)} 0 0 1 ${x2.toFixed(1)},${y2.toFixed(1)} Z" style="fill:var(--sun)" fill-opacity="0.16"/>
+    <line x1="${c}" y1="${c}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" style="stroke:var(--sun)" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="${c}" y1="${c}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" style="stroke:var(--sun)" stroke-width="1" stroke-dasharray="3 3"/>
+    ${[[0, 'N'], [90, 'E'], [180, 'S'], [270, 'O']].map(([az, l]) => { const [x, y] = at(az, R - 11); return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="middle" class="svg-label${l === 'N' ? ' strong' : ''}" style="paint-order:stroke;stroke:var(--sky-day);stroke-width:3px">${l}</text>`; }).join('')}
+    ${refSvg}
+    ${layers.sun ? line(sun, (a) => a <= 0, 'stroke:var(--text-secondary);stroke-width:1.2', '1 4') : ''}
+    ${layers.moon ? line(moon, (a) => a > -0.5, 'stroke:var(--moon);stroke-width:1.8', '4 3') : ''}
+    ${layers.sun ? line(sun, (a) => a > -0.5, 'stroke:var(--sun);stroke-width:2.2') : ''}
+    ${dots}
+    ${layers.moon && mo.alt > 0 ? (() => { const [x, y] = P(mo.az, mo.alt); return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" style="fill:var(--bg-color);stroke:var(--moon)" stroke-width="1.8"/>`; })() : ''}
+    ${layers.sun ? (() => { const [x, y] = P(s.az, s.alt); return s.alt > 0 ? `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="6.5" style="fill:var(--sun);stroke:var(--bg-color)" stroke-width="1.8"/>` : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" style="fill:var(--bg-color);stroke:var(--sun)" stroke-width="1.8"/>`; })() : ''}
+    <path d="M${c - 5},6 L${c + 5},6 L${c},14 Z" style="fill:var(--text-primary)"/>
+    <circle cx="${c}" cy="${c}" r="2.2" style="fill:var(--text-secondary)"/>
+  </svg>`;
+}
+
+/* ---------- Reusable secondary states (tailored per direction) ---------- */
+function statePermission(dirHint) {
+  return `<section class="mini-phone" aria-label="Estado: permiso de cámara denegado">
+    <div class="mini-bar" aria-hidden="true"><span>16:20</span><span>Cámara</span></div>
+    <div class="mini-state-body">
+      <div class="mini-icon-ring">${icon('camOff', 22)}</div>
+      <h3>Permiso de cámara denegado</h3>
+      <p>Cenit usa la cámara solo en directo para dibujar las trayectorias del sol y la luna. Sin fotos ni internet.</p>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <button class="btn-primary" type="button">Abrir ajustes</button>
+        <button class="btn-secondary" type="button">${dirHint}</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function stateCalibration(reticleMode = 'standard') {
+  return `<section class="mini-phone" aria-label="Estado: calibración de brújula necesaria">
+    <div class="mini-bar on-cam" aria-hidden="true"><span>16:20</span><span>Precisión baja</span></div>
+    <div class="cam-view" style="flex:1">
+      ${arOverlay({
+        w: 280, h: 370, cy: 204, heading: S.heading, pitch: S.pitch, min: S.min,
+        fovH: 64, scene: S.scene, layers: S.layers, calibrated: false,
+        reticle: 'compact', showCrossingPill: false,
+        edgePad: { t: 108, b: 44, x: 10 },
+        ariaLabel: 'Cámara con aviso de calibración de brújula',
+      })}
+      <div class="cam-notice" style="top:32px" role="status">
+        <span style="color:var(--hud-sun);flex:none">${icon('figure8', 22)}</span>
+        <div><b>Brújula sin calibrar</b><span>Mueve el móvil dibujando un 8 para estabilizar las líneas.</span></div>
+      </div>
+      <div class="hud-pill" style="position:absolute;left:10px;right:10px;bottom:10px;justify-content:center;font-size:11px">
+        Líneas atenuadas · precisión baja
+      </div>
+    </div>
+  </section>`;
+}
+
+function stateOutOfView() {
+  /* Aim South (175°) right after sunset (18:05, sun at 248°, alt -4.7°) -> BOTH out of view AND below horizon */
+  return `<section class="mini-phone" aria-label="Estado: sol fuera de vista y bajo el horizonte">
+    <div class="mini-bar on-cam" aria-hidden="true"><span>18:05</span><span>175° S</span></div>
+    <div class="cam-view" style="flex:1">
+      ${arOverlay({
+        w: 280, h: 370, cy: 170, heading: 175, pitch: 4, min: 18 * 60 + 5,
+        fovH: 64, scene: 'night', layers: { sun: true, moon: true, solstices: false },
+        reticle: 'compact', showCrossingPill: false,
+        edgePad: { t: 44, b: 50, x: 10 },
+        ariaLabel: 'Sol fuera del encuadre y bajo el horizonte con flecha en el borde',
+      })}
+      <div class="hud-pill" style="position:absolute;left:10px;right:10px;bottom:10px;justify-content:space-between;font-size:11px">
+        <span>Hora azul · 18:05</span><span style="color:var(--hud-sun)">Sol −4,7°</span>
+      </div>
+    </div>
+  </section>`;
+}
+
+function stateGround() {
+  return `<section class="mini-phone" aria-label="Estado: apuntando al suelo">
+    <div class="mini-bar on-cam" aria-hidden="true"><span>16:20</span><span>−42°</span></div>
+    <div class="cam-view" style="flex:1">
+      ${arOverlay({
+        w: 280, h: 370, heading: S.heading, pitch: -42, min: S.min,
+        fovH: 64, scene: S.scene, layers: S.layers,
+        reticle: 'compact', showCrossingPill: false,
+        edgePad: { t: 46, b: 44, x: 10 },
+        ariaLabel: 'Móvil apuntando al suelo con indicador hacia el horizonte',
+      })}
+      <div class="hud-pill" style="position:absolute;left:10px;right:10px;bottom:10px;justify-content:center;font-size:11px">
+        ${deg(S.heading)} ${wind(S.heading)} · −42° · apuntando al suelo
+      </div>
+    </div>
+  </section>`;
+}
+
+function brightSkyProof(reticleMode = 'standard') {
+  return `<section class="bright-box" aria-label="Prueba de legibilidad sobre cielo brillante">
+    <div class="cam-view" style="flex:1">
+      ${arOverlay({
+        w: 480, h: 204, cy: 96, heading: S.heading, pitch: 8, min: S.min,
+        fovH: 76, scene: 'bright', layers: S.layers,
+        reticle: 'compact', showCrossingPill: true,
+        edgePad: { t: 16, b: 14, x: 12 },
+        ariaLabel: 'Superposición sobre cielo claro brillante a contraluz',
+      })}
+    </div>
+    <div class="bright-foot">
+      <span><b>Contorno doble</b> (#111318 + acento) ≥ 3:1 en cielo claro y oscuro</span>
+      <span><b>Velo</b> ≥ 4,5:1</span>
+    </div>
+  </section>`;
+}
+
+function stateNoSensor() {
+  return `<section class="sensor-card" aria-label="Estado: móvil sin sensor de orientación">
+    <div class="sensor-top">
+      <div class="mini-icon-ring" style="flex:none">${icon('sensorOff', 22)}</div>
+      <div>
+        <h3>Sin sensor de orientación</h3>
+        <p>Este móvil no dispone de brújula ni giroscopio. Puedes mover el encuadre manualmente arrastrando la escena o consultar las horas en Hoy.</p>
+      </div>
+    </div>
+    <div class="sensor-actions">
+      <button class="btn-secondary" type="button">Modo manual</button>
+      <button class="btn-secondary" type="button">Ir a Hoy</button>
+    </div>
+  </section>`;
+}
+
+/* ---------- Board header for stage 2 ---------- */
+const arBoardHead = (title, tradeoff) => `<header class="board-head">
+  <div><h1><span id="logo"></span>${title}</h1><p>${tradeoff}</p></div>
+  <div class="board-tools">
+    <label class="tool-range">Rumbo <input type="range" min="0" max="359" step="1" value="239" data-input="heading" aria-label="Rumbo simulado de la cámara"></label>
+    <label class="tool-range">Inclinación <input type="range" min="-45" max="45" step="1" value="5" data-input="pitch" aria-label="Inclinación vertical simulada"></label>
+    <button class="tool" data-act="scene">Escena: <span data-slot="sceneLabel">Atardecer</span></button>
+    <button class="tool" data-act="ar-now">Volver a ahora</button>
+    <button class="tool" data-act="theme" aria-pressed="false">Tema: <span>Oscuro</span></button>
+  </div></header>`;
+
+/* ---------- Mount stage-2 interactions ---------- */
+function mountAr(slots) {
+  SLOTS.sceneLabel = () => (S.scene === 'dusk' ? 'Atardecer' : S.scene === 'bright' ? 'Cielo claro' : 'Noche');
+  mount(slots);
+  document.addEventListener('input', (e) => {
+    const t = e.target.dataset && e.target.dataset.input;
+    if (t === 'pitch') { S.pitch = +e.target.value; update(); }
+  });
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-act]');
+    if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'layer') {
+      const k = b.dataset.layer;
+      S.layers[k] = !S.layers[k];
+      update();
+    } else if (act === 'scene') {
+      S.scene = S.scene === 'dusk' ? 'bright' : S.scene === 'bright' ? 'night' : 'dusk';
+      update();
+    } else if (act === 'ar-now') {
+      S.y = S.today[0]; S.mo = S.today[1]; S.d = S.today[2];
+      S.min = 16 * 60 + 20; S.heading = 239; S.pitch = 5;
+      document.querySelectorAll('[data-input=pitch]').forEach((el) => (el.value = S.pitch));
+      update();
+    } else if (act === 'aim-dome') {
+      const rect = b.getBoundingClientRect();
+      const dx = e.clientX - (rect.left + rect.width / 2);
+      const dy = e.clientY - (rect.top + rect.height / 2);
+      if (Math.hypot(dx, dy) > 8) {
+        const rel = (Math.atan2(dx, -dy) * 180) / Math.PI;
+        S.heading = Math.round(((S.heading + rel) % 360 + 360) % 360);
+        update();
+      }
+    }
+  });
+}
+
+
+document.getElementById('bhead').innerHTML = arBoardHead('02 · Mira', 'Centrada en la retícula: apunta a una fachada o pico y lee al instante «El sol pasa por aquí a las 17:08 · hora dorada». Trayectorias más discretas y hoja inferior con las horas clave del día; el visor de cámara tiene menos altura.');
+document.getElementById('scrub-slot').innerHTML = scrubber('t-mira');
+document.getElementById('tab-slot').innerHTML = tabBar5('camara');
+document.getElementById('logo').innerHTML = logo(30);
+mountAr({
+  status: () => camStatus(),
+  hudTop: () => `<span class="hud-pill">${S.place.name}</span>
+    <div class="hud-stepper" role="group" aria-label="Fecha">
+      <button type="button" data-act="shift" data-days="-1" data-key="prev" aria-label="Día anterior">${icon('prev', 16)}</button>
+      <span>${dateLabel(S.y, S.mo, S.d, { day: 'numeric', month: 'short' })}</span>
+      <button type="button" data-act="shift" data-days="1" data-key="next" aria-label="Día siguiente">${icon('next', 16)}</button>
+    </div>`,
+  cam: () => arOverlay({
+    w: 360, h: 448, cy: 222, heading: S.heading, pitch: S.pitch, min: S.min,
+    fovH: 64, scene: S.scene, layers: S.layers, reticle: 'hero', quietPaths: true,
+    showCrossingPill: true, edgePad: { t: 74, b: 22, x: 14 },
+    ariaLabel: 'Visor de cámara con mira de precisión y lectura contextual de cruce solar',
+  }),
+  sheetHead: () => {
+    const s = sunNow(), ph = skyPhase(s.alt);
+    return `<div><p class="mira-time">${hhmm(S.min)}</p><p class="mira-phase">${ph.name} · Sol ${deg(s.az)} ${wind(s.az)}, ${s.alt < -0.833 ? 'bajo horiz.' : deg(s.alt, 1)}</p></div>
+      <button class="btn-now-sm" type="button" data-act="ar-now" data-key="now">Ahora</button>`;
+  },
+  layers: () => `<div class="chip-row" role="group" aria-label="Capas de trayectoria">
+      <button class="layer-chip l-sun" type="button" data-act="layer" data-layer="sun" data-key="l-sun" aria-pressed="${S.layers.sun}"><span class="sw-dot sun"></span>Sol</button>
+      <button class="layer-chip l-moon" type="button" data-act="layer" data-layer="moon" data-key="l-moon" aria-pressed="${S.layers.moon}"><span class="sw-dot moon"></span>Luna</button>
+      <button class="layer-chip" type="button" data-act="layer" data-layer="solstices" data-key="l-sol" aria-pressed="${S.layers.solstices}"><span class="sw-dot sol"></span>Solsticios</button>
+    </div>
+    <span class="small muted" style="font-size:11px">Estable</span>`,
+  keys: () => {
+    const d = day();
+    return `<dl class="mira-keys">
+      <div><dt>Amanecer</dt><dd>${T(d.setAm)}</dd></div>
+      <div><dt><span class="tag golden"></span>Dorada</dt><dd>${T(d.goldenPm)}</dd></div>
+      <div><dt>Atardecer</dt><dd>${T(d.setPm)}</dd></div>
+    </dl>`;
+  },
+  moonLine: () => {
+    const d = day(), ph = phaseNow();
+    return `<span>${phaseGlyph(ph, 7, false)}Luna ${Math.round(ph.illum * 100)} % · ${ph.name}</span><span>${T(d.moonrise)} – ${T(d.moonset)}</span>`;
+  },
+  stPerm: () => statePermission('Abrir Brújula'),
+  stCal: () => stateCalibration('hero'),
+  stOut: () => stateOutOfView(),
+  stGround: () => stateGround(),
+  land: () => {
+    const d = day(), hit = crosshairHit(S.heading, S.pitch, S.layers);
+    return `<section class="land-phone" aria-label="Vista apaisada — 02 Mira">
+      <div class="cam-view" style="flex:1;height:100%">
+        ${arOverlay({
+          w: 302, h: 254, heading: S.heading, pitch: S.pitch, min: S.min,
+          fovH: 76, scene: S.scene, layers: S.layers, reticle: 'hero', quietPaths: true,
+          showCrossingPill: false, edgePad: { t: 16, b: 16, x: 12 },
+          ariaLabel: 'Mira central en formato apaisado',
+        })}
+      </div>
+      <div class="land-mira-sheet">
+        <div>
+          <p class="eyebrow" style="font-size:10px">${S.place.name} · ${hhmm(S.min)}</p>
+          <p style="font-size:12px;line-height:16px;margin:6px 0 0;color:var(--text-primary)">${hit.text}</p>
+        </div>
+        <div style="border-top:var(--border-hairline);padding-top:8px;font-size:12px;line-height:18px">
+          <div style="display:flex;justify-content:space-between"><span class="muted">Amanecer</span><span>${T(d.setAm)}</span></div>
+          <div style="display:flex;justify-content:space-between"><span class="muted">Dorada</span><span>${T(d.goldenPm)}</span></div>
+          <div style="display:flex;justify-content:space-between"><span class="muted">Atardecer</span><span>${T(d.setPm)}</span></div>
+        </div>
+        <div class="chip-row">
+          <button class="layer-chip l-sun" style="min-height:30px;padding:0 7px;font-size:11px" type="button" data-act="layer" data-layer="sun" aria-pressed="${S.layers.sun}">Sol</button>
+          <button class="layer-chip l-moon" style="min-height:30px;padding:0 7px;font-size:11px" type="button" data-act="layer" data-layer="moon" aria-pressed="${S.layers.moon}">Luna</button>
+          <button class="layer-chip" style="min-height:30px;padding:0 7px;font-size:11px" type="button" data-act="layer" data-layer="solstices" aria-pressed="${S.layers.solstices}">Solst.</button>
+        </div>
+      </div>
+    </section>`;
+  },
+  bright: () => brightSkyProof('hero'),
+  noSensor: () => stateNoSensor(),
+});
+</script>
+</body>
+</html>

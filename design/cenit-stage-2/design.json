@@ -1,0 +1,28 @@
+{
+  "title": "Cenit · etapa 2 (cámara AR)",
+  "brief": "Pantalla de cámara AR para planificar la luz en directo sobre el encuadre (sol, luna, solsticios, horizonte, mira con ángulos y cruce horario, deslizador de hora y estados clave). Referencias: Sun Seeker y Sun Locator. Estilo Scrolless/Sereno (design/system.md).",
+  "feature": "odd/tasks/cenit-stage-2.md",
+  "artboards": [
+    {
+      "file": "01-visor.html",
+      "title": "01 · Visor",
+      "tradeoff": "Máximo campo de cámara tipo visor con cinta de rumbo arriba y controles mínimos abajo; las horas del día quedan fuera de pantalla",
+      "width": 1580,
+      "height": 1020
+    },
+    {
+      "file": "02-mira.html",
+      "title": "02 · Mira",
+      "tradeoff": "Mira central protagonista con lectura contextual de cruce solar y hoja inferior con horas clave; el visor de cámara tiene menos altura",
+      "width": 1580,
+      "height": 1020
+    },
+    {
+      "file": "03-camara-y-cupula.html",
+      "title": "03 · Cámara + cúpula",
+      "tradeoff": "Une la cámara arriba con la cúpula plana de la etapa ① abajo (toca la cúpula para apuntar); recorta la altura de cámara",
+      "width": 1580,
+      "height": 1020
+    }
+  ]
+}
