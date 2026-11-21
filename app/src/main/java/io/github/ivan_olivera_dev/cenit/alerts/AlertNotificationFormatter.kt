@@ -22,13 +22,17 @@ data class FormattedAlertNotification(
  */
 object AlertNotificationFormatter {
     /**
-     * Whole minutes from [now] to the event's displayed minute (event time truncated to the
-     * minute, L14), never negative. The alarm fires anywhere from 40 to 30 minutes before the
-     * event, so the notification states the real time left instead of a fixed lead.
+     * Ceiling of the minutes from [now] to the event's displayed minute (event time truncated to
+     * the minute, L14), never negative. For example, 06:52:30 before a 07:22 event yields 30,
+     * 06:52:00 yields 30, 06:53:01 yields 29, and any instant at or after 07:22:00 yields 0.
      */
     fun minutesUntil(now: Instant, eventInstant: Instant): Long {
         val shownEvent = eventInstant.truncatedTo(ChronoUnit.MINUTES)
-        return Duration.between(now, shownEvent).toMinutes().coerceAtLeast(0L)
+        val remaining = Duration.between(now, shownEvent)
+        if (remaining.isNegative || remaining.isZero) return 0L
+        val wholeMinutes = remaining.seconds / 60L
+        val hasFraction = (remaining.seconds % 60L) != 0L || remaining.nano != 0
+        return if (hasFraction) wholeMinutes + 1L else wholeMinutes
     }
 
     fun format(

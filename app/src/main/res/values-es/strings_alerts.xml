@@ -26,4 +26,6 @@
 
     <string name="alert_permission_denied_notice">Notificaciones desactivadas. Actívalas en los ajustes de la app para recibir avisos.</string>
     <string name="alert_no_occurrence_notice">Este evento no ocurre en este lugar durante el próximo año.</string>
+    <string name="alert_exact_alarm_explanation">Sin este permiso Android puede retrasar los avisos cuando el móvil está en reposo.</string>
+    <string name="alert_exact_alarm_enable">Activar</string>
 </resources>
