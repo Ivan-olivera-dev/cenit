@@ -74,13 +74,20 @@ class AlertNotificationFormatterTest {
     }
 
     @Test
-    fun `minutes left are counted to the displayed event minute and never negative`() {
+    fun `minutes left round up to the displayed event minute and are never negative`() {
         val zone = ZoneId.of("Europe/Madrid")
         fun at(text: String) = LocalDateTime.parse(text).atZone(zone).toInstant()
         val event = at("2026-11-21T07:22:45") // shown as 07:22
         assertEquals(40L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:42:00"), event))
-        assertEquals(34L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:47:30"), event))
+        assertEquals(35L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:47:30"), event))
+        assertEquals(31L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:51:59").plusMillis(999), event))
         assertEquals(30L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:52:00"), event))
+        assertEquals(30L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:52:00").plusMillis(1), event))
+        assertEquals(30L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:52:30"), event))
+        assertEquals(29L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T06:53:01"), event))
+        assertEquals(1L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T07:21:59"), event))
+        assertEquals(0L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T07:22:00"), event))
+        assertEquals(0L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T07:22:01"), event))
         assertEquals(0L, AlertNotificationFormatter.minutesUntil(at("2026-11-21T07:30:00"), event))
     }
 

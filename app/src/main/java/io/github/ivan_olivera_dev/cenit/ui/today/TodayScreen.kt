@@ -28,6 +28,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,9 +61,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.ivan_olivera_dev.cenit.R
 import io.github.ivan_olivera_dev.cenit.alerts.AlertNotifier
 import io.github.ivan_olivera_dev.cenit.alerts.AlertPermissions
+import io.github.ivan_olivera_dev.cenit.alerts.ExactAlarmSync
 import io.github.ivan_olivera_dev.cenit.core.Cenit
 import io.github.ivan_olivera_dev.cenit.core.Ephemeris
 import io.github.ivan_olivera_dev.cenit.core.MoonDay
@@ -120,6 +125,7 @@ private data class TodayDayBundle(
 private enum class TodayAlertNotice {
     PERMISSION_DENIED,
     NO_OCCURRENCE,
+    EXACT_ALARM_OFF,
 }
 
 /**
@@ -303,9 +309,31 @@ fun TodayScreen(
 
     var pendingAlertKind by rememberSaveable { mutableStateOf<AlertKind?>(null) }
     var alertNotice by remember { mutableStateOf<TodayAlertNotice?>(null) }
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     LaunchedEffect(state.activePlace, alertTargetKind) {
         alertNotice = null
+    }
+
+    DisposableEffect(lifecycleOwner, context) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME &&
+                alertNotice == TodayAlertNotice.EXACT_ALARM_OFF &&
+                AlertPermissions.canScheduleExactAlarms(context)
+            ) {
+                alertNotice = null
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    fun handleAlertSubscribed(scheduled: Boolean) {
+        alertNotice = when {
+            !scheduled -> TodayAlertNotice.NO_OCCURRENCE
+            ExactAlarmSync.consumeHoyExactAlarmNotice(context) -> TodayAlertNotice.EXACT_ALARM_OFF
+            else -> null
+        }
     }
 
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
@@ -314,8 +342,7 @@ fun TodayScreen(
         val pending = pendingAlertKind
         pendingAlertKind = null
         if (granted && pending != null) {
-            val scheduled = onSubscribeAlert(pending)
-            alertNotice = if (scheduled) null else TodayAlertNotice.NO_OCCURRENCE
+            handleAlertSubscribed(onSubscribeAlert(pending))
         } else if (!granted) {
             alertNotice = TodayAlertNotice.PERMISSION_DENIED
         }
@@ -327,10 +354,7 @@ fun TodayScreen(
         if (isAlertSubscribed) {
             onUnsubscribeAlert(kind)
         } else if (AlertPermissions.hasNotificationPermission(context)) {
-            val scheduled = onSubscribeAlert(kind)
-            if (!scheduled) {
-                alertNotice = TodayAlertNotice.NO_OCCURRENCE
-            }
+            handleAlertSubscribed(onSubscribeAlert(kind))
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             pendingAlertKind = kind
             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
@@ -502,12 +526,25 @@ fun TodayScreen(
                         stringResource(R.string.alert_permission_denied_notice)
                     TodayAlertNotice.NO_OCCURRENCE ->
                         stringResource(R.string.alert_no_occurrence_notice)
+                    TodayAlertNotice.EXACT_ALARM_OFF ->
+                        stringResource(R.string.alert_exact_alarm_explanation)
                     null -> ""
                 }
+                val isExactAlarmNotice = alertNotice == TodayAlertNotice.EXACT_ALARM_OFF
                 TodayAlertNoticeBanner(
                     text = noticeText,
                     palette = palette,
                     onDismiss = { alertNotice = null },
+                    actionLabel = if (isExactAlarmNotice) {
+                        stringResource(R.string.alert_exact_alarm_enable)
+                    } else {
+                        null
+                    },
+                    onAction = if (isExactAlarmNotice) {
+                        { AlertPermissions.openExactAlarmSettings(context) }
+                    } else {
+                        null
+                    },
                 )
             }
 
@@ -640,6 +677,8 @@ private fun TodayAlertNoticeBanner(
     text: String,
     palette: CenitPalette,
     onDismiss: () -> Unit,
+    actionLabel: String? = null,
+    onAction: (() -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(
         topStart = 0.dp,
@@ -647,7 +686,7 @@ private fun TodayAlertNoticeBanner(
         topEnd = 12.dp,
         bottomEnd = 12.dp,
     )
-    Box(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(shape)
@@ -662,16 +701,44 @@ private fun TodayAlertNoticeBanner(
                 )
             }
             .clickable(role = Role.Button, onClick = onDismiss)
-            .padding(start = 15.dp, end = 12.dp, top = 7.dp, bottom = 7.dp)
+            .padding(
+                start = 15.dp,
+                end = if (actionLabel != null && onAction != null) 8.dp else 12.dp,
+                top = 6.dp,
+                bottom = 6.dp,
+            )
             .semantics { liveRegion = LiveRegionMode.Polite },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.bodySmall,
             color = palette.textPrimary,
-            maxLines = 2,
+            maxLines = 3,
             overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.weight(1f),
         )
+        if (actionLabel != null && onAction != null) {
+            val actionShape = RoundedCornerShape(10.dp)
+            Box(
+                modifier = Modifier
+                    .heightIn(min = 44.dp)
+                    .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
+                    .clip(actionShape)
+                    .border(1.dp, palette.controlBorder, actionShape)
+                    .clickable(role = Role.Button, onClick = onAction)
+                    .padding(horizontal = 12.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = actionLabel,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = palette.textPrimary,
+                    maxLines = 1,
+                )
+            }
+        }
     }
 }
 

@@ -10,16 +10,30 @@ enum class CancelReason {
     INVALID_ZONE,
 }
 
+enum class AlarmScheduleMode {
+    EXACT,
+    WINDOWED,
+}
+
 sealed interface ScheduleDecision {
     val subscription: AlertSubscription
 
     data class Schedule(
         override val subscription: AlertSubscription,
         val trigger: AlertTrigger,
-        val windowLengthMillis: Long,
+        val mode: AlarmScheduleMode = AlarmScheduleMode.WINDOWED,
+        val windowLengthMillis: Long = if (mode == AlarmScheduleMode.EXACT) {
+            0L
+        } else {
+            AlertReschedulePlanner.WINDOW_LENGTH_MILLIS
+        },
     ) : ScheduleDecision {
-        /** Start of the `setWindow` window; the window ends exactly at [AlertTrigger.triggerInstant]. */
-        val windowStart: java.time.Instant get() = trigger.triggerInstant.minusMillis(windowLengthMillis)
+        /**
+         * Start of the delivery window; equals [AlertTrigger.triggerInstant] in
+         * [AlarmScheduleMode.EXACT], and ends at [AlertTrigger.triggerInstant] in
+         * [AlarmScheduleMode.WINDOWED].
+         */
+        val windowStart: Instant get() = trigger.triggerInstant.minusMillis(windowLengthMillis)
     }
 
     data class Cancel(
@@ -44,6 +58,7 @@ object AlertReschedulePlanner {
         "android.intent.action.MY_PACKAGE_REPLACED",
         "android.intent.action.TIMEZONE_CHANGED",
         "android.intent.action.TIME_SET",
+        "android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED",
     )
 
     fun shouldRescheduleForAction(action: String?): Boolean =
@@ -53,24 +68,31 @@ object AlertReschedulePlanner {
         subscription: AlertSubscription,
         now: Instant,
         lead: Duration = AlertSchedule.DEFAULT_LEAD,
+        mode: AlarmScheduleMode = AlarmScheduleMode.WINDOWED,
     ): ScheduleDecision {
         val zone = subscription.resolveZoneOrNull()
             ?: return ScheduleDecision.Cancel(subscription, CancelReason.INVALID_ZONE)
-        // Pick the occurrence by its window start (event - lead - window), so the whole window is
-        // in the future and a reschedule inside it moves on instead of firing the same alert again.
+        val windowMillis = when (mode) {
+            AlarmScheduleMode.EXACT -> 0L
+            AlarmScheduleMode.WINDOWED -> WINDOW_LENGTH_MILLIS
+        }
+        // Pick the occurrence by its delivery start (event - lead - window), so the whole
+        // delivery window (or the exact trigger instant in EXACT mode) is strictly in the future
+        // and a reschedule inside it moves on instead of firing the same alert again.
         val earliest = AlertSchedule.nextTrigger(
             kind = subscription.kind,
             place = subscription.toPlace(),
             zone = zone,
             now = now,
-            lead = lead.plusMillis(WINDOW_LENGTH_MILLIS),
+            lead = lead.plusMillis(windowMillis),
         ) ?: return ScheduleDecision.Cancel(subscription, CancelReason.NO_UPCOMING_OCCURRENCE)
         val trigger = earliest.copy(triggerInstant = earliest.eventInstant.minus(lead))
 
         return ScheduleDecision.Schedule(
             subscription = subscription,
             trigger = trigger,
-            windowLengthMillis = WINDOW_LENGTH_MILLIS,
+            mode = mode,
+            windowLengthMillis = windowMillis,
         )
     }
 
@@ -78,7 +100,8 @@ object AlertReschedulePlanner {
         subscriptions: List<AlertSubscription>,
         now: Instant,
         lead: Duration = AlertSchedule.DEFAULT_LEAD,
-    ): List<ScheduleDecision> = subscriptions.map { planOne(it, now, lead) }
+        mode: AlarmScheduleMode = AlarmScheduleMode.WINDOWED,
+    ): List<ScheduleDecision> = subscriptions.map { planOne(it, now, lead, mode) }
 
     /**
      * Plans the next occurrence after an alarm has fired. Uses `max(now, firedTriggerInstant)`
@@ -89,13 +112,14 @@ object AlertReschedulePlanner {
         firedTriggerInstant: Instant?,
         now: Instant,
         lead: Duration = AlertSchedule.DEFAULT_LEAD,
+        mode: AlarmScheduleMode = AlarmScheduleMode.WINDOWED,
     ): ScheduleDecision {
         val effectiveNow = if (firedTriggerInstant != null && firedTriggerInstant.isAfter(now)) {
             firedTriggerInstant
         } else {
             now
         }
-        return planOne(subscription, effectiveNow, lead)
+        return planOne(subscription, effectiveNow, lead, mode)
     }
 }
 

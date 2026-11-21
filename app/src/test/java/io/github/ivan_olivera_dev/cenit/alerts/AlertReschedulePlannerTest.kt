@@ -24,10 +24,11 @@ class AlertReschedulePlannerTest {
         val sub = AlertSubscription.create(AlertKind.SUNRISE, "Madrid", madrid, "Europe/Madrid")
         val now = atMadrid("2026-06-21T05:00:00")
 
-        val decision = AlertReschedulePlanner.planOne(sub, now)
+        val decision = AlertReschedulePlanner.planOne(sub, now, mode = AlarmScheduleMode.WINDOWED)
         assertTrue(decision is ScheduleDecision.Schedule)
         val scheduled = decision as ScheduleDecision.Schedule
         assertEquals(sub, scheduled.subscription)
+        assertEquals(AlarmScheduleMode.WINDOWED, scheduled.mode)
         assertEquals(atMadrid("2026-06-21T06:44:00"), scheduled.trigger.eventInstant)
         assertEquals(atMadrid("2026-06-21T06:14:00"), scheduled.trigger.triggerInstant)
         // Android 14+ widens setWindow to at least 10 minutes, so the window ends at the
@@ -38,16 +39,71 @@ class AlertReschedulePlannerTest {
     }
 
     @Test
+    fun `planOne in exact mode schedules the exact trigger 30 minutes before the event`() {
+        val sub = AlertSubscription.create(AlertKind.SUNRISE, "Madrid", madrid, "Europe/Madrid")
+        val now = atMadrid("2026-06-21T05:00:00")
+
+        val decision = AlertReschedulePlanner.planOne(sub, now, mode = AlarmScheduleMode.EXACT)
+        assertTrue(decision is ScheduleDecision.Schedule)
+        val scheduled = decision as ScheduleDecision.Schedule
+        assertEquals(sub, scheduled.subscription)
+        assertEquals(AlarmScheduleMode.EXACT, scheduled.mode)
+        assertEquals(atMadrid("2026-06-21T06:44:00"), scheduled.trigger.eventInstant)
+        assertEquals(atMadrid("2026-06-21T06:14:00"), scheduled.trigger.triggerInstant)
+        assertEquals(atMadrid("2026-06-21T06:14:00"), scheduled.windowStart)
+        assertEquals(0L, scheduled.windowLengthMillis)
+    }
+
+    @Test
     fun `a reschedule inside the delivery window moves to the next occurrence`() {
         val sub = AlertSubscription.create(AlertKind.SUNRISE, "Madrid", madrid, "Europe/Madrid")
         // Sunrise 06:44: window 06:04-06:14. Just before it, today's sunrise is still planned.
-        val before = AlertReschedulePlanner.planOne(sub, atMadrid("2026-06-21T06:03:59")) as ScheduleDecision.Schedule
+        val before = AlertReschedulePlanner.planOne(
+            sub,
+            atMadrid("2026-06-21T06:03:59"),
+            mode = AlarmScheduleMode.WINDOWED,
+        ) as ScheduleDecision.Schedule
         assertEquals(atMadrid("2026-06-21T06:04:00"), before.windowStart)
         // Inside it (boot, update or clock change), never a window that already started.
         for (now in listOf("2026-06-21T06:04:00", "2026-06-21T06:09:00", "2026-06-21T06:13:59")) {
-            val inside = AlertReschedulePlanner.planOne(sub, atMadrid(now)) as ScheduleDecision.Schedule
+            val inside = AlertReschedulePlanner.planOne(
+                sub,
+                atMadrid(now),
+                mode = AlarmScheduleMode.WINDOWED,
+            ) as ScheduleDecision.Schedule
             assertEquals(LocalDate.of(2026, 6, 22), inside.trigger.eventInstant.atZone(madridZone).toLocalDate())
             assertTrue(inside.windowStart.isAfter(atMadrid(now)))
+        }
+    }
+
+    @Test
+    fun `exact mode picks today up to the second before trigger and moves to next day at or after trigger`() {
+        val sub = AlertSubscription.create(AlertKind.SUNRISE, "Madrid", madrid, "Europe/Madrid")
+        // Sunrise 06:44 -> exact trigger 06:14:00.
+        // At 06:04:00 (inside windowed delivery window) and 06:13:59, exact trigger is still strictly ahead.
+        for (now in listOf(atMadrid("2026-06-21T06:04:00"), atMadrid("2026-06-21T06:13:59"), atMadrid("2026-06-21T06:13:59").plusMillis(999))) {
+            val before = AlertReschedulePlanner.planOne(
+                sub,
+                now,
+                mode = AlarmScheduleMode.EXACT,
+            ) as ScheduleDecision.Schedule
+            assertEquals(AlarmScheduleMode.EXACT, before.mode)
+            assertEquals(LocalDate.of(2026, 6, 21), before.trigger.eventInstant.atZone(madridZone).toLocalDate())
+            assertEquals(atMadrid("2026-06-21T06:14:00"), before.trigger.triggerInstant)
+            assertTrue(before.trigger.triggerInstant.isAfter(now))
+        }
+        // At or after 06:14:00, never re-fire today's occurrence.
+        for (now in listOf(atMadrid("2026-06-21T06:14:00"), atMadrid("2026-06-21T06:14:01"))) {
+            val atOrAfter = AlertReschedulePlanner.planOne(
+                sub,
+                now,
+                mode = AlarmScheduleMode.EXACT,
+            ) as ScheduleDecision.Schedule
+            assertEquals(AlarmScheduleMode.EXACT, atOrAfter.mode)
+            assertEquals(LocalDate.of(2026, 6, 22), atOrAfter.trigger.eventInstant.atZone(madridZone).toLocalDate())
+            assertEquals(atMadrid("2026-06-22T06:45:00"), atOrAfter.trigger.eventInstant)
+            assertEquals(atMadrid("2026-06-22T06:15:00"), atOrAfter.trigger.triggerInstant)
+            assertTrue(atOrAfter.trigger.triggerInstant.isAfter(now))
         }
     }
 
@@ -79,36 +135,47 @@ class AlertReschedulePlannerTest {
         val firedTrigger = atMadrid("2026-06-21T06:14:00")
 
         // Even if now is 2 seconds before firedTrigger (e.g. clock adjusted slightly backwards),
-        // planAfterFire advances to 2026-06-22 instead of re-scheduling 2026-06-21.
-        val decision = AlertReschedulePlanner.planAfterFire(
-            subscription = sub,
-            firedTriggerInstant = firedTrigger,
-            now = firedTrigger.minusSeconds(2),
-        )
-        assertTrue(decision is ScheduleDecision.Schedule)
-        val next = (decision as ScheduleDecision.Schedule).trigger
-        assertEquals(LocalDate.of(2026, 6, 22), next.eventInstant.atZone(madridZone).toLocalDate())
-        assertEquals(atMadrid("2026-06-22T06:45:00"), next.eventInstant)
-        assertEquals(atMadrid("2026-06-22T06:15:00"), next.triggerInstant)
+        // planAfterFire advances to 2026-06-22 instead of re-scheduling 2026-06-21 in both modes.
+        for (mode in listOf(AlarmScheduleMode.WINDOWED, AlarmScheduleMode.EXACT)) {
+            val decision = AlertReschedulePlanner.planAfterFire(
+                subscription = sub,
+                firedTriggerInstant = firedTrigger,
+                now = firedTrigger.minusSeconds(2),
+                mode = mode,
+            )
+            assertTrue(decision is ScheduleDecision.Schedule)
+            val scheduled = decision as ScheduleDecision.Schedule
+            assertEquals(mode, scheduled.mode)
+            val next = scheduled.trigger
+            assertEquals(LocalDate.of(2026, 6, 22), next.eventInstant.atZone(madridZone).toLocalDate())
+            assertEquals(atMadrid("2026-06-22T06:45:00"), next.eventInstant)
+            assertEquals(atMadrid("2026-06-22T06:15:00"), next.triggerInstant)
+        }
     }
 
     @Test
     fun `planAll handles mixed schedulable and unschedulable subscriptions`() {
         val good = AlertSubscription.create(AlertKind.SUNSET, "Madrid", madrid, "Europe/Madrid")
         val badZone = AlertSubscription.create(AlertKind.SUNRISE, "Broken", madrid, "Mars/Phobos")
-        val decisions = AlertReschedulePlanner.planAll(listOf(good, badZone), atMadrid("2026-06-21T12:00:00"))
+        val decisions = AlertReschedulePlanner.planAll(
+            listOf(good, badZone),
+            atMadrid("2026-06-21T12:00:00"),
+            mode = AlarmScheduleMode.EXACT,
+        )
 
         assertEquals(2, decisions.size)
         assertTrue(decisions[0] is ScheduleDecision.Schedule)
+        assertEquals(AlarmScheduleMode.EXACT, (decisions[0] as ScheduleDecision.Schedule).mode)
         assertEquals(ScheduleDecision.Cancel(badZone, CancelReason.INVALID_ZONE), decisions[1])
     }
 
     @Test
-    fun `shouldRescheduleForAction matches only boot, package replace, timezone, and time set`() {
+    fun `shouldRescheduleForAction matches boot, package replace, timezone, time set, and exact alarm permission change`() {
         assertTrue(AlertReschedulePlanner.shouldRescheduleForAction("android.intent.action.BOOT_COMPLETED"))
         assertTrue(AlertReschedulePlanner.shouldRescheduleForAction("android.intent.action.MY_PACKAGE_REPLACED"))
         assertTrue(AlertReschedulePlanner.shouldRescheduleForAction("android.intent.action.TIMEZONE_CHANGED"))
         assertTrue(AlertReschedulePlanner.shouldRescheduleForAction("android.intent.action.TIME_SET"))
+        assertTrue(AlertReschedulePlanner.shouldRescheduleForAction("android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"))
 
         assertFalse(AlertReschedulePlanner.shouldRescheduleForAction(null))
         assertFalse(AlertReschedulePlanner.shouldRescheduleForAction(""))

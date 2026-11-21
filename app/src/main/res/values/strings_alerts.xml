@@ -26,4 +26,6 @@
 
     <string name="alert_permission_denied_notice">Notifications are off. Enable them in app settings to receive alerts.</string>
     <string name="alert_no_occurrence_notice">This event does not occur at this location within the next year.</string>
+    <string name="alert_exact_alarm_explanation">Without this permission Android may delay alerts while the phone is idle.</string>
+    <string name="alert_exact_alarm_enable">Enable</string>
 </resources>

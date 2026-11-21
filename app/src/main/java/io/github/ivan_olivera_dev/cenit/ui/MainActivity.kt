@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import io.github.ivan_olivera_dev.cenit.alerts.ExactAlarmSync
 import io.github.ivan_olivera_dev.cenit.settings.AppLocaleController
 import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
 import io.github.ivan_olivera_dev.cenit.settings.SettingsStore
@@ -25,6 +26,11 @@ class MainActivity : ComponentActivity() {
 
     override fun attachBaseContext(newBase: Context) {
         super.attachBaseContext(AppLocaleController.wrapBaseContext(newBase))
+    }
+
+    override fun onResume() {
+        super.onResume()
+        ExactAlarmSync.rescheduleIfPermissionChanged(this)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

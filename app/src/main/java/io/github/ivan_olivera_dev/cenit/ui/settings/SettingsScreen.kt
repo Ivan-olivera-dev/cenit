@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +27,11 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -39,7 +44,11 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import io.github.ivan_olivera_dev.cenit.R
+import io.github.ivan_olivera_dev.cenit.alerts.AlertPermissions
 import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import io.github.ivan_olivera_dev.cenit.settings.AppLanguage
 import io.github.ivan_olivera_dev.cenit.settings.AppSettings
@@ -71,6 +80,19 @@ fun SettingsScreen(
         configuration.locales[0] ?: Locale.getDefault()
     }
     val versionName = remember(context) { resolveAppVersionName(context) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var canScheduleExactAlarms by remember(context) {
+        mutableStateOf(AlertPermissions.canScheduleExactAlarms(context))
+    }
+    DisposableEffect(lifecycleOwner, context) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                canScheduleExactAlarms = AlertPermissions.canScheduleExactAlarms(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     val backDesc = stringResource(R.string.settings_cd_back)
     val languageSectionLabel = stringResource(R.string.settings_section_language)
@@ -78,6 +100,7 @@ fun SettingsScreen(
     val formatSectionLabel = stringResource(R.string.settings_section_format)
     val clockLabel = stringResource(R.string.settings_clock_label)
     val degreesLabel = stringResource(R.string.settings_degrees_label)
+    val alertsSectionLabel = stringResource(R.string.settings_section_alerts)
     val aboutSectionLabel = stringResource(R.string.settings_section_about)
 
     val languageOptions = listOf(
@@ -231,7 +254,78 @@ fun SettingsScreen(
                     }
                 }
 
-                // 4. About (editorial hairline rows, no repository link)
+                // 4. Alerts (optional exact-alarm permission)
+                SettingsSection(eyebrow = alertsSectionLabel, locale = locale) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 32.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.settings_alerts_exact_title),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = palette.textPrimary,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                Text(
+                                    text = stringResource(
+                                        if (canScheduleExactAlarms) {
+                                            R.string.settings_alerts_exact_on
+                                        } else {
+                                            R.string.settings_alerts_exact_off
+                                        },
+                                    ),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = if (canScheduleExactAlarms) {
+                                        palette.sun
+                                    } else {
+                                        palette.textSecondary
+                                    },
+                                )
+                            }
+                            Text(
+                                text = stringResource(R.string.alert_exact_alarm_explanation),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = palette.textSecondary,
+                            )
+                        }
+
+                        if (!canScheduleExactAlarms && AlertPermissions.requiresExactAlarmPermission()) {
+                            val buttonShape = RoundedCornerShape(14.dp)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(min = 46.dp)
+                                    .cenitFocusRing(palette.focusRing, cornerRadius = 14.dp)
+                                    .clip(buttonShape)
+                                    .border(1.dp, palette.controlBorder, buttonShape)
+                                    .clickable(role = Role.Button) {
+                                        AlertPermissions.openExactAlarmSettings(context)
+                                    }
+                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.alert_exact_alarm_enable),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = palette.textPrimary,
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // 5. About (editorial hairline rows, no repository link)
                 SettingsSection(eyebrow = aboutSectionLabel, locale = locale) {
                     Column(modifier = Modifier.fillMaxWidth()) {
                         aboutRows.forEachIndexed { index, rowText ->
