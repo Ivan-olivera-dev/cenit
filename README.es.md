@@ -23,11 +23,11 @@ Cada versión incluye un archivo `.sha256` y una atestación SLSA de procedencia
 | :---: | :---: | :---: | :---: |
 | ![Pantalla Hoy en tema oscuro](docs/screenshots/es/hoy-dark.png) | ![Pantalla Cielo en tema oscuro](docs/screenshots/es/cielo-dark.png) | ![Pantalla Brújula en tema oscuro](docs/screenshots/es/brujula-dark.png) | ![Pantalla Lugares en tema oscuro](docs/screenshots/es/lugares-dark.png) |
 
-| Hoy (claro) | Cielo (claro) | Ajustes |
-| :---: | :---: | :---: |
-| ![Pantalla Hoy en tema claro](docs/screenshots/es/hoy-light.png) | ![Pantalla Cielo en tema claro](docs/screenshots/es/cielo-light.png) | ![Pantalla Ajustes](docs/screenshots/es/ajustes-dark.png) |
+| Cámara | Hoy (claro) | Cielo (claro) | Ajustes |
+| :---: | :---: | :---: | :---: |
+| ![Vista de cámara con el recorrido del sol sobre el cielo](docs/screenshots/es/camara-dark.png) | ![Pantalla Hoy en tema claro](docs/screenshots/es/hoy-light.png) | ![Pantalla Cielo en tema claro](docs/screenshots/es/cielo-light.png) | ![Pantalla Ajustes](docs/screenshots/es/ajustes-dark.png) |
 
-*Capturas reales en un móvil, situadas en Valencia a las 17:20 durante la hora dorada.*
+*Capturas reales en un móvil, situadas en Valencia, a las 17:20 durante la hora dorada y a las 14:40 en la vista de cámara. En la captura de la cámara, la imagen en directo se sustituye por un cielo dibujado y la orientación del móvil está fijada; todo lo que aparece encima es la app tal como funciona.*
 
 ## Qué hace Cenit
 
@@ -100,17 +100,26 @@ El tema claro parte del papel cálido de Scrolless y el oscuro de la tinta de Se
 | `sun` | `#7A6220` | `#D6C07E` | Trayectoria solar, hora dorada y estado activo |
 | `moon` | `#3D5896` | `#AFBDE3` | Trayectoria lunar y horas de la luna |
 
-La lista completa de tokens y las comprobaciones de contraste WCAG están en [`design/system.md`](design/system.md). Los bocetos HTML están en [`design/`](design/), incluido el diseño elegido [`design/cenit-stage-1/02-cupula.html`](design/cenit-stage-1/02-cupula.html). Las imágenes de marca de [`docs/brand/`](docs/brand/) se generan con `node tools/brand/render.mjs`.
+La lista completa de tokens y las comprobaciones de contraste WCAG están en [`design/system.md`](design/system.md). Los bocetos HTML están en [`design/`](design/), incluidos los diseños elegidos [`design/cenit-stage-1/02-cupula.html`](design/cenit-stage-1/02-cupula.html) y, para la vista de cámara, [`design/cenit-stage-2/01-visor.html`](design/cenit-stage-2/01-visor.html). Las imágenes de marca de [`docs/brand/`](docs/brand/) se generan con `node tools/brand/render.mjs`.
 
 ## Estructura del proyecto
 
-- `core/` (`:core`): efemérides en Kotlin puro, proyección de la cúpula, datos de la gráfica de elevación, matemáticas de la brújula, búsqueda de eclipses, índice de ciudades, programación de avisos y formato de horas.
-- `app/` (`:app`): pantallas en Jetpack Compose, lectura del magnetómetro y `LocationManager`, persistencia local en JSON, notificaciones y ajustes.
+- `core/` (`:core`): efemérides en Kotlin puro, proyección de la cúpula, datos de la gráfica de elevación, matemáticas de la brújula, búsqueda de eclipses, índice de ciudades, programación de avisos, formato de horas y la proyección de la vista de cámara (`core/ar`: rotación del dispositivo, proyección, suavizado de la orientación y trayectorias del sol y la luna).
+- `app/` (`:app`): pantallas en Jetpack Compose, lectura del magnetómetro y `LocationManager`, la vista previa de CameraX y lo que se dibuja encima, persistencia local en JSON, notificaciones y ajustes.
 - `third_party/astronomy/` (`:astronomy`): fuente sin modificar de Astronomy Engine v2.1.19 con comprobación SHA-256 (`verifyVendoredSource`).
 - `tools/geonames/`: generador en Python y tests unitarios para la lista local de ciudades.
 - `tools/brand/`: plantillas SVG/HTML y script de renderizado en macOS para `docs/brand/`.
 - `scripts/`: `check-manifest.sh` (comprueba que no haya permiso `INTERNET` y que las copias estén desactivadas) y `test-check-manifest.sh`.
 - `design/`: sistema de diseño y bocetos HTML.
+
+## Hoja de ruta
+
+Cenit se construye por etapas, y cada una sale como una versión que ya se puede usar:
+
+1. Horarios, gráficas, la cúpula, la brújula, los lugares y los avisos (v0.1.0).
+2. Vista de cámara con las trayectorias del sol y la luna (v0.2.0).
+3. Sombras: hacia dónde caen y cuánto miden a lo largo del día.
+4. Mapa con las direcciones del sol y la luna. Es la única etapa que podría necesitar conexión.
 
 ## Compilación
 

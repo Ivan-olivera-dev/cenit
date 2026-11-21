@@ -23,11 +23,11 @@ Each release includes a `.sha256` checksum and a GitHub SLSA build provenance at
 | :---: | :---: | :---: | :---: |
 | ![Today screen in dark theme](docs/screenshots/en/today-dark.png) | ![Sky screen in dark theme](docs/screenshots/en/sky-dark.png) | ![Compass screen in dark theme](docs/screenshots/en/compass-dark.png) | ![Places screen in dark theme](docs/screenshots/en/places-dark.png) |
 
-| Today (light) | Sky (light) | Settings |
-| :---: | :---: | :---: |
-| ![Today screen in light theme](docs/screenshots/en/today-light.png) | ![Sky screen in light theme](docs/screenshots/en/sky-light.png) | ![Settings screen](docs/screenshots/en/settings-dark.png) |
+| Camera | Today (light) | Sky (light) | Settings |
+| :---: | :---: | :---: | :---: |
+| ![Camera view with the sun path over the sky](docs/screenshots/en/camera-dark.png) | ![Today screen in light theme](docs/screenshots/en/today-light.png) | ![Sky screen in light theme](docs/screenshots/en/sky-light.png) | ![Settings screen](docs/screenshots/en/settings-dark.png) |
 
-*Real phone screenshots taken in Valencia at 17:20 during golden hour.*
+*Real phone screenshots in Valencia, at 17:20 during golden hour and at 14:40 in the camera view. In the camera screenshot the live camera image is replaced by a drawn sky and the phone's orientation is fixed; everything on top of it is the app as it runs.*
 
 ## What Cenit does
 
@@ -100,17 +100,26 @@ The light theme uses warm paper tones from Scrolless and the dark theme uses dee
 | `sun` | `#7A6220` | `#D6C07E` | Sun path, golden hour and active state |
 | `moon` | `#3D5896` | `#AFBDE3` | Moon path and lunar times |
 
-[`design/system.md`](design/system.md) lists all tokens and WCAG contrast checks. The HTML artboards are in [`design/`](design/), including the selected layout [`design/cenit-stage-1/02-cupula.html`](design/cenit-stage-1/02-cupula.html). Run `node tools/brand/render.mjs` to regenerate the brand assets in [`docs/brand/`](docs/brand/).
+[`design/system.md`](design/system.md) lists all tokens and WCAG contrast checks. The HTML artboards are in [`design/`](design/), including the selected layouts [`design/cenit-stage-1/02-cupula.html`](design/cenit-stage-1/02-cupula.html) and [`design/cenit-stage-2/01-visor.html`](design/cenit-stage-2/01-visor.html) for the camera view. Run `node tools/brand/render.mjs` to regenerate the brand assets in [`docs/brand/`](docs/brand/).
 
 ## Project structure
 
-- `core/` (`:core`): pure Kotlin ephemeris, sky dome projection, elevation chart data, compass math, eclipse search, city index, alert scheduling and time formatting.
-- `app/` (`:app`): Jetpack Compose screens, magnetometer and `LocationManager` integration, local JSON storage, notifications and settings.
+- `core/` (`:core`): pure Kotlin ephemeris, sky dome projection, elevation chart data, compass math, eclipse search, city index, alert scheduling, time formatting, and the camera view's projection (`core/ar`: device rotation, pinhole projection, rotation smoothing, sampled sun and moon paths).
+- `app/` (`:app`): Jetpack Compose screens, magnetometer and `LocationManager` integration, the CameraX preview and its overlay, local JSON storage, notifications and settings.
 - `third_party/astronomy/` (`:astronomy`): unmodified Astronomy Engine v2.1.19 source with a SHA-256 verification task (`verifyVendoredSource`).
 - `tools/geonames/`: Python generator and unit tests for the bundled city TSV.
 - `tools/brand/`: SVG/HTML templates and macOS render script for `docs/brand/`.
 - `scripts/`: `check-manifest.sh` (verifies zero `INTERNET` permission and backups disabled) and `test-check-manifest.sh`.
 - `design/`: design tokens and HTML artboards.
+
+## Roadmap
+
+Cenit is built in stages, and each one ships as a usable release:
+
+1. Times, charts, the sky dome, compass, places and alerts (v0.1.0).
+2. Camera view with the sun and moon paths (v0.2.0).
+3. Shadows: where and how long they fall through the day.
+4. Map with the sun and moon directions. This is the only stage that may need network access.
 
 ## Building
 

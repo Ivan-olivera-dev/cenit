@@ -105,7 +105,7 @@ function main() {
       ...showcaseSpec({
         leftPath: repoAsset('docs/screenshots/en/today-dark.png'),
         centerPath: repoAsset('docs/screenshots/en/sky-light.png'),
-        rightPath: repoAsset('docs/screenshots/en/compass-dark.png'),
+        rightPath: repoAsset('docs/screenshots/en/camera-dark.png'),
       }),
     },
     {
@@ -113,7 +113,7 @@ function main() {
       ...showcaseSpec({
         leftPath: repoAsset('docs/screenshots/es/hoy-dark.png'),
         centerPath: repoAsset('docs/screenshots/es/cielo-light.png'),
-        rightPath: repoAsset('docs/screenshots/es/brujula-dark.png'),
+        rightPath: repoAsset('docs/screenshots/es/camara-dark.png'),
       }),
     },
   ];
