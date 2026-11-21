@@ -28,6 +28,39 @@
     <string name="camera_error_body">Another app may be using the camera or the hardware could not be initialized.</string>
     <string name="camera_action_retry">Retry</string>
 
-    <!-- Minimal debug overlay (replaced in T5) -->
-    <string name="camera_debug_readout">Heading %1$d° · Pitch %2$d° · FOV %3$.0f°×%4$.0f°</string>
+    <!-- Visor AR overlay -->
+    <string name="visor_layer_sun">Sun</string>
+    <string name="visor_layer_moon">Moon</string>
+    <string name="visor_layer_solstices">Solstices</string>
+    <string name="visor_solstice_equinox">eq</string>
+
+    <string name="visor_horizon_label">0° · Horiz.</string>
+    <string name="visor_sun_marker_below">%1$s · below horiz.</string>
+    <string name="visor_moon_marker">Moon %1$d %%</string>
+    <string name="visor_rise_set_label">%1$s %2$s</string>
+
+    <string name="visor_edge_sun">Sun · %1$s</string>
+    <string name="visor_edge_sun_below">Sun below horiz. · %1$s</string>
+    <string name="visor_edge_moon">Moon · %1$s</string>
+
+    <string name="visor_crosshair_aim">%1$s %2$s · %3$s</string>
+    <string name="visor_crossing_sun">Sun passes here at %1$s · %2$s</string>
+    <string name="visor_crossing_sun_below">Sun below horizon here at %1$s</string>
+    <string name="visor_crossing_moon">Moon passes here at %1$s · %2$d %%</string>
+    <string name="visor_crossing_solstice_jun">June solstice passes here at %1$s</string>
+    <string name="visor_crossing_solstice_eq">Equinox passes here at %1$s</string>
+    <string name="visor_crossing_solstice_dec">Dec. solstice passes here at %1$s</string>
+
+    <string name="visor_ground_hint">↑ Horizon %1$d° up · raise the phone</string>
+    <string name="visor_calibration_dimmed">Lines dimmed · low accuracy</string>
+
+    <string name="visor_dock_sun_above">%1$s · Sun %2$s %3$s · %4$s</string>
+    <string name="visor_dock_sun_below">%1$s · Sun %2$s %3$s · below horizon</string>
+    <string name="visor_moon_pill">%1$d %%</string>
+
+    <!-- Accessibility (mirroring 01-visor.html aria-labels) -->
+    <string name="visor_cd_overlay">Full-screen camera viewfinder with sun, moon, and solstice paths</string>
+    <string name="visor_cd_heading_tape">Heading tape: %1$s %2$s</string>
+    <string name="visor_cd_date_chip">Selected date: %1$s. Tap to choose another date</string>
+    <string name="visor_cd_place_pill">Active place: %1$s</string>
 </resources>

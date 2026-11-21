@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "chosen": "01-visor.html",
+  "handoffs": {
+    "01-visor.html": {
+      "status": "in_progress",
+      "queued": false,
+      "sentAt": "2026-11-21T11:14:46.793Z",
+      "startedAt": "2026-11-21T11:15:06.236Z",
+      "implementedAt": null,
+      "feature": "odd/tasks/cenit-stage-2.md",
+      "note": "Stage 2: AR math in :core, CameraX preview + orientation, overlay per 01 · Visor."
+    }
+  }
+}

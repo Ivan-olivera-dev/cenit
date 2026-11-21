@@ -85,6 +85,48 @@ class DeviceRotation(
         )
     }
 
+    /**
+     * Remaps this portrait-convention device-to-world rotation matrix into the active display
+     * coordinate frame for [displayRotationDeg] (`0`, `90`, `180`, or `270` degrees CCW, matching
+     * Android `Surface.ROTATION_*`).
+     *
+     * The optical axis (`-Z_d`) is preserved while screen-right (`+X`) and screen-up (`+Y`) are
+     * rotated to align with the rotated display viewport.
+     */
+    fun withDisplayRotation(displayRotationDeg: Int): DeviceRotation {
+        val m = values
+        return when (displayRotationDeg) {
+            0 -> this
+            // 90° CCW (top of phone on left): +X_disp = -Y_d, +Y_disp = +X_d, +Z_disp = +Z_d
+            90 -> DeviceRotation(
+                doubleArrayOf(
+                    -m[1], m[0], m[2],
+                    -m[4], m[3], m[5],
+                    -m[7], m[6], m[8],
+                ),
+            )
+            // 180° (upside down): +X_disp = -X_d, +Y_disp = -Y_d, +Z_disp = +Z_d
+            180 -> DeviceRotation(
+                doubleArrayOf(
+                    -m[0], -m[1], m[2],
+                    -m[3], -m[4], m[5],
+                    -m[6], -m[7], m[8],
+                ),
+            )
+            // 270° CCW / 90° CW (top of phone on right): +X_disp = +Y_d, +Y_disp = -X_d, +Z_disp = +Z_d
+            270 -> DeviceRotation(
+                doubleArrayOf(
+                    m[1], -m[0], m[2],
+                    m[4], -m[3], m[5],
+                    m[7], -m[6], m[8],
+                ),
+            )
+            else -> throw IllegalArgumentException(
+                "displayRotationDeg must be 0, 90, 180, or 270, was $displayRotationDeg",
+            )
+        }
+    }
+
     override fun equals(other: Any?): Boolean =
         this === other || (other is DeviceRotation && values.contentEquals(other.values))
 

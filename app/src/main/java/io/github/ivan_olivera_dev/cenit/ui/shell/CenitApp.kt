@@ -19,8 +19,8 @@ import io.github.ivan_olivera_dev.cenit.alerts.AlertSubscription
 import io.github.ivan_olivera_dev.cenit.alerts.AlertSubscriptionsStore
 import io.github.ivan_olivera_dev.cenit.settings.AppSettings
 import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
-import io.github.ivan_olivera_dev.cenit.ui.camera.CameraDebugOverlay
 import io.github.ivan_olivera_dev.cenit.ui.camera.CameraScreen
+import io.github.ivan_olivera_dev.cenit.ui.camera.VisorOverlay
 import io.github.ivan_olivera_dev.cenit.ui.compass.CompassScreen
 import io.github.ivan_olivera_dev.cenit.ui.places.PlacesScreen
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
@@ -84,7 +84,14 @@ fun CenitApp(
         CameraScreen(
             state = plannerState,
             onBack = { showCamera = false },
-            overlay = { arInputs -> CameraDebugOverlay(arInputs = arInputs) },
+            overlay = { arInputs ->
+                VisorOverlay(
+                    inputs = arInputs,
+                    state = plannerState,
+                    onStateChange = { plannerState = it },
+                    clock = clock,
+                )
+            },
         )
         return
     }

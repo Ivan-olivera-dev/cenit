@@ -83,14 +83,14 @@ import io.github.ivan_olivera_dev.cenit.ui.components.CenitIcon
 import io.github.ivan_olivera_dev.cenit.ui.components.CenitIconKind
 import io.github.ivan_olivera_dev.cenit.ui.components.cenitFocusRing
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
+import io.github.ivan_olivera_dev.cenit.ui.theme.DarkCenitPalette
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
-import kotlin.math.roundToInt
 
-// HUD dark palette tokens from design/system.md (used over live camera preview for guaranteed contrast).
-private val HudBg = Color(0xFF111318)
-private val HudScrim = Color(0xD6111318) // rgba(17, 19, 24, 0.84)
-private val HudFg = Color(0xFFE9E7E2)
-private val HudBorder = Color(0xFF6C7382)
+// HUD dark palette tokens derived strictly from DarkCenitPalette (design/system.md).
+private val HudBg = DarkCenitPalette.bgColor
+private val HudScrim = DarkCenitPalette.bgColor.copy(alpha = 0.84f)
+private val HudFg = DarkCenitPalette.textPrimary
+private val HudBorder = DarkCenitPalette.controlBorder
 
 private data class CameraOpticalMetrics(
     val focalLengthMm: Double = CameraFovCalculator.DEFAULT_FOCAL_LENGTH_MM,
@@ -398,49 +398,6 @@ fun CameraScreen(
                     onBack = onBack,
                 )
             }
-        }
-    }
-}
-
-/**
- * Minimal debug overlay displaying live back-camera pointing heading, pitch, and computed FOV
- * derived from [ArInputs]. Replaced by the full 01 · Visor AR overlay in T5.
- */
-@Composable
-fun CameraDebugOverlay(
-    arInputs: ArInputs,
-    modifier: Modifier = Modifier,
-) {
-    val pointing = remember(arInputs.rotation) {
-        cameraPointingFromRotation(arInputs.rotation)
-    }
-    val headingDeg = (pointing.azimuthDeg.roundToInt() % 360 + 360) % 360
-    val pitchDeg = pointing.elevationDeg.roundToInt()
-    val readout = stringResource(
-        R.string.camera_debug_readout,
-        headingDeg,
-        pitchDeg,
-        arInputs.horizontalFovDeg,
-        arInputs.verticalFovDeg,
-    )
-
-    Box(modifier = modifier.fillMaxSize()) {
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 24.dp)
-                .clip(RoundedCornerShape(999.dp))
-                .background(HudScrim)
-                .border(1.dp, HudBorder, RoundedCornerShape(999.dp))
-                .padding(horizontal = 14.dp, vertical = 8.dp),
-        ) {
-            Text(
-                text = readout,
-                style = MaterialTheme.typography.bodySmall.copy(fontFeatureSettings = "tnum"),
-                color = HudFg,
-                maxLines = 1,
-            )
         }
     }
 }

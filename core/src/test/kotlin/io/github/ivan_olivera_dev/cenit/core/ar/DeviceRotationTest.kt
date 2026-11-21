@@ -131,6 +131,46 @@ class DeviceRotationTest {
         assertEquals(0.0, pWest.rollDeg, 1e-6)
     }
 
+    @Test
+    fun `withDisplayRotation remaps portrait rotation matrix into active display frame`() {
+        val projector = ArProjector(CameraFov(60.0, 80.0), widthPx = 1000.0, heightPx = 1500.0)
+
+        // Portrait (0°): unchanged
+        val portrait = DeviceRotation.fromHeadingPitchRoll(headingDeg = 120.0, pitchDeg = 15.0, rollDeg = 12.0)
+        assertEquals(portrait, portrait.withDisplayRotation(0))
+
+        // Device rotated 90° CCW (top on left => roll = -90° in portrait frame) with display at 90°
+        val landLeft = DeviceRotation.fromHeadingPitchRoll(headingDeg = 239.0, pitchDeg = 5.0, rollDeg = -90.0)
+        val remapped90 = landLeft.withDisplayRotation(90)
+        assertOrthonormalProper(remapped90)
+        val p90 = projector.pointing(remapped90)
+        assertEquals(239.0, p90.azimuthDeg, 1e-6)
+        assertEquals(5.0, p90.elevationDeg, 1e-6)
+        assertEquals(0.0, p90.rollDeg, 1e-6)
+
+        // Device rotated 90° CW (top on right => roll = +90° in portrait frame) with display at 270°
+        val landRight = DeviceRotation.fromHeadingPitchRoll(headingDeg = 42.0, pitchDeg = -10.0, rollDeg = 90.0)
+        val remapped270 = landRight.withDisplayRotation(270)
+        assertOrthonormalProper(remapped270)
+        val p270 = projector.pointing(remapped270)
+        assertEquals(42.0, p270.azimuthDeg, 1e-6)
+        assertEquals(-10.0, p270.elevationDeg, 1e-6)
+        assertEquals(0.0, p270.rollDeg, 1e-6)
+
+        // Upside-down (180°)
+        val upsideDown = DeviceRotation.fromHeadingPitchRoll(headingDeg = 180.0, pitchDeg = 20.0, rollDeg = 180.0)
+        val remapped180 = upsideDown.withDisplayRotation(180)
+        assertOrthonormalProper(remapped180)
+        val p180 = projector.pointing(remapped180)
+        assertEquals(180.0, p180.azimuthDeg, 1e-6)
+        assertEquals(20.0, p180.elevationDeg, 1e-6)
+        assertEquals(0.0, p180.rollDeg, 1e-6)
+
+        assertThrows(IllegalArgumentException::class.java) {
+            portrait.withDisplayRotation(45)
+        }
+    }
+
     companion object {
         fun assertOrthonormalProper(rot: DeviceRotation, tol: Double = 1e-9) {
             for (i in 0..2) {
