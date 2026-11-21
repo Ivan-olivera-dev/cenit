@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Entry & navigation -->
+    <string name="camera_cd_open">Open camera</string>
+    <string name="camera_cd_back">Back to Compass</string>
+    <string name="camera_cd_screen">Camera viewfinder</string>
+
+    <!-- Permission rationale -->
+    <string name="camera_rationale_title">Camera access needed</string>
+    <string name="camera_rationale_body">Cenit uses the camera live only to draw the sun and moon paths over the scene. Nothing is recorded, saved, or sent anywhere.</string>
+    <string name="camera_action_allow">Allow camera</string>
+
+    <!-- Permission denied / permanently denied -->
+    <string name="camera_denied_title">Camera permission denied</string>
+    <string name="camera_denied_body">Cenit uses the camera live only to draw the sun and moon paths. No photos, no internet.</string>
+    <string name="camera_permanently_denied_body">Camera access is disabled in Android settings. Enable it there to use the live viewfinder, or continue with the flat compass.</string>
+    <string name="camera_action_open_settings">Open settings</string>
+    <string name="camera_action_use_compass">Use flat compass</string>
+
+    <!-- Hardware & runtime error states -->
+    <string name="camera_no_camera_title">No camera available</string>
+    <string name="camera_no_camera_body">This device does not expose a back camera for the live viewfinder. You can still plan sun and moon directions on the flat compass.</string>
+
+    <string name="camera_no_sensor_title">No orientation sensor</string>
+    <string name="camera_no_sensor_body">This phone does not have a rotation sensor to align the sun and moon paths with the camera. You can still plan directions on the flat compass.</string>
+
+    <string name="camera_error_title">Could not start camera</string>
+    <string name="camera_error_body">Another app may be using the camera or the hardware could not be initialized.</string>
+    <string name="camera_action_retry">Retry</string>
+
+    <!-- Minimal debug overlay (replaced in T5) -->
+    <string name="camera_debug_readout">Heading %1$d° · Pitch %2$d° · FOV %3$.0f°×%4$.0f°</string>
+</resources>

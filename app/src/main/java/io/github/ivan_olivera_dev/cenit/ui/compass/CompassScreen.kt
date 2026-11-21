@@ -2,6 +2,7 @@ package io.github.ivan_olivera_dev.cenit.ui.compass
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -33,6 +34,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
@@ -55,8 +57,11 @@ import io.github.ivan_olivera_dev.cenit.core.format.CenitFormat
 import io.github.ivan_olivera_dev.cenit.core.format.ClockFormat
 import io.github.ivan_olivera_dev.cenit.core.sky.SkyFormatting
 import io.github.ivan_olivera_dev.cenit.settings.LocalAppSettings
+import io.github.ivan_olivera_dev.cenit.ui.components.CenitIcon
+import io.github.ivan_olivera_dev.cenit.ui.components.CenitIconKind
 import io.github.ivan_olivera_dev.cenit.ui.components.DomeHorizonTick
 import io.github.ivan_olivera_dev.cenit.ui.components.DomeReferencePaths
+import io.github.ivan_olivera_dev.cenit.ui.components.cenitFocusRing
 import io.github.ivan_olivera_dev.cenit.ui.planner.PlannerState
 import io.github.ivan_olivera_dev.cenit.ui.theme.CenitPalette
 import io.github.ivan_olivera_dev.cenit.ui.theme.LocalCenitPalette
@@ -85,6 +90,7 @@ private data class CompassDayBundle(
 @Composable
 fun CompassScreen(
     state: PlannerState,
+    onOpenCamera: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val sensorState = rememberCompassSensorState(
@@ -94,6 +100,7 @@ fun CompassScreen(
     CompassScreenContent(
         state = state,
         sensorState = sensorState,
+        onOpenCamera = onOpenCamera,
         modifier = modifier,
     )
 }
@@ -102,6 +109,7 @@ fun CompassScreen(
 internal fun CompassScreenContent(
     state: PlannerState,
     sensorState: CompassSensorState,
+    onOpenCamera: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val palette = LocalCenitPalette.current
@@ -206,13 +214,37 @@ internal fun CompassScreenContent(
                 .padding(horizontal = 22.dp)
                 .padding(top = 12.dp, bottom = 10.dp),
         ) {
-            // 1. Screen title
-            Text(
-                text = stringResource(R.string.compass_title),
-                style = MaterialTheme.typography.headlineLarge,
-                color = palette.textPrimary,
-                maxLines = 1,
-            )
+            // 1. Screen title + full-screen AR camera entry button
+            val cameraDesc = stringResource(R.string.camera_cd_open)
+            val cameraShape = RoundedCornerShape(10.dp)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Text(
+                    text = stringResource(R.string.compass_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    color = palette.textPrimary,
+                    maxLines = 1,
+                )
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .cenitFocusRing(palette.focusRing, cornerRadius = 10.dp)
+                        .clip(cameraShape)
+                        .border(1.dp, palette.controlBorder, cameraShape)
+                        .clickable(role = Role.Button, onClick = onOpenCamera)
+                        .semantics { contentDescription = cameraDesc },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CenitIcon(
+                        kind = CenitIconKind.CAMERA,
+                        tint = palette.textPrimary,
+                        size = 20.dp,
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(10.dp))
 

@@ -61,7 +61,7 @@ Puedes comprobar los permisos de cualquier APK con:
 aapt2 dump permissions cenit-<versión>.apk
 ```
 
-Aparecen `ACCESS_COARSE_LOCATION` y `ACCESS_FINE_LOCATION` (GPS, solo cuando tocas *Mi ubicación*), `POST_NOTIFICATIONS` y `RECEIVE_BOOT_COMPLETED` (avisos), y además `io.github.ivan_olivera_dev.cenit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, que añade AndroidX para que solo la propia Cenit pueda enviar mensajes a sus receptores.
+Aparecen `ACCESS_COARSE_LOCATION` y `ACCESS_FINE_LOCATION` (GPS, solo cuando tocas *Mi ubicación*), `CAMERA` (vista de cámara en directo, solo cuando la abres; las imágenes nunca salen del teléfono y no se graba ni se guarda nada), `POST_NOTIFICATIONS` y `RECEIVE_BOOT_COMPLETED` (avisos), y además `io.github.ivan_olivera_dev.cenit.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, que añade AndroidX para que solo la propia Cenit pueda enviar mensajes a sus receptores.
 
 ### Compilación sin firmar reproducible
 

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Entry & navigation -->
+    <string name="camera_cd_open">Abrir cámara</string>
+    <string name="camera_cd_back">Volver a Brújula</string>
+    <string name="camera_cd_screen">Visor de cámara</string>
+
+    <!-- Permission rationale -->
+    <string name="camera_rationale_title">Permiso de cámara necesario</string>
+    <string name="camera_rationale_body">Cenit usa la cámara solo en directo para dibujar las trayectorias del sol y la luna sobre la escena. No graba, no guarda ni envía nada.</string>
+    <string name="camera_action_allow">Permitir cámara</string>
+
+    <!-- Permission denied / permanently denied -->
+    <string name="camera_denied_title">Permiso de cámara denegado</string>
+    <string name="camera_denied_body">Cenit usa la cámara solo en directo para dibujar las trayectorias del sol y la luna. Sin fotos ni internet.</string>
+    <string name="camera_permanently_denied_body">El permiso de cámara está bloqueado en los ajustes de Android. Actívalo allí para usar el visor en directo o continúa con la brújula plana.</string>
+    <string name="camera_action_open_settings">Abrir ajustes</string>
+    <string name="camera_action_use_compass">Usar brújula plana</string>
+
+    <!-- Hardware & runtime error states -->
+    <string name="camera_no_camera_title">Sin cámara disponible</string>
+    <string name="camera_no_camera_body">Este dispositivo no dispone de cámara trasera para el visor en directo. Puedes seguir planificando las direcciones en la brújula plana.</string>
+
+    <string name="camera_no_sensor_title">Sin sensor de orientación</string>
+    <string name="camera_no_sensor_body">Este móvil no dispone de sensor de rotación para alinear las trayectorias del sol y la luna con la cámara. Puedes consultar las direcciones en la brújula plana.</string>
+
+    <string name="camera_error_title">No se pudo iniciar la cámara</string>
+    <string name="camera_error_body">Es posible que otra aplicación esté usando la cámara o que no se haya podido inicializar.</string>
+    <string name="camera_action_retry">Reintentar</string>
+
+    <!-- Minimal debug overlay (replaced in T5) -->
+    <string name="camera_debug_readout">Rumbo %1$d° · Incl. %2$d° · FOV %3$.0f°×%4$.0f°</string>
+</resources>
