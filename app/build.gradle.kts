@@ -39,9 +39,13 @@ android {
     buildTypes {
         release {
             // -PcenitReleaseDebugSigning=true signs a local release with the debug key, so a minified
-            // build can replace an installed debug build for testing without losing its data.
-            signingConfig = signingConfigs.findByName("release")
-                ?: signingConfigs.getByName("debug").takeIf { findProperty("cenitReleaseDebugSigning") == "true" }
+            // build can replace an installed debug build for testing without losing its data. It wins
+            // over the developer's release key when both are present.
+            signingConfig = if (findProperty("cenitReleaseDebugSigning") == "true") {
+                signingConfigs.getByName("debug")
+            } else {
+                signingConfigs.findByName("release")
+            }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
